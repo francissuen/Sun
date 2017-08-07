@@ -2,7 +2,6 @@
 #include <iostream>
 #include <string>
 #include "../Time/gbTime.h" 
-#include "../gbUtilsCommon.h"
 
 #ifdef gbLUAAPI
 #include "../LuaCPP/gbLuaCPP.h"
@@ -25,7 +24,7 @@ enum gbLogType
     Warning, Error
   };
 
-gbUtilsDLL_CLASS  gbLog
+gbUtilsEXPORT_CLASS  gbLog
 {
   SingletonDeclare(gbLog)
 public:
