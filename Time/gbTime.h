@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <time.h>
-#include "../gbUtilsCommon.h"
+#include "../gbCommon.h"
+#include "../config.h"
 
 #define MAXTIMEBUFFERLEN 64
 
+#ifdef _MSC_VER
 typedef __int64 int64_t;
-
-gbUtilsDLL_CLASS gbTime
+#endif
+gbUtilsEXPORT_CLASS gbTime
 {
 	SingletonDeclare(gbTime)
 public:

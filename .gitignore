@@ -2,3 +2,6 @@ GPATH
 GRTAGS
 GTAGS
 *~
+build/
+config.h
+
