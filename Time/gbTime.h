@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <time.h>
+#ifdef __GNUC__
+#include<stdint.h>
+#endif
 #include "../gbCommon.h"
 #include "../config.h"
 
