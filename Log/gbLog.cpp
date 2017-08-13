@@ -29,13 +29,17 @@ HANDLE gbLog::hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
 	 if (str == nullptr)
 		 str = "Error str error";
  	gbLocalTime(buffer);
+	#ifdef WIN32
 	::SetConsoleTextAttribute(hConsole, gb_LOG_ERROR_COLOR);
+	#endif
  	std::cerr << buffer << std::endl << "ERROR:" << str << std::endl;
  }
 void gbLog::Warning(const char* msg)
 {
 	gbLocalTime(buffer);
+	#ifdef WIN32
 	::SetConsoleTextAttribute(hConsole, gb_LOG_WARNING_COLOR);
+	#endif
 	std::cout << buffer << std::endl << "WARNING:" << msg << std::endl;
 }
 
