@@ -54,3 +54,9 @@ else()
     ${gb_src_files} ${gb_header_files})
 endif()
 
+# INSTALL
+
+message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
+
+install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib)
+install(FILES ${gb_header_files} DESTINATION include)
