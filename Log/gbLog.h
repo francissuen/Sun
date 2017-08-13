@@ -7,7 +7,9 @@
 #include "../LuaCPP/gbLuaCPP.h"
 #endif
 
+#ifdef WIN32
 #include<Windows.h>
+#endif
 // colors are 0=black 1=blue 2=green and so on to 15=white  
 // colorattribute = foreground + background * 16
 // to get red text on yellow use 4 + 14*16 = 228
