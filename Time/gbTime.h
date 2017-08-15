@@ -3,8 +3,8 @@
 #ifdef __GNUC__
 #include<stdint.h>
 #endif
-#include "../gbCommon.h"
-#include "../config.h"
+#include "gbCommon.h"
+#include "gbUtilsConfig.h"
 
 #define MAXTIMEBUFFERLEN 64
 

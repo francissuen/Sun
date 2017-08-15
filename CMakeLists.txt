@@ -11,14 +11,14 @@ set(VERSION_MINOR 0)
 option(gbLUAAPI "export lua api?" OFF)
 option(gbUtilsSTATIC "build static or shared lib?" ON)
 
-configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/config.h)
+configure_file(${PROJECT_SOURCE_DIR}/gbUtilsConfig.h.in ${PROJECT_SOURCE_DIR}/gbUtilsConfig.h)
 
 set(LIB_NAME "gbUtils")
 
 set(gb_src_files)
 set(gb_header_files)
 
-macro(gb_src_add_class dir clsNames)
+macro(gb_add_class clsNames dir)
   foreach(name ${clsNames})
     set(src_file ${dir}/${name}.cpp)
     set(header_file ${dir}/${name}.h)
@@ -41,9 +41,11 @@ macro(gb_src_add_class dir clsNames)
   endforeach()
 endmacro()
 
-gb_src_add_class(Log gbLog)
-gb_src_add_class(Time gbTime)
+gb_add_class(gbLog Log)
+gb_add_class(gbTime Time)
+gb_add_class(gbString String)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(gbUtilsSTATIC)
   add_library(${LIB_NAME} STATIC
@@ -59,4 +61,10 @@ endif()
 message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
 
 install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib)
-install(FILES ${gb_header_files} DESTINATION include)
+# install(FILES ${gb_header_files} DESTINATION include)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION include
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN "build" EXCLUDE
+  PATTERN ".*" EXCLUDE
+  )
