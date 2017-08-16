@@ -63,6 +63,9 @@ set_target_properties(${LIB_NAME}
   )
 
 # INSTALL
+if(UNIX)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gbUtils)
+endif()
 
 message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
 
