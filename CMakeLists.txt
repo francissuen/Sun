@@ -56,6 +56,12 @@ else()
     ${gb_src_files} ${gb_header_files})
 endif()
 
+set_target_properties(${LIB_NAME}
+  PROPERTIES
+  DEBUG_OUTPUT_NAME ${LIB_NAME}d
+  RELEASE_OUTPUT_NAME ${LIB_NAME}
+  )
+
 # INSTALL
 
 message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
