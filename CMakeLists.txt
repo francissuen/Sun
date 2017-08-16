@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(gbUtils)
 
-if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=std++11)
-endif()
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++11)
 
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
