@@ -42,6 +42,7 @@ endmacro()
 gb_add_class(gbLog Log)
 gb_add_class(gbTime Time)
 gb_add_class(gbString String)
+gb_add_class(gbThreadPool ThreadPool)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
