@@ -2,7 +2,7 @@
 #include "Log/gbLog.h"
 #include "String/gbString.h"
 
-gbJob::gbJob(std::function<void(void*)> func, void* arg, Priority p):
+gbTask::gbTask(std::function<void(void*)> func, void* arg, Priority p):
 	_p(p),
 	_bindfunc(std::bind(func, arg))
 {
@@ -11,7 +11,7 @@ gbJob::gbJob(std::function<void(void*)> func, void* arg, Priority p):
 std::list<std::thread*> gbThreadPool::_lstFreeThreads;
 std::condition_variable gbThreadPool::_cv;
 std::mutex gbThreadPool::_cv_m;
-std::priority_queue<gbJob> gbThreadPool::_jobs;
+std::priority_queue<gbTask> gbThreadPool::_jobs;
 
 bool gbThreadPool::Initialize(const int threadCount)
 {
@@ -36,7 +36,7 @@ void gbThreadPool::_infinite_loop()
 		{
 			gbLog::Instance().Log("i am woken up now @"); std::cout << std::this_thread::get_id() << std::endl;
 
-			gbJob job;
+			gbTask job;
 			{
 				job = _jobs.top();
 				_jobs.pop();
@@ -50,7 +50,7 @@ void gbThreadPool::_infinite_loop()
 	}
 }
 
-void gbThreadPool::PushJob(const gbJob& job)
+void gbThreadPool::PushTask(const gbTask& job)
 {
 	{
 		std::lock_guard<std::mutex> lg(_cv_m);
