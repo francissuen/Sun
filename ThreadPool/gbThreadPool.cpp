@@ -34,13 +34,10 @@ void gbThreadPool::_infinite_loop()
 		std::unique_lock<std::mutex> m(_cv_m);
 		if (_jobs.size() > 0)
 		{
-			gbLog::Instance().Log("i am woken up now @"); std::cout << std::this_thread::get_id() << std::endl;
-
 			gbTask job;
-			{
-				job = _jobs.top();
-				_jobs.pop();
-			}
+			job = _jobs.top();
+			_jobs.pop();
+
 			m.unlock();
 
 			job.Do();
