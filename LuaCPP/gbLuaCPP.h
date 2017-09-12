@@ -10,9 +10,9 @@
 #define LUA_BUILD_AS_DLL 1
 extern "C"
 {
-#include "../ThirdPartyLib/lua/include/lua.h"
-#include "../ThirdPartyLib/lua/include/lualib.h"
-#include "../ThirdPartyLib/lua/include/lauxlib.h"
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 }
 
 //todo, re-link lua lib in other project issue

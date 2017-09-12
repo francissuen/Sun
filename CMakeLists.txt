@@ -26,7 +26,7 @@ macro(gb_add_class clsNames dir)
       message("file@" ${src_file} " added")
       set(gb_src_files ${gb_src_files} ${src_file})
     else()
-      message(WARNING "file@" ${src_file} " not exist")
+      message("file@" ${src_file} " not exist")
     endif()
 
     #HEADER
@@ -34,7 +34,7 @@ macro(gb_add_class clsNames dir)
       message("file@" ${header_file} " added")
       set(gb_header_files ${gb_header_files} ${header_file})
     else()
-      message(WARNING "file@" ${header_file} " not exist")
+      message("file@" ${header_file} " not exist")
     endif()
   endforeach()
 endmacro()
@@ -43,6 +43,13 @@ gb_add_class(gbLog Log)
 gb_add_class(gbTime Time)
 gb_add_class(gbString String)
 gb_add_class(gbThreadPool ThreadPool)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/")
+find_package(lua REQUIRED)
+include_directories(SYSTEM ${lua_INCLUDE_DIRS})
+
+gb_add_class(gbLCTypeConversion LuaCPP)
+gb_add_class(gbLuaCPP LuaCPP)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -54,6 +61,10 @@ else()
   add_library(${LIB_NAME} SHARED
     ${gb_src_files} ${gb_header_files})
 endif()
+
+target_link_libraries(${LIB_NAME}
+  ${lua_LIBRARIES}
+  )
 
 set_target_properties(${LIB_NAME}
   PROPERTIES

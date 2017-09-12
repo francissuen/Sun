@@ -98,35 +98,35 @@ bool gbLCTypeConversion::TableToArrayFloat(lua_State* L, const int idx, float* o
 }
 
 
-bool gbLCTypeConversion::TableToVec3(lua_State* L, const int idx, glm::vec3& outVal)
+bool gbLCTypeConversion::TableToVec3(lua_State* L, const int idx, float (&outVal)[3])
 {
 	if (!lua_istable(L, idx))
 		return false;
 	lua_getfield(L, idx, "x");
-	outVal.x = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[0] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "y");
-	outVal.y = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[1] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "z");
-	outVal.z = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[2] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	return true;
 }
 
-int gbLCTypeConversion::Vec3ToTable(lua_State* L, const glm::vec3& inVal)
+int gbLCTypeConversion::Vec3ToTable(lua_State* L, const float  (&inVal)[3])
 {
 	lua_newtable(L);
-	lua_pushnumber(L, inVal.x);
+	lua_pushnumber(L, inVal[0]);
 	lua_setfield(L, -2, "x");
 
-	lua_pushnumber(L, inVal.y);
+	lua_pushnumber(L, inVal[1]);
 	lua_setfield(L, -2, "y");
 
-	lua_pushnumber(L, inVal.z);
+	lua_pushnumber(L, inVal[2]);
 	lua_setfield(L, -2, "z");
 
 	return 1;
