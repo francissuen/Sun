@@ -1,7 +1,6 @@
 #include "gbLCTypeConversion.h"
 
-lua_State* gbLuaState;
-std::vector<cpp_static_func> gbLCStaticFuncs;
+//std::vector<cpp_static_func> gbLCStaticFuncs;
 
 //template bool gbLCTypeConversion::TableToArray<float>(lua_State* L, const int idx, float* outVal, const unsigned int size);
 //template bool gbLCTypeConversion::TableToArray<int>(lua_State* L, const unsigned int idx, int* outVal, const unsigned int size);
@@ -10,18 +9,6 @@ std::vector<cpp_static_func> gbLCStaticFuncs;
 template int gbLCTypeConversion::ArrayToTable<float>(lua_State* L, const float* arr, const unsigned int size);
 //template int gbLCTypeConversion::ArrayToTable<int>(lua_State* L, const int* arr, const unsigned int size);
 //template int gbLCTypeConversion::ArrayToTable<unsigned int>(lua_State* L, const unsigned int* arr, const unsigned int size);
-
-int gbLuaTraceback(lua_State* L)
-{
-	lua_getfield(L, LUA_GLOBALSINDEX, "debug");
-	lua_getfield(L, -1, "traceback");
-	lua_pushvalue(L, 1);
-	lua_call(L, 1, 1);
-
-	printf("lua_traceback:%s\n", lua_tostring(L, -1));
-
-	return 1;
-}
 
 gbLCTypeConversion::gbLCTypeConversion()
 {
@@ -98,35 +85,35 @@ bool gbLCTypeConversion::TableToArrayFloat(lua_State* L, const int idx, float* o
 }
 
 
-bool gbLCTypeConversion::TableToVec3(lua_State* L, const int idx, glm::vec3& outVal)
+bool gbLCTypeConversion::TableToVec3(lua_State* L, const int idx, float (&outVal)[3])
 {
 	if (!lua_istable(L, idx))
 		return false;
 	lua_getfield(L, idx, "x");
-	outVal.x = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[0] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "y");
-	outVal.y = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[1] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "z");
-	outVal.z = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[2] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	return true;
 }
 
-int gbLCTypeConversion::Vec3ToTable(lua_State* L, const glm::vec3& inVal)
+int gbLCTypeConversion::Vec3ToTable(lua_State* L, const float  (&inVal)[3])
 {
 	lua_newtable(L);
-	lua_pushnumber(L, inVal.x);
+	lua_pushnumber(L, inVal[0]);
 	lua_setfield(L, -2, "x");
 
-	lua_pushnumber(L, inVal.y);
+	lua_pushnumber(L, inVal[1]);
 	lua_setfield(L, -2, "y");
 
-	lua_pushnumber(L, inVal.z);
+	lua_pushnumber(L, inVal[2]);
 	lua_setfield(L, -2, "z");
 
 	return 1;

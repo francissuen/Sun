@@ -1,6 +1,6 @@
 #pragma once
 #include "gbLuaCPP.h"
-#include "../gbUtils/Math/gbMath.h"
+//#include "../gbUtils/Math/gbMath.h"
 class gbLCTypeConversion
 {
 public:
@@ -15,9 +15,9 @@ public:
 	static bool TableToArrayInt(lua_State* L, const int idx, lua_Integer* outVal, const unsigned int count);
 	//static bool TableToArrayInt(lua_State* L, const int idx, std::vector<lua_Integer>& outVal, const unsigned int count);
 
-	static bool TableToVec3(lua_State* L, const int idx, glm::vec3& outVal);
+	static bool TableToVec3(lua_State* L, const int idx, float (&outVal)[3]);
 
-	static int Vec3ToTable(lua_State* L, const glm::vec3& inVal);
+	static int Vec3ToTable(lua_State* L, const float (&inVal)[3]);
 
 	template<typename T>
 	static int ArrayToTable(lua_State* L, const T* arr, const unsigned int count);
