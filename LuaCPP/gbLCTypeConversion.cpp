@@ -1,7 +1,6 @@
 #include "gbLCTypeConversion.h"
 
-lua_State* gbLuaState;
-std::vector<cpp_static_func> gbLCStaticFuncs;
+//std::vector<cpp_static_func> gbLCStaticFuncs;
 
 //template bool gbLCTypeConversion::TableToArray<float>(lua_State* L, const int idx, float* outVal, const unsigned int size);
 //template bool gbLCTypeConversion::TableToArray<int>(lua_State* L, const unsigned int idx, int* outVal, const unsigned int size);
@@ -10,18 +9,6 @@ std::vector<cpp_static_func> gbLCStaticFuncs;
 template int gbLCTypeConversion::ArrayToTable<float>(lua_State* L, const float* arr, const unsigned int size);
 //template int gbLCTypeConversion::ArrayToTable<int>(lua_State* L, const int* arr, const unsigned int size);
 //template int gbLCTypeConversion::ArrayToTable<unsigned int>(lua_State* L, const unsigned int* arr, const unsigned int size);
-
-int gbLuaTraceback(lua_State* L)
-{
-	lua_getfield(L, LUA_GLOBALSINDEX, "debug");
-	lua_getfield(L, -1, "traceback");
-	lua_pushvalue(L, 1);
-	lua_call(L, 1, 1);
-
-	printf("lua_traceback:%s\n", lua_tostring(L, -1));
-
-	return 1;
-}
 
 gbLCTypeConversion::gbLCTypeConversion()
 {

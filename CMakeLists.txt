@@ -62,10 +62,6 @@ else()
     ${gb_src_files} ${gb_header_files})
 endif()
 
-target_link_libraries(${LIB_NAME}
-  ${lua_LIBRARIES}
-  )
-
 set_target_properties(${LIB_NAME}
   PROPERTIES
   DEBUG_OUTPUT_NAME ${LIB_NAME}d

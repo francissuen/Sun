@@ -1,5 +1,5 @@
 #pragma once
-
+#include "../gbUtilsConfig.h"
 
 #define gbLUAAPI 1
 
@@ -7,7 +7,7 @@
 //lua 5.1 reference manual:http://www.lua.org/manual/5.1/manual.html
 
 #ifdef gbLUAAPI
-#define LUA_BUILD_AS_DLL 1
+
 extern "C"
 {
 #include "lua.h"
@@ -16,12 +16,6 @@ extern "C"
 }
 
 //todo, re-link lua lib in other project issue
-#ifdef _DEBUG
-#pragma comment(lib, "lua_vc140_x86_MDd.lib")
-#else
-#pragma comment(lib, "lua_vc140_x86_MD.lib")
-#endif
-
 
 #include <vector>
 #include <cstring>
@@ -354,17 +348,62 @@ private:								\
 
 #ifdef gbLUAAPI
 
-#ifdef gbRCDLLEXPORT
-extern _declspec(dllexport)lua_State* gbLuaState;
-#else
-extern _declspec(dllimport)lua_State* gbLuaState;
-#endif
+//#ifdef gbUtilsSTATIC
+//extern lua_State* gbLuaState;
+//#else
+//#ifdef gbUtilsEXPORT
+//extern _declspec(dllexport)lua_State* gbLuaState;
+//#else
+//extern _declspec(dllimport)lua_State* gbLuaState;
+//#endif
+//#endif
 
-#ifdef gbRCDLLEXPORT
+#ifdef gbUtilsSTATIC
+int gbLuaTraceback(lua_State* L);
+#else
+#ifdef gbUtilsEXPORT
 _declspec(dllexport) int gbLuaTraceback(lua_State* L);
 #else
 _declspec(dllimport) int gbLuaTraceback(lua_State* L);
 #endif
+#endif
+
+#ifdef gbUtilsSTATIC
+lua_State* gbLuaCPP_init();
+#else
+#ifdef gbUtilsEXPORT
+_declspec(dllexport) lua_State* gbLuaCPP_init();
+#else
+_declspec(dllimport) lua_State* gbLuaCPP_init();
+#endif
+#endif
+
+#ifdef gbUtilsSTATIC
+bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile);
+#else
+#ifdef gbUtilsEXPORT
+_declspec(dllexport) bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile);
+#else
+_declspec(dllimport) bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile);
+#endif
+#endif
+
+#ifdef gbUtilsSTATIC
+bool gbLuaCPP_dostring(lua_State* L, const char* szLua);
+#else
+#ifdef gbUtilsEXPORT
+_declspec(dllexport) bool gbLuaCPP_dostring(lua_State* L, const char* szLua);
+#else
+_declspec(dllimport) bool gbLuaCPP_dostring(lua_State* L, const char* szLua);
+#endif
+#endif
+
+
+//#ifdef gbRCDLLEXPORT
+//_declspec(dllexport) int gbLuaTraceback(lua_State* L);
+//#else
+//_declspec(dllimport) int gbLuaTraceback(lua_State* L);
+//#endif
 
 #define gb_LC(className) \
 className::gb_LC_Reg(L);
