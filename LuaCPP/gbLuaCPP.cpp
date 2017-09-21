@@ -1,5 +1,5 @@
 #include "gbLuaCPP.h"
-
+#include <string>
 //lua_State* gbLuaState;
 
 lua_State* gbLuaCPP_init()
@@ -43,6 +43,19 @@ bool gbLuaCPP_dostring(lua_State* L, const char* szLua)
 	}
 }
 
+void gbLuaCPP_appendPackagePath(lua_State* L, const char* path)
+{
+    lua_getglobal(L, "package");
+    lua_getfield(L, -1, "path");
+    std::string cur_path(lua_tostring(L, -1));
+    cur_path += ";";
+    cur_path += path;
+    cur_path += "/?.lua";
+    lua_pop(L, 1);
+    lua_pushstring(L, cur_path.c_str());
+    lua_setfield(L, -2, "path");
+    lua_pop(L, 1);
+}
 int gbLuaTraceback(lua_State* L)
 {
 	lua_getfield(L, LUA_GLOBALSINDEX, "debug");

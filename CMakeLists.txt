@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 project(gbUtils)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
+
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++11)
 
 set(VERSION_MAJOR 1)
@@ -43,6 +48,7 @@ gb_add_class(gbLog Log)
 gb_add_class(gbTime Time)
 gb_add_class(gbString String)
 gb_add_class(gbThreadPool ThreadPool)
+gb_add_class(gbFileSystem FileSystem)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/")
 find_package(lua REQUIRED)
