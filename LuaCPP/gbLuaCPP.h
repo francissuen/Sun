@@ -398,6 +398,16 @@ _declspec(dllimport) bool gbLuaCPP_dostring(lua_State* L, const char* szLua);
 #endif
 #endif
 
+#ifdef gbUtilsSTATIC
+void gbLuaCPP_appendPackagePath(lua_State* L, const char* path);
+#else
+#ifdef gbUtilsEXPORT
+_declspec(dllexport) void gbLuaCPP_appendPackagePath(lua_State* L, const char* path);
+#else
+_declspec(dllimport) void gbLuaCPP_appendPackagePath(lua_State* L, const char* path);
+#endif
+#endif
+
 
 //#ifdef gbRCDLLEXPORT
 //_declspec(dllexport) int gbLuaTraceback(lua_State* L);
