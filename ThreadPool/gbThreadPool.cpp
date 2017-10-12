@@ -57,7 +57,6 @@ void gbThreadPool::_infinite_loop()
 void gbThreadPool::PushTask(const gbTask& job)
 {
 
-    if(_threadActiveCount )
     {
 	std::lock_guard<std::mutex> lg(_cv_m);
 	_jobs.push(job);

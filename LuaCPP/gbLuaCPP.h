@@ -297,7 +297,11 @@ public: \
 #endif
 
 
-#define gb_LC_EXPORT_FUNC(name) void gb_LC_EF_##name(lua_State* L);
+#ifdef gbLUAAPI
+#define gb_LC_EXPORT_FUNC(name) int gb_LC_EF_##name(lua_State* L)
+#else
+#define gb_LC_EXPORT_FUNC(name)
+#endif
 
 #ifdef gbLUAAPI
 #define gb_LC_EXPORT_WRAP_FUNC(name, definition) \
