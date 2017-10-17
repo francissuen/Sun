@@ -51,19 +51,19 @@ static void gb_LC_Reg(lua_State* L/*, const char* szParentTable = nullptr*/);
 // #define gb_LC_Register_PrvCns(ClassName)
 // #endif
 
-#ifdef gbLUAAPI
-//used after register
-#define gb_LC_Singleton_Instance_Reg(ClassName)				\
-    lua_newtable(L);							\
-    void* p = lua_newuserdata(L, sizeof(void*));			\
-    *(std::uintptr_t*)p = (std::uintptr_t)&(ClassName::Instance);	\
-    luaL_getmetatable(L, MTNAME(ClassName));				\
-    lua_setmetatable(L, -2);						\
-    lua_setfield(L, -2, "Instance");					\
-    lua_setglobal(L, ClassName);	
-#else
-#define gb_LC_Singleton_Instance_Reg(ClassName)
-#endif
+// #ifdef gbLUAAPI
+// //used after register
+// #define gb_LC_Singleton_Instance_Reg(ClassName)				\
+//     lua_newtable(L);							\
+//     void* p = lua_newuserdata(L, sizeof(void*));			\
+//     *(std::uintptr_t*)p = (std::uintptr_t)&(ClassName::Instance);	\
+//     luaL_getmetatable(L, MTNAME(ClassName));				\
+//     lua_setmetatable(L, -2);						\
+//     lua_setfield(L, -2, "Instance");					\
+//     lua_setglobal(L, ClassName);	
+// #else
+// #define gb_LC_Singleton_Instance_Reg(ClassName)
+// #endif
 
 #ifdef gbLUAAPI
 //actual pointer wrapped by a data which point to the pointer
@@ -635,7 +635,7 @@ public:
 	{
 	    lua_newtable(L);							
 	    void* p = lua_newuserdata(L, sizeof(void*));			
-	    *(std::uintptr_t*)p = (std::uintptr_t)&(T::Instance);
+	    *(std::uintptr_t*)p = (std::uintptr_t)&(T::Instance());
 	    luaL_getmetatable(L, ClassMetatableName);			
 	    lua_setmetatable(L, -2);					
 	    lua_setfield(L, -2, "Instance");
