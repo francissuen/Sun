@@ -30,27 +30,21 @@ bool gbThreadPool::Initialize(const int threadCount)
 
 void gbThreadPool::_infinite_loop()
 {
-    while (true)
+    std::unique_lock<std::mutex> m(_cv_m);
+    for(;;)
     {
-	std::unique_lock<std::mutex> m(_cv_m);
-	if (_jobs.size() > 0)
-	{
+	_cv.wait(m, [&]()->bool
+		 {
+		     return _jobs.size() > 0;
+		 });
+
 	    gbTask job;
 	    job = _jobs.top();
-	    _jobs.pop();
-
-//	    gbThreadPool::Instance().IncreaseThreadActiveCount();
-			
 	    m.unlock();
-
 	    job.Do();
-	    
-	    // m.lock();
-	    // gbThreadPool::Instance().DecreaseThreadActiveCount();
-	    // m.unlock();
-	}
-	else
-	    _cv.wait(m);
+
+	    m.lock();
+	    _jobs.pop();
     }
 }
 
