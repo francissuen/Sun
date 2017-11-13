@@ -36,16 +36,26 @@ if(x != nullptr)\
 	x = nullptr;\
 }
 
-#define gbNEW(x, type)\
-type* x = new type;	\
-if(x == nullptr) \
-	gbLog::Instance().Error(gbString("gbNEW") + #type);
+template<typename From, typename To>
+inline To* gb_safe_cast(From* from)
+{
+#ifdef GB_DEBUG
+    To* to = dynamic_cast<To*>(from);
+    assert(to != nullptr);
+    return to;
+#elif
+    return static_cast<To*>(from);
+#endif    
+}
 
-#define gbNEW_ARRAY(x, type, count)\
-type* x = new type[count];	\
-if(x == nullptr) \
-	gbLog::Instance().Error(gbString("gbNEW_ARRAY") + #type);
+template<typename From, typename To>
+inline To& gb_safe_cast(From& from)
+{
+#ifdef GB_DEBUG
+    return dynamic_cast<To&>(from);
+#elif
+    return static_cast<To&>(from);
+#endif    
+}
 
-
-
-
+    
