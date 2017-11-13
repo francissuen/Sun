@@ -1,4 +1,4 @@
-#define gb_Interface class
+#pragma once
 
 #define SingletonDeclare(x) \
 public:\
@@ -43,7 +43,7 @@ inline To* gb_safe_cast(From* from)
     To* to = dynamic_cast<To*>(from);
     assert(to != nullptr);
     return to;
-#elif
+#else
     return static_cast<To*>(from);
 #endif    
 }
@@ -53,9 +53,7 @@ inline To& gb_safe_cast(From& from)
 {
 #ifdef GB_DEBUG
     return dynamic_cast<To&>(from);
-#elif
+#else
     return static_cast<To&>(from);
 #endif    
 }
-
-    
