@@ -75,16 +75,16 @@ set_target_properties(${LIB_NAME}
   )
 
 # INSTALL
-if(UNIX)
-  set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gbUtils)
-endif()
+# if(UNIX)
+#   set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gbUtils)
+# endif()
 
 message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
 
-install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib)
+install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib/gbUtils)
 # install(FILES ${gb_header_files} DESTINATION include)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION include
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION include/gbUtils
   FILES_MATCHING PATTERN "*.h"
   PATTERN "build" EXCLUDE
   PATTERN ".*" EXCLUDE
