@@ -1,10 +1,10 @@
 #pragma once
 #include <iostream>
 #include <string>
-#include "Time/gbTime.h" 
+#include "gbTime.h" 
 
 #ifdef gbLUAAPI
-#include "LuaCPP/gbLuaCPP.h"
+#include "gbLuaCPP.h"
 #endif
 
 #ifdef WIN32
