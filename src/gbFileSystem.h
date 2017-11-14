@@ -1,9 +1,9 @@
 #pragma once
-#include "../gbCommon.h"
+#include "gbCommon.h"
 #include <vector>
 #include <string>
-#include "../Log/gbLog.h"
-#include "../String/gbString.h"
+#include "gbLog.h"
+#include "gbString.h"
 #ifdef __GNUC__
 #include <unistd.h>
 #elif _MSC_VER

@@ -1,5 +1,5 @@
 #pragma once
-#include "../gbUtilsConfig.h"
+#include "gbUtilsConfig.h"
 #include <cstdint>
 #define gbLUAAPI 1
 
@@ -10,9 +10,9 @@
 
 extern "C"
 {
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
+#include <lua/include/lua.h>
+#include <lua/include/lualib.h>
+#include <lua/include/lauxlib.h>
 }
 
 //todo, re-link lua lib in other project issue

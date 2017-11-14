@@ -1,6 +1,6 @@
 #include "gbThreadPool.h"
-#include "Log/gbLog.h"
-#include "String/gbString.h"
+#include "gbLog.h"
+#include "gbString.h"
 
 gbTask::gbTask(std::function<void(void*)> func, void* arg, Priority p):
     _p(p),

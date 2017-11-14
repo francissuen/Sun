@@ -1,12 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(gbUtils)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Debug")
-endif()
-
-
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -std=c++11)
+include(gbCMake/gbCommon.cmake)
 
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 0)
@@ -19,45 +14,21 @@ configure_file(${PROJECT_SOURCE_DIR}/gbUtilsConfig.h.in ${PROJECT_SOURCE_DIR}/gb
 set(LIB_NAME "gbUtils")
 
 set(gb_src_files)
-set(gb_header_files)
 
-macro(gb_add_class clsNames dir)
-  foreach(name ${clsNames})
-    set(src_file ${dir}/${name}.cpp)
-    set(header_file ${dir}/${name}.h)
+gb_add_class(gbLog src gb_src_files)
+gb_add_class(gbTime src gb_src_files)
+gb_add_class(gbString src gb_src_files)
+gb_add_class(gbThreadPool src gb_src_files)
+gb_add_class(gbFileSystem src gb_src_files)
 
-    # SRC
-    if(EXISTS ${PROJECT_SOURCE_DIR}/${src_file})
-      message("file@" ${src_file} " added")
-      set(gb_src_files ${gb_src_files} ${src_file})
-    else()
-      message("file@" ${src_file} " not exist")
-    endif()
+# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/gbCMake/")
+# find_package(lua REQUIRED)
+# include_directories(SYSTEM ${lua_INCLUDE_DIRS})
 
-    #HEADER
-    if(EXISTS ${PROJECT_SOURCE_DIR}/${header_file})
-      message("file@" ${header_file} " added")
-      set(gb_header_files ${gb_header_files} ${header_file})
-    else()
-      message("file@" ${header_file} " not exist")
-    endif()
-  endforeach()
-endmacro()
+gb_add_class(gbLCTypeConversion src gb_src_files)
+gb_add_class(gbLuaCPP src gb_src_files)
 
-gb_add_class(gbLog Log)
-gb_add_class(gbTime Time)
-gb_add_class(gbString String)
-gb_add_class(gbThreadPool ThreadPool)
-gb_add_class(gbFileSystem FileSystem)
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/CMake/")
-find_package(lua REQUIRED)
-include_directories(SYSTEM ${lua_INCLUDE_DIRS})
-
-gb_add_class(gbLCTypeConversion LuaCPP)
-gb_add_class(gbLuaCPP LuaCPP)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(AFTER SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(gbUtilsSTATIC)
   add_library(${LIB_NAME} STATIC
@@ -81,11 +52,10 @@ set_target_properties(${LIB_NAME}
 
 message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
 
-install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION lib/gbUtils)
+install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION gbUtils/lib)
 # install(FILES ${gb_header_files} DESTINATION include)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION include/gbUtils
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/ DESTINATION gbUtils/include
   FILES_MATCHING PATTERN "*.h"
-  PATTERN "build" EXCLUDE
-  PATTERN ".*" EXCLUDE
   )
+

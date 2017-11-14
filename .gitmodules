@@ -1,0 +1,3 @@
+[submodule "gbCMake"]
+	path = gbCMake
+	url = https://github.com/glowingboy/gbCMake.git
