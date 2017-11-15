@@ -1,26 +1,26 @@
-#include "gbTime.h"
+#include "time.h"
 
 //SingletonDefine(gbTime)
-
-void gbTime::GetLocalTime(char * const buffer, const unsigned int length)
+using gb::utils::time;
+void time::get_local_time(char * const buffer, const unsigned int length)
 {
 	if (length > MAXTIMEBUFFERLEN)
 		return;
 	time_t rawTime;
-	time(&rawTime);
+	::time(&rawTime);
 
 	tm* pTime = localtime(&rawTime);
 	sprintf(buffer, "%d:%d:%d(%d,%d,%d)", pTime->tm_hour, pTime->tm_min, pTime->tm_sec, (pTime->tm_mon + 1), pTime->tm_mday, 1900+pTime->tm_year);
 }
 
-int64_t gbTime::GetLocalTime()
+int64_t time::get_local_time()
 {
 	time_t rawTime;
-	time(&rawTime);
+	::time(&rawTime);
 	return rawTime;
 }
 
-void gbTime::FormatTime(int64_t rawTime, char * const buffer, const unsigned int length)
+void time::format_time(int64_t rawTime, char * const buffer, const unsigned int length)
 {
 	int mins = rawTime / 60;
 	int hours = mins / 60;

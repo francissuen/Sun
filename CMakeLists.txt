@@ -13,19 +13,20 @@ configure_file(${PROJECT_SOURCE_DIR}/gbUtilsConfig.h.in ${PROJECT_SOURCE_DIR}/gb
 
 set(LIB_NAME "gbUtils")
 
-gb_add_class(gbCommon src gb_src_files)
-gb_add_class(gbLog src gb_src_files)
-gb_add_class(gbTime src gb_src_files)
-gb_add_class(gbString src gb_src_files)
-gb_add_class(gbThreadPool src gb_src_files)
-gb_add_class(gbFileSystem src gb_src_files)
+gb_add_class(common src gb_src_files)
+gb_add_class(logger src gb_src_files)
+gb_add_class(time src gb_src_files)
+gb_add_class(string src gb_src_files)
+gb_add_class(threadpool src gb_src_files)
+gb_add_class(filesystem src gb_src_files)
 
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/gbCMake/")
 # find_package(lua REQUIRED)
 # include_directories(SYSTEM ${lua_INCLUDE_DIRS})
 
-gb_add_class(gbLCTypeConversion src gb_src_files)
-gb_add_class(gbLuaCPP src gb_src_files)
+gb_add_class(luacpp_type_conversion src gb_src_files)
+gb_add_class(luacpp src gb_src_files)
+gb_add_class(args src gb_src_files)
 
 
 include_directories(AFTER SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,4 +1,4 @@
-#include "gbLuaCPP.h"
+#include "luacpp.h"
 #include <string>
 //lua_State* gbLuaState;
 

@@ -1,6 +1,9 @@
-#include "gbThreadPool.h"
-#include "gbLog.h"
-#include "gbString.h"
+#include "threadpool.h"
+#include "logger.h"
+#include "string.h"
+
+using gb::utils::string;
+using gb::utils::logger;
 
 gbTask::gbTask(std::function<void(void*)> func, void* arg, Priority p):
     _p(p),
@@ -17,7 +20,7 @@ unsigned char gbThreadPool::_threadBlockingCount = 0;
 bool gbThreadPool::Initialize(const int threadCount)
 {
     int count = threadCount < 0 ? std::thread::hardware_concurrency() : threadCount;
-    gbLog::Instance().Log(gbString("threadCount: ") + count);
+    logger::Instance().log(string("threadCount: ") + count);
     for (int i = 0; i < count; i++)
     {
 	std::thread* t = new std::thread(_infinite_loop);
