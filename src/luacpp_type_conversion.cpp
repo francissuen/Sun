@@ -1,4 +1,4 @@
-#include "gbLCTypeConversion.h"
+#include "luacpp_type_conversion.h"
 
 //std::vector<cpp_static_func> gbLCStaticFuncs;
 

@@ -5,7 +5,7 @@
 #include <queue>
 
 #include <list>
-#include "gbCommon.h"
+#include "common.h"
 class gbTask
 {
     enum Priority

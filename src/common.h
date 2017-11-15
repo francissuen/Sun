@@ -29,7 +29,7 @@ private:\
 		x = nullptr;\
 	}
 
-#define gbSAFE_DELETE(x)\
+#define GB_SAFE_DELETE(x)\
 if(x != nullptr)\
 {\
 	delete x;\
