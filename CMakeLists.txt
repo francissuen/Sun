@@ -13,8 +13,7 @@ configure_file(${PROJECT_SOURCE_DIR}/gbUtilsConfig.h.in ${PROJECT_SOURCE_DIR}/gb
 
 set(LIB_NAME "gbUtils")
 
-set(gb_src_files)
-
+gb_add_class(gbCommon src gb_src_files)
 gb_add_class(gbLog src gb_src_files)
 gb_add_class(gbTime src gb_src_files)
 gb_add_class(gbString src gb_src_files)
@@ -28,15 +27,18 @@ gb_add_class(gbFileSystem src gb_src_files)
 gb_add_class(gbLCTypeConversion src gb_src_files)
 gb_add_class(gbLuaCPP src gb_src_files)
 
+
 include_directories(AFTER SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(gbUtilsSTATIC)
   add_library(${LIB_NAME} STATIC
-    ${gb_src_files} ${gb_header_files})
+    ${gb_src_files}
+    )
 else()
   add_definitions(-DgbUtilsEXPORT)
   add_library(${LIB_NAME} SHARED
-    ${gb_src_files} ${gb_header_files})
+    ${gb_src_files}
+    )
 endif()
 
 set_target_properties(${LIB_NAME}
@@ -55,7 +57,13 @@ message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
 install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION gbUtils/lib)
 # install(FILES ${gb_header_files} DESTINATION include)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/ DESTINATION gbUtils/include
-  FILES_MATCHING PATTERN "*.h"
-  )
+set(headers)
+foreach(src IN LISTS gb_src_files)
+  if(${src} MATCHES ".*\\.h") 
+    set(headers ${headers} ${src})
+    message("header: " ${src})
+  endif()
+endforeach()
+set(headers ${headers} gbUtilsConfig.h)
 
+install(FILES ${headers} DESTINATION gbUtils/include)
