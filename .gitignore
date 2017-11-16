@@ -2,8 +2,7 @@ GPATH
 GRTAGS
 GTAGS
 *~
-build/
+*build/
 config.h
-test/
 
 gbUtilsConfig.h
