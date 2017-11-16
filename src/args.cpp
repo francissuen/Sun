@@ -47,7 +47,7 @@ void args::parse(const int argc, char** argv)
 	    {
 		curOpt = arg[j];
 		if(curOpt == '\0')
-		    throw string("unexpected '\0' after '-' when expecting a opt");
+		    throw string("unexpected '\\0' after '-' when expecting a opt");
 
 		mpNamedArg_t::iterator i = _mpNamedArgs.find(curOpt);
 		if(i == _mpNamedArgs.end())
@@ -112,6 +112,6 @@ template char* args::named_arg<char*>(const char opt)const;
 const char* args::unnamed_arg(const unsigned int idx)const
 {
     if(idx >= _vUnnamedArgs.size())
-	throw string("idx >= _vUnnamedargs") + idx;
+	throw string("idx >= _vUnnamedargs idx:") + idx;
     return _vUnnamedArgs[idx];
 }
