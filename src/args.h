@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include "string.h"
-#include "gbUtilsConfig.h"
+#include "../gbUtilsConfig.h"
 namespace gb
 {
   namespace utils
@@ -12,7 +12,8 @@ namespace gb
       /*
        *supported arguments formats
        *[-opt [opt_arg]]... [arg]...
-       *[opt_arg] called named arg, and [arg] called unnamed arg(always after named args)
+       *[opt_arg] called named arg, 
+       *[arg] called unnamed arg(always after named args, except argv[0])
        *note! unnamed_arg(0) always return current executable path
        */
       class args

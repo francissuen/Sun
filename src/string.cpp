@@ -1,66 +1,87 @@
 #include "string.h"
 using gb::utils::string;
 
-#define _GB_UTILS_STRING_MAX_BUFFER_SIZE 64
-
-void string::operator=(const char* str)
-{
-    _data = str;
-}
-
-bool string::operator==(const char* str)
-{
-    return _data.compare(str)==0?true:false;
-}
-
-bool string::operator==(const string& str)
-{
-    return _data.compare((const char*)str)==0?true:false;
-}
+#define _GB_UTILS_STRING_MAX_BUFFER_SIZE 12
 
 bool string::operator==(const char* str)const
 {
-    return (*const_cast<string*>(this)) == str;
+    return _data.compare(str) == 0? true : false;
 }
-
-bool string::operator==(const string& str)const
+bool string::operator==(const std::string& str)const
 {
-    return (*const_cast<string*>(this)) == str;
+    return _data.compare(str) == 0? true : false;
 }
 
-string string::operator+(const char* str)
+string gb::utils::operator+(const string& str, const char* szStr)
 {
-
-    return  (_data + str).c_str();
+    return string(str._data + szStr);
 }
-
-string string::operator+(const char val)
+string gb::utils::operator+(const string& str, const char val)
 {
-    return (_data + val).c_str();
-}
-string string::operator+(const unsigned int val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%d", val);
-  
-    return (_data + szVal).c_str();
+    return string(str._data + val);
 }
 
-string string::operator+(const int val)
+template<typename intoruint>
+string gb::utils::operator+(const string& str, const intoruint val)
 {
     char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
     sprintf(szVal, "%d", val);
-  
-    return (_data + szVal).c_str();
+    return string(str._data + szVal);
 }
 
-string string::operator+(const float val)
+template string gb::utils::operator+<int>(const string& str, const int val);
+template string gb::utils::operator+<unsigned int>(const string& str, const unsigned val);
+
+string gb::utils::operator+(const string& str, const float val)
 {
     char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
     sprintf(szVal, "%f", val);
-  
-    return (_data + szVal).c_str();
+    return string(str._data + szVal);
 }
+
+void ts(std::string & s)
+{
+    std::cout << "l r" << s << std::endl;
+}
+
+void ts(std::string && s)
+{
+    std::cout << "r r" << s << std::endl;
+}
+
+string gb::utils::operator+(string&& str, const char* szStr)
+{
+    str._data += szStr;
+    //copy elision not met, so using move ctor
+    return std::move(str);
+}
+string gb::utils::operator+(string&& str, const char val)
+{
+    str._data += val;
+    return std::move(str);
+}
+
+template<typename intoruint>
+string gb::utils::operator+(string&& str, const intoruint val)
+{
+    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
+    sprintf(szVal, "%d", val);
+    str._data += szVal;
+    return std::move(str);
+}
+
+template string gb::utils::operator+<int>(string&& str, const int val);
+template string gb::utils::operator+<unsigned int>(string&& str, const unsigned int val);
+
+string gb::utils::operator+(string&& str, const float val)
+{
+    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
+    sprintf(szVal, "%f", val);
+    str._data += szVal;
+    return std::move(str);
+}
+
+
 std::map<const std::string, std::string> string::extract_blocks(const std::vector<std::string>& pairDelimiters)const
 {
     std::map<const std::string, std::string> ret;
