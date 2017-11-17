@@ -1,4 +1,4 @@
-#include "../src/string.h"
+#include <gbUtils/string.h>
 #include <iostream>
 #include <cassert>
 using gb::utils::string;

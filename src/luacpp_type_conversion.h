@@ -1,6 +1,6 @@
 #pragma once
 #include "luacpp.h"
-//#include "../gbUtils/Math/gbMath.h"
+
 class gbLCTypeConversion
 {
 public:

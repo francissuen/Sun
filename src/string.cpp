@@ -23,32 +23,26 @@ string gb::utils::operator+(const string& str, const char val)
     return string(str._data + val);
 }
 
-template<typename intoruint>
-string gb::utils::operator+(const string& str, const intoruint val)
+string gb::utils::operator+(const string& str, const int val)
 {
     char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
     sprintf(szVal, "%d", val);
     return string(str._data + szVal);
 }
 
-template string gb::utils::operator+<int>(const string& str, const int val);
-template string gb::utils::operator+<unsigned int>(const string& str, const unsigned val);
+string gb::utils::operator+(const string& str, const unsigned int val)
+{
+    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
+    sprintf(szVal, "%u", val);
+    return string(str._data + szVal);
+}
+
 
 string gb::utils::operator+(const string& str, const float val)
 {
     char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
     sprintf(szVal, "%f", val);
     return string(str._data + szVal);
-}
-
-void ts(std::string & s)
-{
-    std::cout << "l r" << s << std::endl;
-}
-
-void ts(std::string && s)
-{
-    std::cout << "r r" << s << std::endl;
 }
 
 string gb::utils::operator+(string&& str, const char* szStr)
@@ -64,8 +58,7 @@ string gb::utils::operator+(string&& str, const char val)
     return std::move(str);
 }
 
-template<typename intoruint>
-string gb::utils::operator+(string&& str, const intoruint val)
+string gb::utils::operator+(string&& str, const int val)
 {
     char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
     sprintf(szVal, "%d", val);
@@ -73,8 +66,13 @@ string gb::utils::operator+(string&& str, const intoruint val)
     return std::move(str);
 }
 
-template string gb::utils::operator+<int>(string&& str, const int val);
-template string gb::utils::operator+<unsigned int>(string&& str, const unsigned int val);
+string gb::utils::operator+(string&& str, const unsigned int val)
+{
+    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
+    sprintf(szVal, "%u", val);
+    str._data += szVal;
+    return std::move(str);
+}
 
 string gb::utils::operator+(string&& str, const float val)
 {
@@ -125,12 +123,12 @@ std::vector<string> string::split(const char* delimeter)const
 	size_t pos = _data.find(delimeter, curPos);
 	if(pos != std::string::npos)
 	{
-	    ret.push_back(_data.substr(curPos, pos).c_str());
+	    ret.push_back(string(_data.substr(curPos, pos).c_str()));
 	    curPos += (pos + strlen(delimeter));
 	}
 	else
 	{
-	    ret.push_back(_data.substr(curPos).c_str());
+	    ret.push_back(string(_data.substr(curPos).c_str()));
 	    break;
 	}
     }
@@ -151,16 +149,16 @@ string string::substr_at_l_lastof(const char val, const bool exclude)
 {
     size_t pos =  _data.find_last_of(val);
     if(pos == std::string::npos)
-	return _data.c_str();
+	return string(_data);
     else
-	return _data.substr(0, exclude?pos:pos + 1).c_str();
+	return string(_data.substr(0, exclude?pos:pos + 1));
 }
 
 string string::substr_at_r_lastof(const char val, const bool exclude)
 {
     size_t pos =  _data.find_last_of(val);
     if(pos == std::string::npos)
-	return _data.c_str();
+	return string(_data);
     else
-	return _data.substr(exclude ? pos + 1 : pos).c_str();
+	return string(_data.substr(exclude ? pos + 1 : pos));
 }

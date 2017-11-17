@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include "string.h"
-#include "../gbUtilsConfig.h"
+#include "gbUtilsConfig.h"
 namespace gb
 {
   namespace utils

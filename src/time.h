@@ -1,17 +1,14 @@
 #pragma once
 #include <stdio.h>
 #include <time.h>
-#ifdef __GNUC__
-#include<stdint.h>
-#endif
 #include "common.h"
 #include "gbUtilsConfig.h"
 
-#define MAXTIMEBUFFERLEN 64
+#define GB_TIMEBUFFER_MAX_LEN 64
 
-#ifdef _MSC_VER
-typedef __int64 int64_t;
-#endif
+#define GB_GET_LOCALTIME(buffer)		\
+    char buffer[GB_TIMEBUFFER_MAX_LEN] = { 0 };	\
+    time::Instance().get_localtime(buffer);
 
 namespace gb
 {
@@ -19,20 +16,11 @@ namespace gb
     {
 	gbUtilsEXPORT_CLASS time
 	{
-	    SingletonDeclare(time);
+	    GB_SINGLETON(time);
 	public:
-	    void get_local_time(char * const buffer, const unsigned int length = MAXTIMEBUFFERLEN);
-	    int64_t get_local_time();
-	    void format_time(int64_t rawTime, char * const buffer, const unsigned int length = MAXTIMEBUFFERLEN);
+	    void get_localtime(char * const buffer, const unsigned char length = GB_TIMEBUFFER_MAX_LEN)const;
+	    time_t get_localtime()const;
 	};
-#define GB_LocalTime(x)				\
-	char x[MAXTIMEBUFFERLEN] = { 0 };	\
-	time::Instance().get_local_time(x);
-
-#define timeFormat(rawTime, buffer)			\
-	char buffer[MAXTIMEBUFFERLEN] = { 0 };		\
-	time::Instance().format_time(rawTime, buffer);
-	
     };
 };
 

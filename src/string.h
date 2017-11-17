@@ -4,7 +4,8 @@
 #include <vector>
 #include <map>
 #include "common.h"
-#include "../gbUtilsConfig.h"
+
+#include "gbUtilsConfig.h"
 
 #include <iostream>
 #include <cassert>
@@ -19,7 +20,7 @@ namespace gb
       {
       public:
 	  inline string(){}
-	  inline string(const char* str):_data(str){}
+	  inline explicit string(const char* str):_data(str){}
 
 	  /*
 	   *if std::string can conver to string implicit,
@@ -56,21 +57,19 @@ namespace gb
 	  bool operator==(const std::string& str)const;
 
 	  //const version
-	  friend string operator+(const string& str, const char* szStr);
-	  friend string operator+(const string& str, const char val);
-
-	  template<typename intoruint>
-	  friend string operator+(const string& str, const intoruint val);
-
-	  friend string operator+(const string& str, const float val);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const char*);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const char);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const int);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const unsigned int);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const float);
 
 	  //non-const rvalue ref version
-	  friend string operator+(string&& str, const char* szStr);
-	  friend string operator+(string&& str, const char val);
-	  template<typename intoruint>
-	  friend string operator+(string&& str, const intoruint val);
-
-	  friend string operator+(string&& str, const float val);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const char*);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const char);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const int);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const unsigned int);
+	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const float);
+	  
 	      
 	  //extract block with back delimiters as map's key
 	  std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;

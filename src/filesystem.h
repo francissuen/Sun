@@ -19,7 +19,7 @@ namespace gb
     {
 	gbUtilsEXPORT_CLASS filesystem
 	{
-	    SingletonDeclare(filesystem)
+	    GB_SINGLETON(filesystem)
 		public:
 		///if suffix is nullptr then all files here will be output 
 		void get_files_here(const char* path, std::vector<std::string>& files, const std::vector<const char*>* suffix = nullptr);

@@ -24,7 +24,7 @@ private:
 };
 class gbThreadPool
 {
-    SingletonDeclare(gbThreadPool);
+    GB_SINGLETON(gbThreadPool);
 
 public:
     //if threadCount < 0, then using core's num
