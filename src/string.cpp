@@ -3,9 +3,10 @@ using gb::utils::string;
 
 #define _GB_UTILS_STRING_MAX_BUFFER_SIZE 12
 
-bool string::operator==(const char* str)const
+bool string::operator==(const char* szStr)const
 {
-    return _data.compare(str) == 0? true : false;
+    assert(szStr != nullptr);
+    return _data.compare(szStr) == 0? true : false;
 }
 bool string::operator==(const std::string& str)const
 {
@@ -14,6 +15,7 @@ bool string::operator==(const std::string& str)const
 
 string gb::utils::operator+(const string& str, const char* szStr)
 {
+    assert(szStr != nullptr);
     return string(str._data + szStr);
 }
 string gb::utils::operator+(const string& str, const char val)
@@ -51,6 +53,7 @@ void ts(std::string && s)
 
 string gb::utils::operator+(string&& str, const char* szStr)
 {
+    assert(szStr != nullptr);
     str._data += szStr;
     //copy elision not met, so using move ctor
     return std::move(str);
@@ -114,6 +117,7 @@ std::map<const std::string, std::string> string::extract_blocks(const std::vecto
 
 std::vector<string> string::split(const char* delimeter)const
 {
+    assert(delimeter != nullptr);
     std::vector<string> ret;
     size_t curPos = 0;
     while(true)
@@ -135,6 +139,7 @@ std::vector<string> string::split(const char* delimeter)const
 
 void string::replace(const char* old_str, const char* new_str)
 {
+    assert(old_str != nullptr && new_str != nullptr);
     const size_t pos = _data.find(old_str);
     if(pos != std::string::npos)
     {

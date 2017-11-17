@@ -26,21 +26,36 @@ fi
 
 cd build
 
-rm -rfv ./* && cmake .. && cmake --build . --target install
+if [ "$1" = "-r" ]
+then
+    # rebuilding
+    rm -rfv ./* && cmake .. && cmake --build . --target install
+else
+    cmake --build . --target install
+fi
+
+
 
 # build test
 cd $origin_dir
 
-if 1[ -d build ]
+if ! [ -d build ]
 then
     mkdir build
 fi
 
 cd build
-rm -rfv ./* && cmake .. && cmake --build .
+
+if [ "$1" = "-r" ]
+then
+    rm -rfv ./* && cmake .. && cmake --build .
+else
+    cmake --build .
+fi
 
 # run test
-./gbtest -d - -n hello -c 100 world fsgb
+./gbtest -d -n hello -c 100 world fsgb
 
+./gbtest -d hello -n world
 
 exit 0

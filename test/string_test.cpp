@@ -19,7 +19,5 @@ int string_test()
     assert((string("hello") + "world") == "helloworld");
     assert((string("hello") + "world" + 'x') != "helloworld");
 
-
-    
     return 0;
 }
