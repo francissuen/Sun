@@ -9,7 +9,7 @@ set(VERSION_MINOR 0)
 option(gbLUAAPI "export lua api?" OFF)
 option(gbUtilsSTATIC "build static or shared lib?" ON)
 
-configure_file(${PROJECT_SOURCE_DIR}/gbUtilsConfig.h.in ${PROJECT_SOURCE_DIR}/gbUtilsConfig.h)
+configure_file(${PROJECT_SOURCE_DIR}/gbUtilsConfig.h.in ${PROJECT_SOURCE_DIR}/src/gbUtilsConfig.h)
 
 set(LIB_NAME "gbUtils")
 
@@ -29,7 +29,7 @@ gb_add_class(luacpp src gb_src_files)
 gb_add_class(args src gb_src_files)
 
 
-include_directories(AFTER SYSTEM ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(gbUtilsSTATIC)
   add_library(${LIB_NAME} STATIC
@@ -48,15 +48,10 @@ set_target_properties(${LIB_NAME}
   RELEASE_OUTPUT_NAME ${LIB_NAME}
   )
 
-# INSTALL
-# if(UNIX)
-#   set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gbUtils)
-# endif()
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gbUtils)
 
-message("install dir:" " ${CMAKE_INSTALL_PREFIX}")
 
-install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION gbUtils/lib)
-# install(FILES ${gb_header_files} DESTINATION include)
+install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION .)
 
 set(headers)
 foreach(src IN LISTS gb_src_files)
@@ -65,6 +60,6 @@ foreach(src IN LISTS gb_src_files)
     message("header: " ${src})
   endif()
 endforeach()
-set(headers ${headers} gbUtilsConfig.h)
+set(headers ${headers} src/gbUtilsConfig.h)
 
-install(FILES ${headers} DESTINATION gbUtils/include)
+install(FILES ${headers} DESTINATION .)
