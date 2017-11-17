@@ -7,7 +7,7 @@
 #include "../gbUtilsConfig.h"
 
 #include <iostream>
-
+#include <cassert>
 namespace gb
 {
   namespace utils
@@ -22,9 +22,8 @@ namespace gb
 	  inline string(const char* str):_data(str){}
 
 	  /*
-	   *@brief if std::string can conver to string implicit,
-	   *then any member function which has same type arguments with std::string
-	   *may be encounter ambiguous issue
+	   *if std::string can conver to string implicit,
+	   *then operator+ may have ambiguous issue with std::string::operator+
 	   */
 	  inline explicit string(const std::string& str):
 	      _data(str)
@@ -43,13 +42,17 @@ namespace gb
 	  
 	  inline explicit operator const std::string&()const { return _data; }
 	  
-	  void operator=(const char* str);
+	  inline void operator=(const char* szStr)
+	      {
+		  assert(szStr != nullptr);
+		  _data = szStr;
+	      }
 	  inline void operator=(const string& other)
 	      {
 		  _data = other._data;
 	      }
 	  
-	  bool operator==(const char* str)const;
+	  bool operator==(const char* szStr)const;
 	  bool operator==(const std::string& str)const;
 
 	  //const version
