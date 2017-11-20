@@ -11,7 +11,7 @@
 
 //#include "../RenderCore/LuaCPP/gbLuaCPP.h"
 
-#define GB_FILESYSTEM_MAX_PATH 128
+
 
 namespace gb
 {
@@ -19,13 +19,19 @@ namespace gb
     {
 	gbUtilsEXPORT_CLASS filesystem
 	{
-	    GB_SINGLETON(filesystem)
-		public:
-		///if suffix is nullptr then all files here will be output 
-		void get_files_here(const char* path, std::vector<std::string>& files, const std::vector<const char*>* suffix = nullptr);
-	    void get_work_path(gb::utils::string& buffer);
+	    GB_SINGLETON_EXCLUDECTOR(filesystem);
+	    filesystem();
+	public:
+	    ///if suffix is nullptr then all files here will be output 
+	    std::vector<gb::utils::string>  get_files_here(const char* path, const std::vector<const char*>* suffix = nullptr)const;
+	    inline const gb::utils::string& get_workingdir()const{ return _workingDir; }
 
-	    // gb_LC_EXPORT_WRAP_FUNC(GetWorkPath, 
+	    /*
+	     *@param, if szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
+	     *else it's a relative path.
+	     */
+	    gb::utils::string get_absolute_path(const char* szPath)const;
+//	    _LC_EXPORT_WRAP_FUNC(GetWorkPath, 
 	    // {
 	    // 	gbString val;
 	    // GetWorkPath(val);
@@ -34,6 +40,9 @@ namespace gb
 	    // });
 
 	    // gb_LC_Register_PrvCns(filesystem);
+//	};
+	private:
+	    gb::utils::string _workingDir;
 	};
 	
     };

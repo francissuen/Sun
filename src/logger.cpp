@@ -5,9 +5,9 @@
 using gb::utils::logger;
 
 logger::logger():
-    _log_color_code("1;37;40"),
-    _error_color_code("1;31;40"),
-    _warning_color_code("1;33;40"),
+    _log_color_code(GB_LOGGER_DEFAULT_LOG_COLOR_CODE),
+    _error_color_code(GB_LOGGER_DEFAULT_ERROR_COLOR_CODE),
+    _warning_color_code(GB_LOGGER_DEFAULT_WARNING_COLOR_CODE),
     _log_default_streambuf(std::cout.rdbuf()),
     _error_default_streambuf(std::cerr.rdbuf())
 {

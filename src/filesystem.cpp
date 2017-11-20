@@ -1,58 +1,73 @@
 #include "filesystem.h"
 
 using gb::utils::filesystem;
-using gb::utils::logger;
-using gb::utils::string;
 
-void filesystem::get_files_here(const char* path, std::vector<std::string>& files, const std::vector<const char*>* suffix)
+#define _GB_FILESYSTEM_MAX_PATH 128
+
+filesystem::filesystem()
 {
-  #ifdef _WIN32
-  HANDLE hFind  = INVALID_HANDLE_VALUE;
-  WIN32_FIND_DATA ffd;
+    char path[_GB_FILESYSTEM_MAX_PATH] = {'\0'};
+#ifdef _MSC_VER
+    GetModuleFileName(NULL, path, GB_FILESYSTEM_MAX_PATH);	
+    _workingDir = path;
+    _workingDir = _workingDir.substr_at_l_lastof('\\', false);
+#elif __GNUC__
+    ::readlink("/proc/self/exe", path, _GB_FILESYSTEM_MAX_PATH);
+    _workingDir = path;
+    _workingDir = _workingDir.substr_at_l_lastof('/', false);
+#endif
+}
+std::vector<gb::utils::string> filesystem::get_files_here(const char* path, const std::vector<const char*>* suffix)const
+{
+    assert(path != nullptr && suffix != nullptr);
+    std::vector<gb::utils::string> files;
+#ifdef _WIN32
+    HANDLE hFind  = INVALID_HANDLE_VALUE;
+    WIN32_FIND_DATA ffd;
   
-  hFind = FindFirstFile(path, &ffd);
-  if(hFind == INVALID_HANDLE_VALUE)
+    hFind = FindFirstFile(path, &ffd);
+    if(hFind == INVALID_HANDLE_VALUE)
     {
-      logger::Instance.log((string)"filesystem::GetFileHere:nothing here" + path);
-      return;
+	logger::Instance.warning((string)"filesystem::get_files_here:nothing here @" + path);
+	return;
     }
-  do
+    do
     {
-      string file(ffd.cFileName);
-      if(suffix != nullptr)
+	string file(ffd.cFileName);
+	if(suffix != nullptr)
 	{
-	  string suf(file.substr_at_r_lastof('.'));
-	  for(std::vector<const char*>::const_iterator i = suffix->begin(); i != suffix->end(); i++)
+	    string suf(file.substr_at_r_lastof('.'));
+	    for(std::vector<const char*>::const_iterator i = suffix->begin(); i != suffix->end(); i++)
 	    {
-	      if(suf == (*i))
+		if(suf == (*i))
 		{
-		  string fileName(path);
-		  fileName.replace("*", file);
-		  files.push_back((const char*)fileName);
-		  continue;
+		    string fileName(path);
+		    fileName.replace("*", file);
+		    files.push_back((const char*)fileName);
+		    continue;
 		}
 	    }
 	}
-      else
-	files.push_back((const char*)file);
+	else
+	    files.push_back((const char*)file);
     }
-  while(FindNextFile(hFind, &ffd) != 0);
+    while(FindNextFile(hFind, &ffd) != 0);
 #endif
+
+    return files;
 }
 
-void filesystem::get_work_path(string& buffer)
+gb::utils::string filesystem::get_absolute_path(const char* szPath)const
 {
-char path[GB_FILESYSTEM_MAX_PATH] = {'\0'};
-
-#ifdef __GNUC__
-::readlink("/proc/self/exe", path, GB_FILESYSTEM_MAX_PATH);
-buffer = path;
-buffer = buffer.substr_at_l_lastof('/', false);
-#elif _MSC_VER
-GetModuleFileName(NULL, path, GB_FILESYSTEM_MAX_PATH);	
-buffer = path;
-buffer = buffer.substr_at_l_lastof('\\', false);
+    assert(szPath != nullptr);
+#ifdef _MSC_VER
+    if(szPath[1] == ':')
+#elif __GNUC__
+    if(szPath[0] == '/')
 #endif
+	return gb::utils::string(szPath);
+    else//relative path
+	return _workingDir + szPath;
 }
 
 // void filesystem::gb_LC_Reg(lua_State* L)
@@ -64,3 +79,4 @@ buffer = buffer.substr_at_l_lastof('\\', false);
 
 // 	gb_LC_Singleton_Instance_Reg(filesystem);
 // }
+ 

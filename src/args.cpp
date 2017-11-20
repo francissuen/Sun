@@ -37,9 +37,6 @@ void args::parse(const int argc, char** argv)
 	assert(arg != nullptr);
 	if(curType == enmType::BOOL || curType == enmType::DEFAULT)
 	{
-	    if(curType == enmType::BOOL)
-		curNamedArg->SetArg(1);
-
 	    //searching for next opt
 	    int j = 0;
 	    if(arg[j++] == '-')
@@ -54,6 +51,8 @@ void args::parse(const int argc, char** argv)
 
 		curNamedArg = i->second;
 		curType = curNamedArg->type;
+		if(curType == enmType::BOOL)
+		    curNamedArg->SetArg(1);
 	    }
 	    else//unnamed args
 	    {
@@ -92,8 +91,10 @@ T args::named_arg(const char opt)const
     mpNamedArg_t::const_iterator i = _mpNamedArgs.find(opt);
     if(i == _mpNamedArgs.end())
 	throw string("unknown opt: ") + opt;
-    
-    return (T)(i->second->GetArg());
+    if(i->second->IsSupplied())
+	return (T)(i->second->GetArg());
+    else
+	throw string("unsupplied opt: ") + opt;
 }
 
 bool args::has_named_arg(const char opt)const

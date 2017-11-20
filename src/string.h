@@ -20,8 +20,8 @@ namespace gb
       {
       public:
 	  inline string(){}
-	  inline explicit string(const char* str):_data(str){}
-
+	  inline string(const char* str):_data(str){}
+	  
 	  /*
 	   *if std::string can conver to string implicit,
 	   *then operator+ may have ambiguous issue with std::string::operator+
@@ -56,21 +56,33 @@ namespace gb
 	  bool operator==(const char* szStr)const;
 	  bool operator==(const std::string& str)const;
 
+	  //lvalue version
+	  string operator+(const string& other)const &;
+	  string operator+(string&& other)const &;
+
+	  //rvalue version
+	  string operator+(const string& other)&&;
+	  string operator+(string&& other)&&;
+	      
 	  //const version
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const char*);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const char);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const int);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const unsigned int);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, const string&, const float);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const char*);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const char);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const int);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const unsigned int);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const float);
 
 	  //non-const rvalue ref version
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const char*);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const char);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const int);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const unsigned int);
-	  GB_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(string, +, string&&, const float);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const char*);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const char);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const int);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const unsigned int);
+	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const float);
 	  
-	      
+	  void operator+=(const char* szStr);
+	  void operator+=(const char val);
+	  void operator+=(const int val);
+	  void operator+=(const unsigned int val);
+	  void operator+=(const float val);
 	  //extract block with back delimiters as map's key
 	  std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;
 	  std::vector<string> split(const char* delimiter)const;

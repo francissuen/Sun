@@ -3,15 +3,17 @@
 #include "string_test.cpp"
 #include "args_test.cpp"
 #include "logger_test.cpp"
+#include "filesystem_test.cpp"
+
+#define test(test_func, ...)				\
+    if(test_func(__VA_ARGS__) != 0)			\
+	std::cout << #test_func << " failed" << std::endl;
 
 int main(int argc, char** argv)
 {
-    if(args_test(argc, argv) != 0)
-    	std::cout << "args test failed" << std::endl;
-    if(string_test() != 0)
-    	std::cout << "string test failed" << std::endl;
-    if(logger_test() != 0)
-    	std::cout << "logger test failed" << std::endl;
-
+    test(args_test, argc, argv);
+    test(string_test);
+    test(logger_test);
+    test(filesystem_test);
     return 0;
 }

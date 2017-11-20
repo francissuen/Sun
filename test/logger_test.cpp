@@ -15,6 +15,9 @@ int logger_test()
     logger::Instance().warning("hello");
     logger::Instance().set_warning_color_code("32;40");//green
     logger::Instance().warning("hello");
-    
+
+    logger::Instance().set_log_color_code(GB_LOGGER_DEFAULT_LOG_COLOR_CODE);
+    logger::Instance().set_error_color_code(GB_LOGGER_DEFAULT_ERROR_COLOR_CODE);
+    logger::Instance().set_warning_color_code(GB_LOGGER_DEFAULT_WARNING_COLOR_CODE);
     return 0;
 }

@@ -16,8 +16,8 @@ int args_test(int argc, char** argv)
 	std::cout << "d: " << arg.named_arg<bool>('d') << std::endl;
 	std::cout << "n: " << arg.named_arg<char*>('n') << std::endl;
 	std::cout << "c: " << arg.named_arg<int>('c') << std::endl;
-	assert(!arg.has_named_arg('x'));
-	assert(arg.has_named_arg('d'));
+	
+	std::cout << "has named arg d: " << arg.has_named_arg('d') << std::endl;
 
 	const size_t uaSize = arg.unnamed_arg_size();
 	std::cout << "unnamed arg size: " << uaSize << std::endl;
