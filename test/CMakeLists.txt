@@ -15,6 +15,5 @@ add_executable(gbtest
 
 
 target_link_libraries(gbtest
-  debug ${gbUtils_LIBRARIES_d}
-  optimized ${gbUtils_LIBRARIES}
+  ${gbUtils_LIBRARIES}
   )
