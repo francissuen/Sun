@@ -17,7 +17,7 @@ gb_add_class(common src gb_src_files)
 gb_add_class(logger src gb_src_files)
 gb_add_class(time src gb_src_files)
 gb_add_class(string src gb_src_files)
-gb_add_class(threadpool src gb_src_files)
+gb_add_class(concurrency src gb_src_files)
 gb_add_class(filesystem src gb_src_files)
 
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/gbCMake/")
