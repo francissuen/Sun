@@ -16,4 +16,5 @@ add_executable(gbtest
 
 target_link_libraries(gbtest
   ${gbUtils_LIBRARIES}
+  -lpthread
   )
