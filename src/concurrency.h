@@ -55,6 +55,7 @@ namespace gb
 	    void pushtask(const task_t& task);
 	    void pushtask(task_t&& task);
 
+	    inline std::uint8_t get_threadscount()const { return _vThreads.size(); }
 	private:
 	    std::vector<std::thread*> _vThreads;
 	    bool _bQuit;
