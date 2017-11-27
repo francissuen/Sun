@@ -1,8 +1,15 @@
 #include <gbUtils/concurrency.h>
 #include <atomic>
 #include <cassert>
+#include <gbUtils/logger.h>
+#include <gbUtils/string.h>
+#include <gbUtils/time.h>
+#include <numeric>
 using gb::utils::concurrency;
 typedef concurrency::task_t task_t;
+using gb::utils::logger;
+using gb::utils::string;
+using gb::utils::time;
 
 int concurrency_test(const unsigned int count = 1000)
 {
@@ -18,6 +25,8 @@ int concurrency_test(const unsigned int count = 1000)
 	    threadSafe_val[threadIdx]--;
 	    assert(threadSafe_val[threadIdx] == 0);
 	    idx ++;
+
+	    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	};
     
     
@@ -34,7 +43,18 @@ int concurrency_test(const unsigned int count = 1000)
 	    // 					}, nullptr));
     }
 
-    concurrency::Instance().done();
+    const unsigned int timeout = 10;
+    auto timeout_func = [&](const concurrency::status_t status)
+	{
+	    unsigned int speed = status.speed;
+	    unsigned int timeLeft = status.eta;
+	    if(speed != 0)
+		logger::Instance().log(string("task left: ") + status.taskCount + "\n"
+				   "eta: " + time::Instance().format(timeLeft) + "\n"
+				   "speed@" + speed + " tasks/s"
+		);
+	};
+    concurrency::Instance().timeout_done(timeout_func, timeout);
 
     return idx == count ? 0 : 1;
 }

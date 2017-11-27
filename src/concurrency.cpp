@@ -1,9 +1,11 @@
 #include "concurrency.h"
 #include <cassert>
 #include <algorithm>
+#include <chrono>
+#include "time.h"
 using gb::utils::concurrency;
 typedef concurrency::task_t task_t;
-
+using gb::utils::time;
 static void gb::utils::_task_thread(std::uint8_t threadIdx)
 {
     concurrency& c = gb::utils::concurrency::Instance();
@@ -81,6 +83,9 @@ void concurrency::initialize(std::uint8_t threadCount)
 
     _bQuit = false;
     _bForceQuit = false;
+
+    _preTaskCount = 0;
+    
     for(int i = 0; i < count; i++)
     {
 	_vThreads.push_back(new std::thread(std::bind(_task_thread, i)));
@@ -101,8 +106,60 @@ void concurrency::done(bool bForceQuit)
 	    _bForceQuit = true;
     }
 
-    _cv.notify_one();
+    _cv.notify_all();
 
+    _join();
+}
+
+void concurrency::timeout_done(std::function<void(const status_t& status)> func, const std::uint32_t timeout)
+{
+    {
+	std::lock_guard<std::mutex> lck(_mtx);
+	_bQuit = true;
+    }
+
+    _cv.notify_all();
+
+    std::unique_lock<std::mutex> lck(_mtx);
+
+    status_t status;
+    size_t& taskCount = status.taskCount;
+    size_t& speed = status.speed;
+    time_t& eta = status.eta;
+
+    std::uint64_t preTime = 0;
+    for(;;)
+    {
+	std::cv_status ret = _cv.wait_for(lck, std::chrono::milliseconds(timeout));
+	taskCount = _tasks.size();
+	lck.unlock();
+	if(taskCount == 0)
+	    break;
+	if(ret == std::cv_status::timeout)
+	{
+	    std::uint64_t curTime = time::Instance().timestamp();
+	    if(curTime - preTime > 1000)//refresh status every 1000 milliseconds
+	    {
+		if(_preTaskCount != 0)
+		{
+		    speed = (_preTaskCount - taskCount)/((float)timeout/1000);
+		    if(speed != 0)
+			eta = taskCount / speed;
+		}
+		_preTaskCount = taskCount;
+		preTime = curTime;
+	    }
+	    func(status);		
+	}
+
+	lck.lock();
+    }
+
+    _join();
+}
+
+void concurrency::_join()
+{ 
     std::for_each(_vThreads.begin(), _vThreads.end(), [](std::thread*& th)
 		  {
 		      th->join();
@@ -112,6 +169,13 @@ void concurrency::done(bool bForceQuit)
 
     _vThreads.clear();
 }
+
+size_t concurrency::get_taskscount()
+{
+    std::lock_guard<std::mutex> lck(_mtx);
+    return _tasks.size();
+}
+
 void concurrency::pushtask(const task_t& task)
 {
     {
