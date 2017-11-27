@@ -63,26 +63,23 @@ namespace gb
 	  //rvalue version
 	  string operator+(const string& other)&&;
 	  string operator+(string&& other)&&;
-	      
-	  //const version
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const char*);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const char);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const int);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const unsigned int);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, const string&, const float);
 
-	  //non-const rvalue ref version
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const char*);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const char);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const int);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const unsigned int);
-	  GB_FRIEND_BINARY_OPERATOR_DECLAR(string, +, string&&, const float);
+#define _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(type)			\
+	  /*+=*/							\
+	      void operator+=(type);					\
+	      /*const version*/						\
+	      GB_FRIEND_BINARY_OPERATOR_DECLARE(string, +, const string&, type); \
+	      /*non-const rvalue ref version*/				\
+	      GB_FRIEND_BINARY_OPERATOR_DECLARE(string, +, string&&, type); 
 	  
-	  void operator+=(const char* szStr);
-	  void operator+=(const char val);
-	  void operator+=(const int val);
-	  void operator+=(const unsigned int val);
-	  void operator+=(const float val);
+	  _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(const char*);
+	  _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(const char);
+	  _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(const int);
+	  _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(const unsigned int);
+	  _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(const float);
+	  _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(const long);
+	  _GB_UTILS_STRING_OPERATOR_PLUS_DECLARE(const unsigned long);
+	  
 	  //extract block with back delimiters as map's key
 	  std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;
 	  std::vector<string> split(const char* delimiter)const;

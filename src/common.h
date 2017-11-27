@@ -23,12 +23,12 @@ private:					\
 inline x(x const&) {}				\
 inline void operator = (x const&){}
 
-#define GB_FRIEND_BINARY_OPERATOR_DECLAR(return_t, operator_, operand_1_t, operand_2_t) \
+#define GB_FRIEND_BINARY_OPERATOR_DECLARE(return_t, operator_, operand_1_t, operand_2_t) \
     friend return_t operator operator_ (operand_1_t, operand_2_t); \
     friend return_t operator operator_ (operand_2_t, operand_1_t); \
 
 //iff it's commutative
-#define GB_FRIEND_BINARY_OPERATOR_DECLAR_SYMMETRICALLY(return_t, operator_, operand_1_t, operand_2_t) \
+#define GB_FRIEND_BINARY_OPERATOR_DECLARE_SYMMETRICALLY(return_t, operator_, operand_1_t, operand_2_t) \
     friend return_t operator operator_ (operand_1_t, operand_2_t);	\
     inline friend return_t operator operator_ (operand_2_t o2, operand_1_t o1) \
     {									\

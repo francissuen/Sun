@@ -33,6 +33,17 @@ namespace gb
 		std::function<void(std::uint8_t)> _bindFunc;
 		priority _p;
 	    };
+
+	    struct status_t
+	    {
+		inline status_t():
+		    taskCount(0),
+		    speed(0)
+		    {}
+		size_t taskCount;//count of task left
+		size_t speed;//in tasks/seconds
+		time_t eta;//time left in seconds
+	    };
 	    GB_SINGLETON(concurrency);
 	    ~concurrency();
 	public:
@@ -48,14 +59,16 @@ namespace gb
 	    void done(bool bForce = false);
 
 	    /*
-	     *brief, block current thread until all current running tasks completed
+	     *@brief, execute func when timeout expires until done()
+	     *@param, timeout, in milliseconds
 	     */
-	    void force_done();
+	    void timeout_done(std::function<void(const status_t& status)> func, const std::uint32_t timeout = 1000);
 
 	    void pushtask(const task_t& task);
 	    void pushtask(task_t&& task);
 
 	    inline std::uint8_t get_threadscount()const { return _vThreads.size(); }
+	    size_t get_taskscount();
 	private:
 	    std::vector<std::thread*> _vThreads;
 	    bool _bQuit;
@@ -64,7 +77,10 @@ namespace gb
 	    std::mutex _mtx;
 	    std::priority_queue<task_t> _tasks;
 
+	    size_t _preTaskCount;
+	    
 	    friend void _task_thread(std::uint8_t);
+	    void _join();
 	};
     };
 };

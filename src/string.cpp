@@ -38,32 +38,9 @@ string string::operator+(string&& other)&&
 
 void string::operator+=(const char* szStr)
 {
+    assert(szStr != nullptr);
     this->_data += szStr;
 }
-void string::operator+=(const char val)
-{
-    this->_data += val;
-}
-void string::operator+=(const int val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%d", val);
-    this->_data += szVal;
-}
-void string::operator+=(const unsigned int val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%u", val);
-    this->_data += szVal;
-}
-void string::operator+=(const float val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%f", val);
-    this->_data += szVal;
-}
-
-
 string gb::utils::operator+(const string& str, const char* szStr)
 {
     assert(szStr != nullptr);
@@ -74,55 +51,6 @@ string gb::utils::operator+(const char* szStr, const string& str)
     assert(szStr != nullptr);
     return string(szStr + str._data);
 }
-
-string gb::utils::operator+(const string& str, const char val)
-{
-    return string(str._data + val);
-}
-string gb::utils::operator+(const char val, const string& str)
-{
-    return string(val + str._data);
-}
-
-string gb::utils::operator+(const string& str, const int val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%d", val);
-    return string(str._data + szVal);
-}
-string gb::utils::operator+(const int val, const string& str)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%d", val);
-    return string(szVal + str._data);
-}
-
-string gb::utils::operator+(const string& str, const unsigned int val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%u", val);
-    return string(str._data + szVal);
-}
-string gb::utils::operator+(const unsigned int val, const string& str)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%u", val);
-    return string(szVal + str._data);
-}
-
-string gb::utils::operator+(const string& str, const float val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%f", val);
-    return string(str._data + szVal);
-}
-string gb::utils::operator+(const float val, const string& str)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%f", val);
-    return string(szVal + str._data);
-}
-
 string gb::utils::operator+(string&& str, const char* szStr)
 {
     assert(szStr != nullptr);
@@ -137,62 +65,51 @@ string gb::utils::operator+(const char* szStr, string&& str)
     return std::move(str);
 }
 
-string gb::utils::operator+(string&& str, const char val)
-{
-    str._data += val;
-    return std::move(str);
-}
-string gb::utils::operator+(const char val, string&& str)
-{
-    str._data.insert(0, 1, val);
-    return std::move(str);
-}
+#define _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE(type, fmt)		\
+    /*+=*/								\
+    void string::operator+=(type val)					\
+    {									\
+	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+	sprintf(szVal, fmt, val);					\
+	this->_data += szVal;						\
+    }									\
+    /*const string& + type*/						\
+    string gb::utils::operator+(const string& str,type val)		\
+    {									\
+	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+	sprintf(szVal, fmt, val);					\
+	return string(str._data + szVal);				\
+    }									\
+    /*type + const string&*/						\
+    string gb::utils::operator+(type val, const string& str)		\
+    {									\
+	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+	sprintf(szVal, fmt, val);					\
+	return string(szVal + str._data);				\
+    }									\
+    /*string&& + type*/							\
+    string gb::utils::operator+(string&& str, type val)			\
+    {									\
+	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+	sprintf(szVal, fmt, val);					\
+	str._data += szVal;						\
+	return std::move(str);						\
+    }									\
+    /*type + string&&*/							\
+    string gb::utils::operator+(type val, string&& str)			\
+    {									\
+	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+	sprintf(szVal, fmt, val);					\
+	str._data.insert(0, szVal);					\
+	return std::move(str);						\
+    }
 
-string gb::utils::operator+(string&& str, const int val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%d", val);
-    str._data += szVal;
-    return std::move(str);
-}
-string gb::utils::operator+(const int val, string&& str)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%d", val);
-    str._data.insert(0, szVal);
-    return std::move(str);
-}
-
-string gb::utils::operator+(string&& str, const unsigned int val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%u", val);
-    str._data += szVal;
-    return std::move(str);
-}
-string gb::utils::operator+(const unsigned int val, string&& str)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%u", val);
-    str._data.insert(0, szVal);
-    return std::move(str);
-}
-
-string gb::utils::operator+(string&& str, const float val)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%f", val);
-    str._data += szVal;
-    return std::move(str);
-}
-string gb::utils::operator+(const float val, string&& str)
-{
-    char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};
-    sprintf(szVal, "%f", val);
-    str._data.insert(0, szVal);
-    return std::move(str);
-}
-
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE(const char, "%c");
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE(const int, "%d");
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE(const unsigned int, "%u");
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE(const float, "%f");
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE(const long, "%ld");
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE(const unsigned long, "%lu");
 
 std::map<const std::string, std::string> string::extract_blocks(const std::vector<std::string>& pairDelimiters)const
 {
