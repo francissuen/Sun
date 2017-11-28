@@ -8,8 +8,13 @@ logger::logger():
     _log_color_code(GB_LOGGER_DEFAULT_LOG_COLOR_CODE),
     _error_color_code(GB_LOGGER_DEFAULT_ERROR_COLOR_CODE),
     _warning_color_code(GB_LOGGER_DEFAULT_WARNING_COLOR_CODE),
+    _progress_color_code{
+    GB_LOGGER_DEFAULT_PROGRESS_COLOR_CODE,
+	GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE},
     _log_default_streambuf(std::cout.rdbuf()),
-    _error_default_streambuf(std::cerr.rdbuf())
+    _error_default_streambuf(std::cerr.rdbuf()),
+    _progress_bar_char(GB_LOGGER_DEFAULT_PROGRESS_BAR_CHAR)
+    _progress_bar_width(GB_LOGGER_DEF)
 {
 #ifdef _MSC_VER
     _hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
@@ -87,6 +92,35 @@ void logger::set_warning_color_code(const char* szCode)
 {
     assert(szCode != nullptr);
     _warning_color_code = szCode;
+}
+
+void logger::progress(const float value, const char* title)
+{
+    assert(value >= 0.0f && value <= 1.0f);
+    
+    const std::string& c0 = GB_LOGGER_COLOR_BEGIN + _progress_color_code[0] + GB_LOGGER_COLOR_END;
+    const std::string& c1 = GB_LOGGER_COLOR_BEGIN +  _progress_color_code[1] + GB_LOGGER_COLOR_END;
+
+    std::cout << c0 << title << '[' << c1;
+    const std::uint8_t width = value * width;
+    for(int i = 0; i < width; i++)
+	std::cout << _progress_bar_char;
+    const std::uint8_t width_left = _progress_bar_width - width;
+    for(int i = 0; i < width_left; i++)
+	std::cout << ' ';
+
+    std::cout << c0 << ']' << int(value * 100) << '%' << GB_LOGGER_COLOR_BACKTONORMAL << '\r';
+
+    std::cout.flush();
+}
+
+void logger::set_progress_bar_char(const char barChar)
+{
+    _progress_bar_char = barChar;
+}
+void logger::set_progress_bar_width(const std::uint8_t width)
+{
+    _progress_bar_width = width;
 }
 
 #ifdef gbLUAAPI
