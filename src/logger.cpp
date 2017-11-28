@@ -1,8 +1,9 @@
 #include "logger.h"
 #include <cassert>
-//SingletonDefine(gbLog)
+#include <limits>
 
 using gb::utils::logger;
+using gb::utils::time;
 
 logger::logger():
     _log_color_code(GB_LOGGER_DEFAULT_LOG_COLOR_CODE),
@@ -13,9 +14,11 @@ logger::logger():
 	GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE},
     _log_default_streambuf(std::cout.rdbuf()),
     _error_default_streambuf(std::cerr.rdbuf()),
-    _progress_bar_char(GB_LOGGER_DEFAULT_PROGRESS_BAR_CHAR)
-    _progress_bar_width(GB_LOGGER_DEF)
+    _progress_bar_width(GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH),
+    _progress_total_width(GB_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
+    _bProgressing(false)
 {
+    _progress_flexible_width = _progress_total_width - (_progress_bar_width + strlen(GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 #ifdef _MSC_VER
     _hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
 #endif
@@ -34,6 +37,7 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
 #ifdef _MSC_VER
 
 #define _gb_fancy_print(ostream, title, win_color_code)		\
+    assert(!_bProgressing);					\
     assert(szMsg != nullptr);					\
     GB_GET_LOCALTIME(timeBuf);					\
     ::SetConsoleTextAttribute(_hConsole, win_color_code);	\
@@ -43,6 +47,7 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
 #elif __GNUC__
 
 #define _gb_fancy_print(ostream, title, color_code)			\
+    assert(!_bProgressing);						\
     assert(szMsg != nullptr);						\
     GB_GET_LOCALTIME(timeBuf);						\
     ostream << GB_LOGGER_COLOR_BEGIN + color_code + GB_LOGGER_COLOR_END	\
@@ -97,30 +102,119 @@ void logger::set_warning_color_code(const char* szCode)
 void logger::progress(const float value, const char* title)
 {
     assert(value >= 0.0f && value <= 1.0f);
+    _bProgressing = true;
     
-    const std::string& c0 = GB_LOGGER_COLOR_BEGIN + _progress_color_code[0] + GB_LOGGER_COLOR_END;
-    const std::string& c1 = GB_LOGGER_COLOR_BEGIN +  _progress_color_code[1] + GB_LOGGER_COLOR_END;
+    static std::uint64_t preTime = 0;
+    const std::uint64_t curTime = time::Instance().timestamp();
+    static const std::uint8_t etaCount = 5;
+    static float eta[etaCount] = {0.0f};
 
-    std::cout << c0 << title << '[' << c1;
-    const std::uint8_t width = value * width;
+    string strEta;
+    std::uint8_t widthLeft;
+    if(value < 1.0f)
+    {
+	if(curTime - preTime > 1000)//sample per second
+	{
+	    static float preValue = 0;
+	    if(preValue != 0)
+	    {
+		const float speed = value - preValue;
+		static std::uint8_t eta_idx = 0;
+		eta_idx++;
+		float& curEta = eta[eta_idx % etaCount];
+		if(speed > 0.0f)
+		    curEta = (1.0f - value)/speed;
+		else
+		    curEta = 0.0f;
+	    }
+	    preValue = value;
+	    preTime = curTime;
+	}
+    
+	float average_eta = 0.0f;
+	std::uint8_t valid_cout = 0;
+	for(int i = 0; i < etaCount; i++)
+	{
+	    float e = eta[i];
+	    if(e > 0.0f)
+	    {
+		assert((std::numeric_limits<float>::max() - average_eta) > e);
+		average_eta += e;
+
+		valid_cout++;
+	    }
+	}
+
+	if(valid_cout != 0)
+	    average_eta = average_eta / valid_cout;
+	else
+	    average_eta = 0;
+	strEta = "ETA: " + time::Instance().format(average_eta);
+	widthLeft = _progress_flexible_width - strEta.length() - 3/*anim ...*/;
+    }
+    else
+	widthLeft = _progress_flexible_width;
+
+    std::uint8_t lenTitle;
+    if(title != nullptr)
+	lenTitle = strlen(title);
+    else
+	lenTitle = 0;
+    assert(widthLeft > lenTitle);
+    const std::uint8_t paddingWidth = widthLeft - lenTitle;
+//    if(paddingWidth)
+    
+    const std::string& c0 = _progress_color_code[0];
+    const std::string& c1 = _progress_color_code[1];
+
+    std::cout << GB_LOGGER_COLOR_BEGIN << c0 << GB_LOGGER_COLOR_END
+	      << ">>>";
+    if(title != nullptr)
+	std::cout << title;
+    std::cout << '['
+	      << GB_LOGGER_COLOR_BEGIN << c1 << GB_LOGGER_COLOR_END;
+    
+    const std::uint8_t width = value * _progress_bar_width;
     for(int i = 0; i < width; i++)
-	std::cout << _progress_bar_char;
+	std::cout << ' ';
+    
+    std::cout << GB_LOGGER_COLOR_BEGIN << c0 << GB_LOGGER_COLOR_END;
+    
     const std::uint8_t width_left = _progress_bar_width - width;
     for(int i = 0; i < width_left; i++)
 	std::cout << ' ';
 
-    std::cout << c0 << ']' << int(value * 100) << '%' << GB_LOGGER_COLOR_BACKTONORMAL << '\r';
+    std::cout << ']' << int(value * 100) << '%' << ' ';
+    
+    //anim
+    static const char anim[6][4] = {{'.', ' ', ' ', '\0'},
+				    {' ', '.', ' ', '\0'},
+				    {' ', ' ', '.', '\0'},
+				    {'.', ' ', '.', '\0'},
+				    {' ', '.', '.', '\0'},
+				    {'.', '.', '.', '\0'}};
+    static unsigned char count = 0;
+    count++;
 
+    if(value < 1.0f)
+	std::cout << strEta << anim[count % 6];
+    for(int i = 0 ; i < paddingWidth; i++)
+	std::cout << ' ';
+    std::cout << GB_LOGGER_COLOR_BACKTONORMAL << '\r';
+    
     std::cout.flush();
 }
 
-void logger::set_progress_bar_char(const char barChar)
+void logger::progress_done()
 {
-    _progress_bar_char = barChar;
+    std::cout << std::endl;
+    _bProgressing = false;
 }
-void logger::set_progress_bar_width(const std::uint8_t width)
+void logger::set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth)
 {
-    _progress_bar_width = width;
+    _progress_bar_width = barWidth;
+    _progress_total_width = totalWidth;
+    _progress_flexible_width = _progress_total_width - (_progress_bar_width + strlen(GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 }
 
 #ifdef gbLUAAPI

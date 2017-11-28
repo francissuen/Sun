@@ -4,7 +4,7 @@
 #include <gbUtils/logger.h>
 #include <gbUtils/string.h>
 #include <gbUtils/time.h>
-#include <numeric>
+
 using gb::utils::concurrency;
 typedef concurrency::task_t task_t;
 using gb::utils::logger;
@@ -19,14 +19,14 @@ int concurrency_test(const unsigned int count = 1000)
 
     unsigned int idx = 0;
 
-    auto task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, void* arg)
+    auto task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount, void* arg)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
 	    assert(threadSafe_val[threadIdx] == 0);
 	    idx ++;
 
-	    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+	    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 	};
     
     
@@ -34,32 +34,38 @@ int concurrency_test(const unsigned int count = 1000)
     {
 	concurrency::Instance().pushtask(
 	    task_t(task_func, nullptr));
-	    // task_t([i, &idx, &threadSafe_val](const std::uint8_t threadIdx, void* arg)
-	    // 					{
-	    // 					    threadSafe_val[threadIdx]++;
-	    // 					    threadSafe_val[threadIdx]--;
-	    // 					    assert(threadSafe_val[threadIdx] == 0);
-	    // 					    idx ++;
-	    // 					}, nullptr));
     }
 
-    const unsigned int timeout = 100;
-    auto timeout_func = [&](const concurrency::status_t status)
-	{
-	    // unsigned int speed = status.speed;
-	    // unsigned int timeLeft = status.eta;
-	    // if(speed != 0)
-	    // 	logger::Instance().log(string("task left: ") + status.taskCount + "\n"
-	    // 			   "eta: " + time::Instance().format(timeLeft) + "\n"
-	    // 			   "speed@" + speed + " tasks/s"
-	    // 	);
 
-	    float value = float(count - status.taskCount) / count;
-	    logger::Instance().log(string("taskCount: ") + value);
-	    logger::Instance().progress(value, "pro");
+    const unsigned int timeout = 100;
+    auto timeout_func = [&](const size_t taskCount)
+	{
+	    float value = float(count - taskCount) / count;
+	    logger::Instance().progress(value, "hello ");
 
 	};
-    concurrency::Instance().timeout_done(timeout_func, timeout);
 
+    concurrency::Instance().timeout_done(timeout_func, timeout);
+    logger::Instance().progress_done();
+
+    logger::Instance().log("task_func_2");
+    auto task_func_2 = [count, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount, void* arg)
+	{
+	    threadSafe_val[threadIdx]++;
+	    threadSafe_val[threadIdx]--;
+	    assert(threadSafe_val[threadIdx] == 0);
+
+	    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+	    float value = float(count - (taskCount - 1)) / count;
+	    logger::Instance().progress(value, string("taskcount:") + (taskCount - 1));
+	};
+
+    concurrency::Instance().initialize(threadCount);
+    for(int i = 0; i < count; i++)
+	concurrency::Instance().pushtask(task_t(task_func_2, nullptr));
+
+    concurrency::Instance().done();
+    logger::Instance().progress_done();
+    
     return idx == count ? 0 : 1;
 }

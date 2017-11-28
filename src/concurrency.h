@@ -22,28 +22,21 @@ namespace gb
 		    low = 1,
 		    mid, high
 		};
-		task_t(std::function<void(std::uint8_t, void*)> func, void* arg, priority p = priority::mid);
+		/*
+		 *@param func, threadCount is count of current left tasks, including this task
+		 */
+		task_t(std::function<void(const std::uint8_t threadCount, const size_t taskCount, void*)> func, void* arg, priority p = priority::mid);
 		task_t(const task_t& other);
 		task_t(task_t&& other);
 		void operator=(const task_t& other);
 		void operator=(task_t&& other);
 		inline bool operator<(const task_t& other)const{ return _p < other._p; }
-		inline void run(std::uint8_t threadIdx)const{ _bindFunc(threadIdx); }
+		inline void run(const std::uint8_t threadIdx, const size_t taskCount)const{ _bindFunc(threadIdx, taskCount); }
 	    private:
-		std::function<void(std::uint8_t)> _bindFunc;
+		std::function<void(const std::uint8_t, const size_t)> _bindFunc;
 		priority _p;
 	    };
 
-	    struct status_t
-	    {
-		inline status_t():
-		    taskCount(0),
-		    speed(0)
-		    {}
-		size_t taskCount;//count of task left
-		size_t speed;//in tasks/seconds
-		time_t eta;//time left in seconds
-	    };
 	    GB_SINGLETON(concurrency);
 	    ~concurrency();
 	public:
@@ -62,13 +55,15 @@ namespace gb
 	     *@brief, execute func when timeout expires until done()
 	     *@param, timeout, in milliseconds
 	     */
-	    void timeout_done(std::function<void(const status_t& status)> func, const std::uint32_t timeout = 1000);
+	    void timeout_done(std::function<void(const size_t taskCount)> func, const std::uint32_t timeout = 1000);
 
 	    void pushtask(const task_t& task);
 	    void pushtask(task_t&& task);
 
 	    inline std::uint8_t get_threadscount()const { return _vThreads.size(); }
-	    size_t get_taskscount();
+
+	    //retrive count in taskfunc, or timeoutfunc
+//	    size_t get_taskscount();
 	private:
 	    std::vector<std::thread*> _vThreads;
 	    bool _bQuit;

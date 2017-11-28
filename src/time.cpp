@@ -39,13 +39,17 @@ string time::format(const time_t seconds)
 	
 	if(hour > 0)
 	{
-	    const time_t day = hour / 24;
+	    time_t day = hour / 24;
 	    const std::uint8_t h = hour % 24;
 	    if(day > 0)
+	    {
+		if(day > 999)
+		    day = 999;
 		return day + string("d") + ":" +
 		    (unsigned int)h + string("h") + ":" +
 		    (unsigned int)m + "m" + ":" +
 		    (unsigned int)s + "s";
+	    }
 	    else
 		return h + string("h") + ":" +
 		    (unsigned int)m + "m" + ":" +
