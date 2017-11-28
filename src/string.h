@@ -39,6 +39,7 @@ namespace gb
 	  inline ~string()
 	  {}
 
+	  inline size_t length()const { return _data.length();}
 	  inline operator const char*()const { return _data.c_str(); }
 	  
 	  inline explicit operator const std::string&()const { return _data; }

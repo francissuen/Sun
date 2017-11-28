@@ -29,7 +29,7 @@
 #define GB_LOGGER_DEFAULT_ERROR_COLOR_CODE "1;31;40"
 #define GB_LOGGER_DEFAULT_WARNING_COLOR_CODE "1;33;40"
 #define GB_LOGGER_DEFAULT_PROGRESS_COLOR_CODE "1;34;40"
-#define GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE "1;32;40"
+#define GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE "1;32;42"
 #endif
 
 /*
@@ -38,8 +38,11 @@
  *2.permanent store
  */
 
-#define GB_LOGGER_DEFAULT_PROGRESS_BAR_CHAR '-'
-#define GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH 32
+#define GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH 20
+#define GB_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH 64
+
+//len 10
+#define GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS ">>>[]100% "
 namespace gb
 {
     namespace utils
@@ -62,10 +65,14 @@ namespace gb
 	    void warning(const char* msg)const;
 	    void set_warning_color_code(const char* szCode);
 
+	    /*
+	     *@brief, progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
+	     *thread unsafe, will disable all other logger function until progress_done()
+	     */
 	    void progress(const float value, const char* title = nullptr);
-	    void set_progress_bar_char(const char barChar);
-	    void set_progress_bar_width(const std::uint8_t width);
+	    void progress_done();
 	    
+	    void set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth);
 	private:
 	    std::string _log_color_code;
 	    std::string _error_color_code;
@@ -78,9 +85,10 @@ namespace gb
 	    std::streambuf* _log_default_streambuf;
 	    std::streambuf* _error_default_streambuf;
 
-	    char _progress_bar_char;
 	    std::uint8_t _progress_bar_width;
-
+	    std::uint8_t _progress_total_width;
+	    std::uint8_t _progress_flexible_width;
+	    bool _bProgressing;
 #ifdef _MSC_VER
 	    HANDLE _hConsole;
 #endif

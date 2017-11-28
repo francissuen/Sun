@@ -24,14 +24,15 @@ static void gb::utils::_task_thread(std::uint8_t threadIdx)
 	    );
 	if(!bForceQuit)
 	{
-	    if(tasks.size() != 0)
+	    const size_t taskCount = tasks.size();
+	    if(taskCount != 0)
 	    {
 		task_t task(tasks.top());
 		tasks.pop();
 
 		lck.unlock();
 
-		task.run(threadIdx);
+		task.run(threadIdx, taskCount);
 
 		lck.lock();
 	    }
@@ -46,8 +47,8 @@ static void gb::utils::_task_thread(std::uint8_t threadIdx)
     }
 }
 
-task_t::task_t(std::function<void(std::uint8_t, void*)> func, void* arg, priority p):
-    _bindFunc(std::bind(func, std::placeholders::_1, arg)),
+task_t::task_t(std::function<void(const std::uint8_t,const size_t, void*)> func, void* arg, priority p):
+    _bindFunc(std::bind(func, std::placeholders::_1, std::placeholders::_2, arg)),
     _p(p)
 {
 }
@@ -84,8 +85,6 @@ void concurrency::initialize(std::uint8_t threadCount)
     _bQuit = false;
     _bForceQuit = false;
 
-    _preTaskCount = 0;
-    
     for(int i = 0; i < count; i++)
     {
 	_vThreads.push_back(new std::thread(std::bind(_task_thread, i)));
@@ -111,7 +110,7 @@ void concurrency::done(bool bForceQuit)
     _join();
 }
 
-void concurrency::timeout_done(std::function<void(const status_t& status)> func, const std::uint32_t timeout)
+void concurrency::timeout_done(std::function<void(const size_t taskCount)> func, const std::uint32_t timeout)
 {
     {
 	std::lock_guard<std::mutex> lck(_mtx);
@@ -121,37 +120,21 @@ void concurrency::timeout_done(std::function<void(const status_t& status)> func,
     _cv.notify_all();
 
     std::unique_lock<std::mutex> lck(_mtx);
-
-    status_t status;
-    size_t& taskCount = status.taskCount;
-    size_t& speed = status.speed;
-    time_t& eta = status.eta;
-
-    std::uint64_t preTime = 0;
+    size_t taskCount = 0;
     for(;;)
     {
 	std::cv_status ret = _cv.wait_for(lck, std::chrono::milliseconds(timeout));
 	taskCount = _tasks.size();
 	lck.unlock();
 	if(taskCount == 0)
-	    break;
-	if(ret == std::cv_status::timeout)
 	{
-	    std::uint64_t curTime = time::Instance().timestamp();
-	    if(curTime - preTime > 1000)//refresh status every 1000 milliseconds
-	    {
-		if(_preTaskCount != 0)
-		{
-		    speed = (_preTaskCount - taskCount)/((float)timeout/1000);
-		    if(speed != 0)
-			eta = taskCount / speed;
-		}
-		_preTaskCount = taskCount;
-		preTime = curTime;
-	    }
-	    func(status);		
+	    func(taskCount);
+	    break;
 	}
-
+	
+	if(ret == std::cv_status::timeout)
+	    func(taskCount);		
+	
 	lck.lock();
     }
 
@@ -170,11 +153,11 @@ void concurrency::_join()
     _vThreads.clear();
 }
 
-size_t concurrency::get_taskscount()
-{
-    std::lock_guard<std::mutex> lck(_mtx);
-    return _tasks.size();
-}
+// size_t concurrency::get_taskscount()
+// {
+//     std::lock_guard<std::mutex> lck(_mtx);
+//     return _tasks.size();
+// }
 
 void concurrency::pushtask(const task_t& task)
 {

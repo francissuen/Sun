@@ -56,6 +56,4 @@ fi
 # run test
 ./gbtest -d -n hello -c 100 world fsgb
 
-./gbtest -d hello -n world
-
 exit 0
