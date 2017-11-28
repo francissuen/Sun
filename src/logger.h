@@ -28,7 +28,8 @@
 #define GB_LOGGER_DEFAULT_LOG_COLOR_CODE "1;37;40"
 #define GB_LOGGER_DEFAULT_ERROR_COLOR_CODE "1;31;40"
 #define GB_LOGGER_DEFAULT_WARNING_COLOR_CODE "1;33;40"
-
+#define GB_LOGGER_DEFAULT_PROGRESS_COLOR_CODE "1;34;40"
+#define GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE "1;32;40"
 #endif
 
 /*
@@ -37,9 +38,8 @@
  *2.permanent store
  */
 
-#define _GB_DEFAULT_STREAMBUF_IDX 0
-#define _GB_CURRENT_STREAMBUF_IDX 1
-
+#define GB_LOGGER_DEFAULT_PROGRESS_BAR_CHAR '-'
+#define GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH 32
 namespace gb
 {
     namespace utils
@@ -62,17 +62,25 @@ namespace gb
 	    void warning(const char* msg)const;
 	    void set_warning_color_code(const char* szCode);
 
+	    void progress(const float value, const char* title = nullptr);
+	    void set_progress_bar_char(const char barChar);
+	    void set_progress_bar_width(const std::uint8_t width);
+	    
 	private:
 	    std::string _log_color_code;
 	    std::string _error_color_code;
 	    std::string _warning_color_code;
-
+	    std::string _progress_color_code[2];
+	    
 	    /*
 	     *log and waring share same streambuf
 	     */
 	    std::streambuf* _log_default_streambuf;
 	    std::streambuf* _error_default_streambuf;
-	    
+
+	    char _progress_bar_char;
+	    std::uint8_t _progress_bar_width;
+
 #ifdef _MSC_VER
 	    HANDLE _hConsole;
 #endif

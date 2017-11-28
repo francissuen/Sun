@@ -43,16 +43,21 @@ int concurrency_test(const unsigned int count = 1000)
 	    // 					}, nullptr));
     }
 
-    const unsigned int timeout = 10;
+    const unsigned int timeout = 100;
     auto timeout_func = [&](const concurrency::status_t status)
 	{
-	    unsigned int speed = status.speed;
-	    unsigned int timeLeft = status.eta;
-	    if(speed != 0)
-		logger::Instance().log(string("task left: ") + status.taskCount + "\n"
-				   "eta: " + time::Instance().format(timeLeft) + "\n"
-				   "speed@" + speed + " tasks/s"
-		);
+	    // unsigned int speed = status.speed;
+	    // unsigned int timeLeft = status.eta;
+	    // if(speed != 0)
+	    // 	logger::Instance().log(string("task left: ") + status.taskCount + "\n"
+	    // 			   "eta: " + time::Instance().format(timeLeft) + "\n"
+	    // 			   "speed@" + speed + " tasks/s"
+	    // 	);
+
+	    float value = float(count - status.taskCount) / count;
+	    logger::Instance().log(string("taskCount: ") + value);
+	    logger::Instance().progress(value, "pro");
+
 	};
     concurrency::Instance().timeout_done(timeout_func, timeout);
 
