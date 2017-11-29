@@ -49,7 +49,9 @@ int concurrency_test(const unsigned int count = 1000)
     logger::Instance().progress_done();
 
     logger::Instance().log("task_func_2");
-    auto task_func_2 = [count, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount, void* arg)
+
+    std::mutex mtx;
+    auto task_func_2 = [count, &threadSafe_val, &mtx](const std::uint8_t threadIdx, const size_t taskCount, void* arg)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
@@ -57,7 +59,12 @@ int concurrency_test(const unsigned int count = 1000)
 
 	    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 	    float value = float(count - (taskCount - 1)) / count;
-	    logger::Instance().progress(value, string("taskcount:") + (taskCount - 1));
+	    
+	    {
+		std::lock_guard<std::mutex> lck(mtx);
+		logger::Instance().progress(value, string("taskcount:") + (taskCount - 1));	
+	    }
+	    
 	};
 
     concurrency::Instance().initialize(threadCount);
