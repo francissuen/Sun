@@ -6,7 +6,7 @@
 #include <gbUtils/time.h>
 
 using gb::utils::concurrency;
-typedef concurrency::task_t task_t;
+
 using gb::utils::logger;
 using gb::utils::string;
 using gb::utils::time;
@@ -14,12 +14,15 @@ using gb::utils::time;
 int concurrency_test(const unsigned int count = 1000)
 {
     const std::uint8_t threadCount = 4;
-    concurrency::Instance().initialize(threadCount);
+    concurrency<>::Instance().initialize(threadCount);
+
+    typedef concurrency<>::task_t task_t;
+    
     std::atomic<std::uint8_t> threadSafe_val[threadCount]{{0}};
 
     unsigned int idx = 0;
 
-    auto task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount, void* arg)
+    auto task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
@@ -32,8 +35,8 @@ int concurrency_test(const unsigned int count = 1000)
     
     for(int i = 0; i < count; i++)
     {
-	concurrency::Instance().pushtask(
-	    task_t(task_func, nullptr));
+	concurrency<>::Instance().pushtask(
+	    task_t(task_func));
     }
 
 
@@ -45,13 +48,13 @@ int concurrency_test(const unsigned int count = 1000)
 
 	};
 
-    concurrency::Instance().timeout_done(timeout_func, timeout);
+    concurrency<>::Instance().timeout_done(timeout_func, timeout);
     logger::Instance().progress_done();
 
     logger::Instance().log("task_func_2");
 
     std::mutex mtx;
-    auto task_func_2 = [count, &threadSafe_val, &mtx](const std::uint8_t threadIdx, const size_t taskCount, void* arg)
+    auto task_func_2 = [count, &threadSafe_val, &mtx](const std::uint8_t threadIdx, const size_t taskCount, int arg)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
@@ -62,16 +65,16 @@ int concurrency_test(const unsigned int count = 1000)
 	    
 	    {
 		std::lock_guard<std::mutex> lck(mtx);
-		logger::Instance().progress(value, string("taskcount:") + (taskCount - 1));	
+		logger::Instance().progress(value, string("arg:") + arg);	
 	    }
 	    
 	};
 
-    concurrency::Instance().initialize(threadCount);
+    concurrency<int>::Instance().initialize(threadCount);
     for(int i = 0; i < count; i++)
-	concurrency::Instance().pushtask(task_t(task_func_2, nullptr));
+	concurrency<int>::Instance().pushtask(concurrency<int>::task_t(task_func_2, i));
 
-    concurrency::Instance().done();
+    concurrency<int>::Instance().done();
     logger::Instance().progress_done();
     
     return idx == count ? 0 : 1;
