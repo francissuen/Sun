@@ -27,7 +27,7 @@ gb_add_class(filesystem src gb_src_files)
 gb_add_class(luacpp_type_conversion src gb_src_files)
 gb_add_class(luacpp src gb_src_files)
 gb_add_class(args src gb_src_files)
-
+gb_add_class(file src gb_src_files)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
