@@ -14,9 +14,11 @@
 // colorattribute = foreground + background * 16
 // to get red text on yellow use 4 + 14*16 = 228
 // light red on yellow would be 12 + 14*16 = 236
-#define GB_LOGGER_LOG_MS_COLOR 15
-#define GB_LOGGER_ERROR_MS_COLOR 12
-#define GB_LOGGER_WARNING_MS_COLOR 14
+#define GB_LOGGER_DEFAULT_LOG_MS_COLOR 15
+#define GB_LOGGER_DEFAULT_ERROR_MS_COLOR 12
+#define GB_LOGGER_DEFAULT_WARNING_MS_COLOR 14
+#define GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR 1
+#define GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR 32
 
 #elif __GNUC__
 
@@ -51,6 +53,7 @@ namespace gb
 	{
 	    GB_SINGLETON_EXCLUDECTOR(logger);
 	    logger();
+	    ~logger();
 	public:
 	    void log(const char* msg)const;
 	    void set_log_color_code(const char* szCode);
@@ -73,7 +76,13 @@ namespace gb
 	    void progress_done();
 	    
 	    void set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth);
+
+	    inline void enable_color(bool bState = true)
+	    {
+		_bEnableColor = bState;
+	    }
 	private:
+	    std::string _normal_color_code;
 	    std::string _log_color_code;
 	    std::string _error_color_code;
 	    std::string _warning_color_code;
@@ -89,8 +98,10 @@ namespace gb
 	    std::uint8_t _progress_total_width;
 	    std::uint8_t _progress_flexible_width;
 	    bool _bProgressing;
+	    bool _bEnableColor;
 #ifdef _MSC_VER
 	    HANDLE _hConsole;
+	    PCONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
 #endif
 	    
 #ifdef gbLUAAPI
