@@ -56,7 +56,14 @@ namespace gb
 	  
 	  bool operator==(const char* szStr)const;
 	  bool operator==(const std::string& str)const;
-
+	  inline bool operator!=(const char* szStr)const
+	  {
+	      return ! operator==(szStr);
+	  }
+	  inline bool operator!=(const std::string& str)const
+	  {
+	      return ! operator==(str);
+	  }
 	  //lvalue version
 	  string operator+(const string& other)const &;
 	  string operator+(string&& other)const &;

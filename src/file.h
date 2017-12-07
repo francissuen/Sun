@@ -1,5 +1,5 @@
 #pragma once
-
+#include "string.h"
 #include <fstream>
 
 namespace gb
@@ -9,14 +9,18 @@ namespace gb
 	class file
 	{
 	public:
-	    file(const char* filePath);
+	    file(const char* filePath, bool bRead = true);
 	    ~file();
 	    void read(char* const buffer, const size_t bufferSize);
 	    void write(const char* data, const size_t size);
+	    void close();
+	    
+	    bool eof()const { return _file.eof(); }
 	    std::uint32_t size() const { return _size; }
 	private:
 	    std::fstream _file;
 	    std::uint32_t _size;
+	    string _filePath;
 	};
     };
 };
