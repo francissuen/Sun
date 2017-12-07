@@ -6,22 +6,48 @@ using gb::utils::logger;
 using gb::utils::time;
 
 logger::logger():
-    _log_color_code(GB_LOGGER_DEFAULT_LOG_COLOR_CODE),
-    _error_color_code(GB_LOGGER_DEFAULT_ERROR_COLOR_CODE),
-    _warning_color_code(GB_LOGGER_DEFAULT_WARNING_COLOR_CODE),
+#ifdef _MSC_VER
+    _normal_color_code("0"),
+    _log_color_code(GB_LOGGER_DEFAULT_LOG_MS_COLOR),
+    _error_color_code(GB_LOGGER_DEFAULT_ERROR_MS_COLOR),
+    _warning_color_code(GB_LOGGER_DEFAULT_WARNING_MS_COLOR),
     _progress_color_code{
-    GB_LOGGER_DEFAULT_PROGRESS_COLOR_CODE,
-	GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE},
+    GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR,
+	GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR},
+#elif __GNUC__
+    _normal_color_code(GB_LOGGER_COLOR_BACKTONORMAL),
+    _log_color_code(GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_LOG_COLOR_CODE GB_LOGGER_COLOR_END),
+    _error_color_code(GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_ERROR_COLOR_CODE GB_LOGGER_COLOR_END),
+    _warning_color_code(GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_WARNING_COLOR_CODE GB_LOGGER_COLOR_END),
+    _progress_color_code{
+    GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_PROGRESS_COLOR_CODE GB_LOGGER_COLOR_END,
+	GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE GB_LOGGER_COLOR_END},
+#endif
     _log_default_streambuf(std::cout.rdbuf()),
     _error_default_streambuf(std::cerr.rdbuf()),
     _progress_bar_width(GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH),
     _progress_total_width(GB_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
-    _bProgressing(false)
+    _bProgressing(false),
+    _bEnableColor(true)
 {
     _progress_flexible_width = _progress_total_width - (_progress_bar_width + strlen(GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 #ifdef _MSC_VER
     _hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    ::memset(&_preConsoleAttrib, 0, sizeof(PCONSOLE_SCREEN_BUFFER_INFO));
+    ::GetConsoleScreenBufferInfo(_hConsole, &_preConsoleAttrib);
 #endif
+}
+
+logger::~logger()
+{
+    if(_bEnableColor)
+    {
+#ifdef _MSC_VER
+	::SetConsoleTextAttribute(_hConsole, _preConsoleAttrib.wAttributes);
+#elif __GNUC__
+	std::cout << _normal_color_code;
+#endif
+    }
 }
 
 void logger::set_log_streambuf(std::streambuf* streambuf)
@@ -40,63 +66,54 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
     assert(!_bProgressing);					\
     assert(szMsg != nullptr);					\
     GB_GET_LOCALTIME(timeBuf);					\
-    ::SetConsoleTextAttribute(_hConsole, win_color_code);	\
+    if(_bEnableColor)						\
+	::SetConsoleTextAttribute(_hConsole, win_color_code);	\
     ostream << timeBuf << std::endl				\
     << title << szMsg << std::endl;
 
 #elif __GNUC__
 
-#define _gb_fancy_print(ostream, title, color_code)			\
-    assert(!_bProgressing);						\
-    assert(szMsg != nullptr);						\
-    GB_GET_LOCALTIME(timeBuf);						\
-    ostream << GB_LOGGER_COLOR_BEGIN + color_code + GB_LOGGER_COLOR_END	\
-    << timeBuf << std::endl						\
-    << title << szMsg << GB_LOGGER_COLOR_BACKTONORMAL << std::endl;	\
+#define _gb_fancy_print(ostream, title, color_code)	\
+    assert(!_bProgressing);				\
+    assert(szMsg != nullptr);				\
+    GB_GET_LOCALTIME(timeBuf);				\
+    if(_bEnableColor)					\
+	ostream << color_code;				\
+    ostream << timeBuf << std::endl			\
+    << title << szMsg;					\
+    ostream << std::endl;	
 
 #endif
 
 void logger::log(const char* szMsg)const
 {
-#ifdef _MSC_VER
-    _gb_fancy_print(std::cout, "LOG: ", GB_LOGGER_LOG_MS_COLOR);
-#elif __GNUC__
     _gb_fancy_print(std::cout, "LOG: ", _log_color_code);
-#endif
 }
 
 void logger::set_log_color_code(const char* szCode)
 {
     assert(szCode != nullptr);
-    _log_color_code = szCode;
+    _log_color_code = std::string(GB_LOGGER_COLOR_BEGIN) + szCode + GB_LOGGER_COLOR_END;
 }
 
 void logger::error(const char * szMsg)const
 {
-#ifdef _MSC_VER
-    _gb_fancy_print(std::cerr, "ERROR: ", GB_LOGGER_ERROR_MS_COLOR);
-#elif __GNUC__
     _gb_fancy_print(std::cerr, "ERROR: ", _error_color_code);
-#endif
 }
 void logger::set_error_color_code(const char* szCode)
 {
     assert(szCode != nullptr);
-    _error_color_code = szCode;
+    _error_color_code = std::string(GB_LOGGER_COLOR_BEGIN) + szCode + GB_LOGGER_COLOR_END;
 }
 void logger::warning(const char* szMsg)const
 {
-#ifdef _MSC_VER
-    _gb_fancy_print(std::cout, "WARNING: ", GB_LOGGER_WARNING_MS_COLOR);
-#elif __GNUC__
     _gb_fancy_print(std::cout, "WARNING: ", _warning_color_code);
-#endif
 }
 
 void logger::set_warning_color_code(const char* szCode)
 {
     assert(szCode != nullptr);
-    _warning_color_code = szCode;
+    _warning_color_code = std::string(GB_LOGGER_COLOR_BEGIN) + szCode + GB_LOGGER_COLOR_END;
 }
 
 void logger::progress(const float value, const char* title)
@@ -166,19 +183,26 @@ void logger::progress(const float value, const char* title)
     
     const std::string& c0 = _progress_color_code[0];
     const std::string& c1 = _progress_color_code[1];
-
-    std::cout << GB_LOGGER_COLOR_BEGIN << c0 << GB_LOGGER_COLOR_END
-	      << ">>>";
+#ifdef _MSC_VER
+    ::SetConsoleTextAttribute(_hConsole, c0);
+#elif __GNUC__
+    std::cout << c0;
+#endif
+    std::cout << ">>>";
     if(title != nullptr)
 	std::cout << title;
-    std::cout << '['
-	      << GB_LOGGER_COLOR_BEGIN << c1 << GB_LOGGER_COLOR_END;
+    std::cout << '[';
+#ifdef _MSC_VER
+    ::SetConsoleTextAttribute(_hConsole, c1);
+#elif __GNUC__
+    std::cout << c1;
+#endif
     
     const std::uint8_t width = value * _progress_bar_width;
     for(int i = 0; i < width; i++)
 	std::cout << ' ';
     
-    std::cout << GB_LOGGER_COLOR_BEGIN << c0 << GB_LOGGER_COLOR_END;
+    std::cout << c0;
     
     const std::uint8_t width_left = _progress_bar_width - width;
     for(int i = 0; i < width_left; i++)
@@ -200,7 +224,7 @@ void logger::progress(const float value, const char* title)
 	std::cout << strEta << anim[count % 6];
     for(int i = 0 ; i < paddingWidth; i++)
 	std::cout << ' ';
-    std::cout << GB_LOGGER_COLOR_BACKTONORMAL << '\r';
+    std::cout << '\r';
     
     std::cout.flush();
 }
