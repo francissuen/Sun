@@ -10,15 +10,15 @@
 #ifdef _MSC_VER
 #include<Windows.h>
 
-// colors are 0=black 1=blue 2=green and so on to 15=white  
+// colors are 0=black 1=blue 2=green ... 9=light blue 10=light green ...and so on to 15=white  
 // colorattribute = foreground + background * 16
 // to get red text on yellow use 4 + 14*16 = 228
 // light red on yellow would be 12 + 14*16 = 236
-#define GB_LOGGER_DEFAULT_LOG_MS_COLOR 15
-#define GB_LOGGER_DEFAULT_ERROR_MS_COLOR 12
-#define GB_LOGGER_DEFAULT_WARNING_MS_COLOR 14
-#define GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR 1
-#define GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR 32
+#define GB_LOGGER_DEFAULT_LOG_MS_COLOR_CODE 15
+#define GB_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE 12
+#define GB_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE 14
+#define GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE 9
+#define GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE 160
 
 #elif __GNUC__
 
@@ -53,7 +53,7 @@ namespace gb
 	{
 #ifdef _MSC_VER
 		typedef WORD color_code_t;
-#elif
+#elif __GNUC__
 		typedef std::string color_code_t;
 #endif
 	    GB_SINGLETON_EXCLUDECTOR(logger);

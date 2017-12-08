@@ -11,18 +11,39 @@ using gb::utils::logger;
 using gb::utils::string;
 using gb::utils::time;
 
+//template<typename ... Args>
+class testc
+{
+public:
+	testc(testc&& o)
+	{
+
+	}
+	testc(const std::function<void()>& c, /*Args ... args,*/ std::uint8_t p =1)
+	{
+
+	}
+};
+
+//void test_func(int param)
+//{
+//
+//}
 int concurrency_test(const unsigned int count = 1000)
 {
+	//typedef testc<> testc;
+	testc t([]() {});
+
     const std::uint8_t threadCount = 4;
     concurrency<>::Instance().initialize(threadCount);
 
-    typedef concurrency<>::task_t task_t;
+    //typedef concurrency<>::task_t task_t;
     
     std::atomic<std::uint8_t> threadSafe_val[threadCount]{{0}};
 
     unsigned int idx = 0;
 
-    auto task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount)
+	std::function<void(const std::uint8_t, const size_t)> task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
@@ -32,15 +53,14 @@ int concurrency_test(const unsigned int count = 1000)
 	    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 	};
     
-    
     for(int i = 0; i < count; i++)
     {
 	concurrency<>::Instance().pushtask(
-	    task_t(task_func));
+		concurrency<>::task_t(task_func));
     }
 
 
-    const unsigned int timeout = 100;
+    /*const unsigned int timeout = 100;
     auto timeout_func = [&](const size_t taskCount)
 	{
 	    float value = float(count - taskCount) / count;
@@ -54,7 +74,7 @@ int concurrency_test(const unsigned int count = 1000)
     logger::Instance().log("task_func_2");
 
     std::mutex mtx;
-    auto task_func_2 = [count, &threadSafe_val, &mtx](const std::uint8_t threadIdx, const size_t taskCount, int arg)
+    std::function<void(const std::uint8_t, const size_t, int)> task_func_2 = [count, &threadSafe_val, &mtx](const std::uint8_t threadIdx, const size_t taskCount, int arg)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
@@ -77,5 +97,5 @@ int concurrency_test(const unsigned int count = 1000)
     concurrency<int>::Instance().done();
     logger::Instance().progress_done();
     
-    return idx == count ? 0 : 1;
+    return idx == count ? 0 : 1;*/
 }
