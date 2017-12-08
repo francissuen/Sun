@@ -45,7 +45,7 @@ string time::format(const time_t seconds)
 	    {
 		if(day > 999)
 		    day = 999;
-		return day + string("d") + ":" +
+		return (unsigned int)day + string("d") + ":" +
 		    (unsigned int)h + string("h") + ":" +
 		    (unsigned int)m + "m" + ":" +
 		    (unsigned int)s + "s";

@@ -8,7 +8,7 @@ filesystem::filesystem()
 {
     char path[_GB_FILESYSTEM_MAX_PATH] = {'\0'};
 #ifdef _MSC_VER
-    GetModuleFileName(NULL, path, GB_FILESYSTEM_MAX_PATH);	
+    GetModuleFileName(NULL, path, _GB_FILESYSTEM_MAX_PATH);
     _workingDir = path;
     _workingDir = _workingDir.substr_at_l_lastof('\\', false);
 #elif __GNUC__
@@ -28,8 +28,8 @@ std::vector<gb::utils::string> filesystem::get_files_here(const char* path, cons
     hFind = FindFirstFile(path, &ffd);
     if(hFind == INVALID_HANDLE_VALUE)
     {
-	logger::Instance.warning((string)"filesystem::get_files_here:nothing here @" + path);
-	return;
+	logger::Instance().warning((string)"filesystem::get_files_here:nothing here @" + path);
+	return files;
     }
     do
     {
