@@ -7,7 +7,7 @@ using gb::utils::time;
 
 logger::logger():
 #ifdef _MSC_VER
-    _normal_color_code("0"),
+    _normal_color_code(0),
     _log_color_code(GB_LOGGER_DEFAULT_LOG_MS_COLOR),
     _error_color_code(GB_LOGGER_DEFAULT_ERROR_MS_COLOR),
     _warning_color_code(GB_LOGGER_DEFAULT_WARNING_MS_COLOR),
@@ -90,30 +90,39 @@ void logger::log(const char* szMsg)const
     _gb_fancy_print(std::cout, "LOG: ", _log_color_code);
 }
 
-void logger::set_log_color_code(const char* szCode)
+void logger::set_log_color_code(const color_code_t szCode)
 {
-    assert(szCode != nullptr);
-    _log_color_code = std::string(GB_LOGGER_COLOR_BEGIN) + szCode + GB_LOGGER_COLOR_END;
+#ifdef _MSC_VER
+	_log_color_code = szCode;
+#elif
+	_log_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
+#endif
 }
 
 void logger::error(const char * szMsg)const
 {
     _gb_fancy_print(std::cerr, "ERROR: ", _error_color_code);
 }
-void logger::set_error_color_code(const char* szCode)
+void logger::set_error_color_code(const color_code_t szCode)
 {
-    assert(szCode != nullptr);
-    _error_color_code = std::string(GB_LOGGER_COLOR_BEGIN) + szCode + GB_LOGGER_COLOR_END;
+#ifdef _MSC_VER
+	_error_color_code = szCode;
+#elif
+	_error_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
+#endif
 }
 void logger::warning(const char* szMsg)const
 {
     _gb_fancy_print(std::cout, "WARNING: ", _warning_color_code);
 }
 
-void logger::set_warning_color_code(const char* szCode)
+void logger::set_warning_color_code(const color_code_t szCode)
 {
-    assert(szCode != nullptr);
-    _warning_color_code = std::string(GB_LOGGER_COLOR_BEGIN) + szCode + GB_LOGGER_COLOR_END;
+#ifdef _MSC_VER
+	_warning_color_code = szCode;
+#elif
+	_warning_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
+#endif
 }
 
 void logger::progress(const float value, const char* title)
@@ -155,10 +164,11 @@ void logger::progress(const float value, const char* title)
 	    float e = eta[i];
 	    if(e > 0.0f)
 	    {
-		assert((std::numeric_limits<float>::max() - average_eta) > e);
-		average_eta += e;
+			//assert((std::numeric_limits<float>::max() - average_eta) > e);
+			float x = std::numeric_limits<float>::max() - average_eta;
+			average_eta += e;
 
-		valid_cout++;
+			valid_cout++;
 	    }
 	}
 
@@ -181,8 +191,8 @@ void logger::progress(const float value, const char* title)
     const std::uint8_t paddingWidth = widthLeft - lenTitle;
 //    if(paddingWidth)
     
-    const std::string& c0 = _progress_color_code[0];
-    const std::string& c1 = _progress_color_code[1];
+    const color_code_t& c0 = _progress_color_code[0];
+    const color_code_t& c1 = _progress_color_code[1];
 #ifdef _MSC_VER
     ::SetConsoleTextAttribute(_hConsole, c0);
 #elif __GNUC__

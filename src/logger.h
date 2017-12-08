@@ -51,22 +51,27 @@ namespace gb
     {
 	gbUtilsEXPORT_CLASS  logger
 	{
+#ifdef _MSC_VER
+		typedef WORD color_code_t;
+#elif
+		typedef std::string color_code_t;
+#endif
 	    GB_SINGLETON_EXCLUDECTOR(logger);
 	    logger();
 	    ~logger();
 	public:
 	    void log(const char* msg)const;
-	    void set_log_color_code(const char* szCode);
+	    void set_log_color_code(const color_code_t szCode);
 	    /*
 	     *@param streambuf, if streambuf == nullptr,
 	     *then set back to default streambuf.
 	     */
 	    void set_log_streambuf(std::streambuf* streambuf);
 	    void error(const char* msg)const;
-	    void set_error_color_code(const char* szCode);
+	    void set_error_color_code(const color_code_t szCode);
 	    void set_error_streambuf(std::streambuf* streambuf);
 	    void warning(const char* msg)const;
-	    void set_warning_color_code(const char* szCode);
+	    void set_warning_color_code(const color_code_t szCode);
 
 	    /*
 	     *@brief, progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
@@ -82,11 +87,14 @@ namespace gb
 		_bEnableColor = bState;
 	    }
 	private:
-	    std::string _normal_color_code;
-	    std::string _log_color_code;
-	    std::string _error_color_code;
-	    std::string _warning_color_code;
-	    std::string _progress_color_code[2];
+#ifdef _MSC_VER
+#elif __GNUC__
+#endif
+		color_code_t _normal_color_code;
+		color_code_t _log_color_code;
+		color_code_t _error_color_code;
+		color_code_t _warning_color_code;
+		color_code_t _progress_color_code[2];
 	    
 	    /*
 	     *log and waring share same streambuf
@@ -101,7 +109,7 @@ namespace gb
 	    bool _bEnableColor;
 #ifdef _MSC_VER
 	    HANDLE _hConsole;
-	    PCONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
+	    CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
 #endif
 	    
 #ifdef gbLUAAPI
