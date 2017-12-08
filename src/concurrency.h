@@ -7,6 +7,10 @@
 #include <vector>
 #include <algorithm>
 #include "common.h"
+
+#define GB_UTILS_CONCURRENCY_TASK_PRIORITY_LOW 0x50
+#define GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID 0x90
+#define GB_UTILS_CONCURRENCY_TASK_PRIORITY_HIGH 0xd0
 namespace gb
 {
     namespace utils
@@ -21,15 +25,10 @@ namespace gb
 	    class task_t
 	    {
 	    public:
-		enum priority
-		{
-		    low = 1,
-		    mid, high
-		};
 		/*
 		 *@param func, threadCount is count of current left tasks, including this task
 		 */
-		task_t(std::function<void(const std::uint8_t,const size_t, TaskArg ...)> func, TaskArg ... arg, priority p = priority::mid):
+		task_t(const std::function<void(const std::uint8_t,const size_t, TaskArg ...)>& func, TaskArg ... arg, const std::uint8_t p = GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID):
 		    _bindFunc(std::bind(func, std::placeholders::_1, std::placeholders::_2, arg ...)),
 		    _p(p)
 		    {
@@ -63,7 +62,7 @@ namespace gb
 		void run(const std::uint8_t threadIdx, const size_t taskCount)const{ _bindFunc(threadIdx, taskCount); }
 	    private:
 		std::function<void(const std::uint8_t, const size_t)> _bindFunc;
-		priority _p;
+		std::uint8_t _p;
 	    };
 
 	    

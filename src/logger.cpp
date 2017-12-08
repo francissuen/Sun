@@ -8,12 +8,12 @@ using gb::utils::time;
 logger::logger() :
 #ifdef _MSC_VER
 	_normal_color_code(0),
-	_log_color_code(GB_LOGGER_DEFAULT_LOG_MS_COLOR),
-	_error_color_code(GB_LOGGER_DEFAULT_ERROR_MS_COLOR),
-	_warning_color_code(GB_LOGGER_DEFAULT_WARNING_MS_COLOR),
+	_log_color_code(GB_LOGGER_DEFAULT_LOG_MS_COLOR_CODE),
+	_error_color_code(GB_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE),
+	_warning_color_code(GB_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE),
 	_progress_color_code{
-	GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR,
-	GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR },
+	GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE,
+	GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
 #elif __GNUC__
 	_normal_color_code(GB_LOGGER_COLOR_BACKTONORMAL),
 	_log_color_code(GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_LOG_COLOR_CODE GB_LOGGER_COLOR_END),
@@ -94,7 +94,7 @@ void logger::set_log_color_code(const color_code_t szCode)
 {
 #ifdef _MSC_VER
 	_log_color_code = szCode;
-#elif
+#elif __GNUC__
 	_log_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
 #endif
 }
@@ -107,7 +107,7 @@ void logger::set_error_color_code(const color_code_t szCode)
 {
 #ifdef _MSC_VER
 	_error_color_code = szCode;
-#elif
+#elif __GNUC__
 	_error_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
 #endif
 }
@@ -120,7 +120,7 @@ void logger::set_warning_color_code(const color_code_t szCode)
 {
 #ifdef _MSC_VER
 	_warning_color_code = szCode;
-#elif
+#elif __GNUC__
 	_warning_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
 #endif
 }
