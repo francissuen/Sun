@@ -1,6 +1,6 @@
 #pragma once
 #include <stdio.h>
-#include <time.h>
+#include <ctime>
 #include "common.h"
 #include "gbUtilsConfig.h"
 #include "string.h"

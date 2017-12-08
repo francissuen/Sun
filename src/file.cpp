@@ -21,7 +21,7 @@ file::file(const char* filePath, bool bRead):
     {
 	_file.seekg(0, std::ios_base::end);
 
-	_size = _file.tellg();
+	_size = (std::uint32_t)_file.tellg();
 
 	_file.seekg(0, std::ios_base::beg);
     }

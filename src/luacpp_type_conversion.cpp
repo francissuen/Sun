@@ -44,7 +44,7 @@ bool gbLCTypeConversion::TableToArrayInt(lua_State* L, const int idx, lua_Intege
 		return false;
 	}
 	//if(size > lua_objlen(L, idx);
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < count; i++)
 	{
 		lua_rawgeti(L, idx, i + 1 /*lua table start at 1*/);
 		if (lua_isnumber(L, -1))
@@ -69,11 +69,11 @@ bool gbLCTypeConversion::TableToArrayFloat(lua_State* L, const int idx, float* o
 
 
 	//if(size > lua_objlen(L, idx);
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < count; i++)
 	{
 		lua_rawgeti(L, idx, i + 1 /*lua table start at 1*/);
 		if (lua_isnumber(L, -1))
-			outVal[i] = lua_tonumber(L, -1);
+			outVal[i] = (float)lua_tonumber(L, -1);
 		else
 		{
 			printf("gbLCTypeConversion::TableToArray:not a number@%d, assigned to 0.0f", i);
@@ -90,15 +90,15 @@ bool gbLCTypeConversion::TableToVec3(lua_State* L, const int idx, float (&outVal
 	if (!lua_istable(L, idx))
 		return false;
 	lua_getfield(L, idx, "x");
-	outVal[0] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[0] = (float)lua_isnumber(L, -1) ? (float)lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "y");
-	outVal[1] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[1] = (float)lua_isnumber(L, -1) ? (float)lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	lua_getfield(L, idx, "z");
-	outVal[2] = lua_isnumber(L, -1) ? lua_tonumber(L, -1) : 0.0f;
+	outVal[2] = (float)lua_isnumber(L, -1) ? (float)lua_tonumber(L, -1) : 0.0f;
 	lua_pop(L, 1);
 
 	return true;
@@ -124,7 +124,7 @@ int gbLCTypeConversion::ArrayToTable(lua_State* L, const T* arr, const unsigned 
 {
 	lua_newtable(L);
 	
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < count; i++)
 	{
 		lua_pushnumber(L, arr[i]);
 		lua_rawseti(L, -2, i + 1);
@@ -147,7 +147,7 @@ int gbLCTypeConversion::ArrayIntToTable(lua_State* L, const lua_Integer* arr, co
 {
 	lua_newtable(L);
 
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < count; i++)
 	{
 		lua_pushinteger(L, arr[i]);
 		lua_rawseti(L, -2, i + 1);
