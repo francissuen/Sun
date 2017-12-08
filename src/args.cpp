@@ -5,105 +5,112 @@ using gb::utils::string;
 
 args::~args()
 {
-    for(mpNamedArg_t::iterator i =  _mpNamedArgs.begin(); i != _mpNamedArgs.end(); i++)
-    {
-	delete i->second;
-    }
+	for (mpNamedArg_t::iterator i = _mpNamedArgs.begin(); i != _mpNamedArgs.end(); i++)
+	{
+		delete i->second;
+	}
 }
 
 void args::_namedArg::SetArg(const std::uintptr_t arg_)
 {
-    _rawArg = arg_;
-    _isSupplied = true;
+	_rawArg = arg_;
+	_isSupplied = true;
 }
 
 void args::register_namedArg(const char opt, const enmType type)
 {
-    _namedArg* na = new _namedArg(opt, type);
-    _mpNamedArgs.insert(std::pair<char, _namedArg*>(opt, na));
+	_namedArg* na = new _namedArg(opt, type);
+	_mpNamedArgs.insert(std::pair<char, _namedArg*>(opt, na));
 }
 
 
 void args::parse(const int argc, char** argv)
 {
-    assert(argv != nullptr);
-    
-    _namedArg* curNamedArg = nullptr;
-    enmType curType = enmType::DEFAULT;
-    char curOpt = -1;
-    for(int i = 0; i < argc; i++)
-    {
-	char* arg = argv[i];
-	assert(arg != nullptr);
-	if(curType == enmType::BOOL || curType == enmType::DEFAULT)
-	{
-	    //searching for next opt
-	    int j = 0;
-	    if(arg[j++] == '-')
-	    {
-		curOpt = arg[j];
-		if(curOpt == '\0')
-		    throw string("unexpected '\\0' after '-' when expecting a opt");
+	assert(argv != nullptr);
 
-		mpNamedArg_t::iterator i = _mpNamedArgs.find(curOpt);
-		if(i == _mpNamedArgs.end())
-		    throw string("unknown opt: ") + curOpt;
-
-		curNamedArg = i->second;
-		curType = curNamedArg->type;
-		if(curType == enmType::BOOL)
-		    curNamedArg->SetArg(1);
-	    }
-	    else//unnamed args
-	    {
-		if(*arg == '-')
-		    throw string("unexpected '-' when expecting a arg");
-			    
-		_vUnnamedArgs.push_back(arg);
-		if(i != 0)//argv[0] always is current executable path
-		    curType = enmType::UNNAMED;
-	    }
-	}
-	else//arg
+	_namedArg* curNamedArg = nullptr;
+	enmType curType = enmType::DEFAULT;
+	char curOpt = -1;
+	for (int i = 0; i < argc; i++)
 	{
-	    if(*arg == '-')
-		throw string("unexpected '-' when expecting a arg");
-	    if(curType == enmType::UNNAMED)
-		_vUnnamedArgs.push_back(arg);
-	    else if(curType == enmType::INT)
-	    {
-		int intArg = ::atoi(arg);
-		curNamedArg->SetArg(intArg);
-		curType = enmType::DEFAULT;
-	    }
-	    else if(curType == enmType::STRING)
-	    {
-		curNamedArg->SetArg((std::uintptr_t)arg);
-		curType = enmType::DEFAULT;
-	    }
+		char* arg = argv[i];
+		assert(arg != nullptr);
+		if (curType == enmType::BOOL || curType == enmType::DEFAULT)
+		{
+			//searching for next opt
+			int j = 0;
+			if (arg[j++] == '-')
+			{
+				curOpt = arg[j];
+				if (curOpt == '\0')
+					throw string("unexpected '\\0' after '-' when expecting a opt");
+
+				mpNamedArg_t::iterator i = _mpNamedArgs.find(curOpt);
+				if (i == _mpNamedArgs.end())
+					throw string("unknown opt: ") + curOpt;
+
+				curNamedArg = i->second;
+				curType = curNamedArg->type;
+				if (curType == enmType::BOOL)
+					curNamedArg->SetArg(1);
+			}
+			else//unnamed args
+			{
+				if (*arg == '-')
+					throw string("unexpected '-' when expecting a arg");
+
+				_vUnnamedArgs.push_back(arg);
+				if (i != 0)//argv[0] always is current executable path
+					curType = enmType::UNNAMED;
+			}
+		}
+		else//arg
+		{
+			if (*arg == '-')
+				throw string("unexpected '-' when expecting a arg");
+			if (curType == enmType::UNNAMED)
+				_vUnnamedArgs.push_back(arg);
+			else if (curType == enmType::INT)
+			{
+				int intArg = ::atoi(arg);
+				curNamedArg->SetArg(intArg);
+				curType = enmType::DEFAULT;
+			}
+			else if (curType == enmType::STRING)
+			{
+				curNamedArg->SetArg((std::uintptr_t)arg);
+				curType = enmType::DEFAULT;
+			}
+		}
 	}
-    }
 }
 
 template<typename T>
 T args::named_arg(const char opt)const
 {
-    mpNamedArg_t::const_iterator i = _mpNamedArgs.find(opt);
-    if(i == _mpNamedArgs.end())
-	throw string("unknown opt: ") + opt;
-    if(i->second->IsSupplied())
-	return (T)(i->second->GetArg());
-    else
-	throw string("unsupplied opt: ") + opt;
+	mpNamedArg_t::const_iterator i = _mpNamedArgs.find(opt);
+	if (i == _mpNamedArgs.end())
+		throw string("unknown opt: ") + opt;
+	if (i->second->IsSupplied())
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4800)
+#endif
+		return (T)(i->second->GetArg());
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+	else
+		throw string("unsupplied opt: ") + opt;
 }
 
 bool args::has_named_arg(const char opt)const
 {
-    mpNamedArg_t::const_iterator i = _mpNamedArgs.find(opt);
-    if(i == _mpNamedArgs.end())
-	return false;
-    else
-	return i->second->IsSupplied();
+	mpNamedArg_t::const_iterator i = _mpNamedArgs.find(opt);
+	if (i == _mpNamedArgs.end())
+		return false;
+	else
+		return i->second->IsSupplied();
 }
 template bool args::named_arg<bool>(const char opt)const;
 template int args::named_arg<int>(const char opt)const;
@@ -111,7 +118,7 @@ template char* args::named_arg<char*>(const char opt)const;
 
 const char* args::unnamed_arg(const unsigned int idx)const
 {
-    if(idx >= _vUnnamedArgs.size())
-	throw string("idx >= _vUnnamedargs idx:") + idx;
-    return _vUnnamedArgs[idx];
+	if (idx >= _vUnnamedArgs.size())
+		throw string("idx >= _vUnnamedargs idx:") + idx;
+	return _vUnnamedArgs[idx];
 }

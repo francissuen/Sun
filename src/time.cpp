@@ -9,7 +9,7 @@ void time::get_localtime(char * const buffer, const unsigned char length)const
 {
     assert(buffer != nullptr);
     time_t rawTime;
-    ::time(&rawTime);
+    std::time(&rawTime);
 
     tm* pTime = localtime(&rawTime);
     assert(pTime != nullptr);
