@@ -13,8 +13,11 @@ add_executable(gbtest
   test.cpp
   )
 
-
+  set(pthread_lib)
+  if(UNIX)
+  set(pthread_lib -lpthread)
+  endif()
 target_link_libraries(gbtest
   ${gbUtils_LIBRARIES}
-  -lpthread
+  ${pthread_lib}
   )
