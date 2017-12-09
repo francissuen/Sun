@@ -12,7 +12,9 @@ filesystem::filesystem()
     _workingDir = path;
     _workingDir = _workingDir.substr_at_l_lastof('\\', false);
 #elif __GNUC__
-    ::readlink("/proc/self/exe", path, _GB_FILESYSTEM_MAX_PATH);
+    ssize_t ret = ::readlink("/proc/self/exe", path, _GB_FILESYSTEM_MAX_PATH);
+    if(ret == -1)
+	throw string("readlink error");
     _workingDir = path;
     _workingDir = _workingDir.substr_at_l_lastof('/', false);
 #endif

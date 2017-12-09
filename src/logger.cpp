@@ -212,7 +212,11 @@ void logger::progress(const float value, const char* title)
 	for (int i = 0; i < width; i++)
 		std::cout << ' ';
 
+#ifdef _MSC_VER
+	::SetConsoleTextAttribute(_hConsole, c0);
+#elif __GNUC__
 	std::cout << c0;
+#endif
 
 	const std::uint8_t width_left = _progress_bar_width - width;
 	for (int i = 0; i < width_left; i++)

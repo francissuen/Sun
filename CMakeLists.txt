@@ -32,11 +32,12 @@ gb_add_class(file src gb_src_files)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(gbUtilsSTATIC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGB_UTILS_STATIC_LIB=1")
   add_library(${LIB_NAME} STATIC
     ${gb_src_files}
     )
 else()
-  add_definitions(-DgbUtilsEXPORT)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGB_UTILS_SHARED_LIB=1")
   add_library(${LIB_NAME} SHARED
     ${gb_src_files}
     )

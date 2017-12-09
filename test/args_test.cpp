@@ -22,7 +22,7 @@ int args_test(int argc, char** argv)
 	const size_t uaSize = arg.unnamed_arg_size();
 	std::cout << "unnamed arg size: " << uaSize << std::endl;
 
-	for(int i = 0; i < uaSize; i++)
+	for(size_t i = 0; i < uaSize; i++)
 	{
 	    std::cout << "ua " << i << ": " << arg.unnamed_arg(i) << std::endl;	
 	}

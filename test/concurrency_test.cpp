@@ -10,35 +10,11 @@ using gb::utils::concurrency;
 using gb::utils::logger;
 using gb::utils::string;
 using gb::utils::time;
-
-//template<typename ... Args>
-class testc
-{
-public:
-	testc(testc&& o)
-	{
-
-	}
-	testc(const std::function<void()>& c, /*Args ... args,*/ std::uint8_t p =1)
-	{
-
-	}
-};
-
-//void test_func(int param)
-//{
-//
-//}
 int concurrency_test(const unsigned int count = 1000)
 {
-	//typedef testc<> testc;
-	testc t([]() {});
-
     const std::uint8_t threadCount = 4;
     concurrency<>::Instance().initialize(threadCount);
 
-    //typedef concurrency<>::task_t task_t;
-    
     std::atomic<std::uint8_t> threadSafe_val[threadCount]{{0}};
 
     unsigned int idx = 0;
@@ -53,14 +29,17 @@ int concurrency_test(const unsigned int count = 1000)
 	    std::this_thread::sleep_for(std::chrono::milliseconds(3));
 	};
     
-    for(int i = 0; i < count; i++)
+    for(unsigned int i = 0; i < count; i++)
     {
 	concurrency<>::Instance().pushtask(
-		concurrency<>::task_t(task_func));
+		concurrency<>::task_t(task_func
+#ifdef _MSC_VER
+		, GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+#endif
+	));
     }
 
-
-    /*const unsigned int timeout = 100;
+    const unsigned int timeout = 100;
     auto timeout_func = [&](const size_t taskCount)
 	{
 	    float value = float(count - taskCount) / count;
@@ -91,11 +70,15 @@ int concurrency_test(const unsigned int count = 1000)
 	};
 
     concurrency<int>::Instance().initialize(threadCount);
-    for(int i = 0; i < count; i++)
-	concurrency<int>::Instance().pushtask(concurrency<int>::task_t(task_func_2, i));
+    for(unsigned int i = 0; i < count; i++)
+	concurrency<int>::Instance().pushtask(concurrency<int>::task_t(task_func_2, i
+#ifdef _MSC_VER
+		, GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+#endif
+	));
 
     concurrency<int>::Instance().done();
     logger::Instance().progress_done();
     
-    return idx == count ? 0 : 1;*/
+    return idx == count ? 0 : 1;
 }
