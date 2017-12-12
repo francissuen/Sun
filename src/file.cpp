@@ -36,18 +36,18 @@ void file::close()
 {
     _file.close();
 }
-void file::read(char* const buffer, const size_t bufferSize)
+void file::read(void* const buffer, const size_t bufferSize)
 {
     assert(buffer != nullptr);
-    _file.read(buffer, bufferSize);
+    _file.read((char* const)buffer, bufferSize);
     if(!_file)
     	throw string("file read error@") + _filePath;
 }
 
-void file::write(const char* data, const size_t size)
+void file::write(const void* data, const size_t size)
 {
     assert(data != nullptr);
-    _file.write(data, size);
+    _file.write((const char*)data, size);
     if(!_file)
 	throw string("file write error@") + _filePath;
 }

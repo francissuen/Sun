@@ -11,8 +11,8 @@ namespace gb
 	public:
 	    file(const char* filePath, bool bRead = true);
 	    ~file();
-	    void read(char* const buffer, const size_t bufferSize);
-	    void write(const char* data, const size_t size);
+	    void read(void* const buffer, const size_t bufferSize);
+	    void write(const void* data, const size_t size);
 	    void close();
 	    
 	    bool eof()const { return _file.eof(); }
