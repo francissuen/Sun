@@ -4,11 +4,9 @@
 #include <unordered_map>
 #include <vector>
 #include "string.h"
-#include "gbUtilsConfig.h"
-namespace gb
-{
-  namespace utils
-  {
+
+GB_UTILS_NS_BEGIN
+
       /*
        *supported arguments formats
        *[-opt [opt_arg]]... [arg]...
@@ -16,7 +14,7 @@ namespace gb
        *[arg] called unnamed arg(always after named args, except argv[0])
        *note! unnamed_arg(0) always return current executable path
        */
-      class args
+      GB_UTILS_CLASS args
       {
       public:
 	  enum enmType
@@ -64,5 +62,5 @@ namespace gb
 	  
 	  std::vector<char*> _vUnnamedArgs;
       };
-  };
-};
+
+GB_UTILS_NS_END

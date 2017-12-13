@@ -1,0 +1,24 @@
+//gbUtils config file
+
+//version
+#define GB_UTILS_VERSION_MAJOR @GB_UTILS_VERSION_MAJOR@
+#define GB_UTILS_VERSION_MINOR @GB_UTILS_VERSION_MINOR@
+
+
+#cmakedefine GB_UTILS_LUA_API
+
+#cmakedefine GB_UTILS_STATIC_LIB
+
+#ifdef GB_UTILS_STATIC_LIB
+#define GB_UTILS_CLASS class
+#define GB_UTILS_STRUCT struct
+#define GB_UTILS_EXPORT
+#elif GB_UTILS_SHARED_LIB
+#define GB_UTILS_CLASS class __declspec(dllexport)
+#define GB_UTILS_STRUCT struct __declspec(dllexport)
+#define GB_UTILS_EXPORT __declspec(dllexport)
+#else
+#define GB_UTILS_CLASS class __declspec(dllimport)
+#define GB_UTILS_STRUCT struct __declspec(dllimport)
+#define GB_UTILS_EXPORT __declspec(dllimport)
+#endif
