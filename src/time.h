@@ -14,7 +14,7 @@ namespace gb
 {
     namespace utils
     {
-	gbUtilsEXPORT_CLASS time
+	GB_UTILS_CLASS time
 	{
 	    GB_SINGLETON(time);
 	public:

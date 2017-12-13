@@ -17,7 +17,7 @@ namespace gb
 {
     namespace utils
     {
-	gbUtilsEXPORT_CLASS filesystem
+	GB_UTILS_CLASS filesystem
 	{
 	    GB_SINGLETON_EXCLUDECTOR(filesystem);
 	    filesystem();

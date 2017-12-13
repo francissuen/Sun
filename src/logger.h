@@ -49,7 +49,7 @@ namespace gb
 {
     namespace utils
     {
-	gbUtilsEXPORT_CLASS  logger
+	GB_UTILS_CLASS  logger
 	{
 #ifdef _MSC_VER
 		typedef WORD color_code_t;
