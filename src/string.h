@@ -16,7 +16,7 @@ namespace gb
       /*
        * a wrapper for std::string
        */
-      gbUtilsEXPORT_CLASS string
+      GB_UTILS_CLASS string
       {
       public:
 	  inline string(){}
