@@ -2,11 +2,9 @@
 #include "string.h"
 #include <fstream>
 
-namespace gb
-{
-    namespace utils
-    {
-	class file
+GB_UTILS_NS_BEGIN
+
+	GB_UTILS_CLASS file
 	{
 	public:
 	    file(const char* filePath, bool bRead = true);
@@ -22,5 +20,5 @@ namespace gb
 	    std::uint32_t _size;
 	    string _filePath;
 	};
-    };
-};
+
+GB_UTILS_NS_END

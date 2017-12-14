@@ -3,9 +3,8 @@
 #include <string>
 #include "time.h" 
 
-#ifdef gbLUAAPI
-#include "luacpp.h"
-#endif
+#include "ns.h"
+#include "config.h"
 
 #ifdef _MSC_VER
 #include<Windows.h>
@@ -45,10 +44,9 @@
 
 //len 10
 #define GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS ">>>[]100% "
-namespace gb
-{
-    namespace utils
-    {
+
+GB_UTILS_NS_BEGIN
+
 	GB_UTILS_CLASS  logger
 	{
 #ifdef _MSC_VER
@@ -121,5 +119,4 @@ namespace gb
 
 	};
 	
-    };
-};
+GB_UTILS_NS_END

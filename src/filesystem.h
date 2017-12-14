@@ -11,12 +11,8 @@
 
 //#include "../RenderCore/LuaCPP/gbLuaCPP.h"
 
+GB_UTILS_NS_BEGIN
 
-
-namespace gb
-{
-    namespace utils
-    {
 	GB_UTILS_CLASS filesystem
 	{
 	    GB_SINGLETON_EXCLUDECTOR(filesystem);
@@ -45,5 +41,4 @@ namespace gb
 	    gb::utils::string _workingDir;
 	};
 	
-    };
-};
+GB_UTILS_NS_END

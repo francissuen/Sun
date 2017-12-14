@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <ctime>
 #include "common.h"
-#include "gbUtilsConfig.h"
+#include "config.h"
 #include "string.h"
 #define GB_TIMEBUFFER_MAX_LEN 64
 
@@ -10,10 +10,8 @@
     char buffer[GB_TIMEBUFFER_MAX_LEN] = { 0 };	\
     time::Instance().get_localtime(buffer);
 
-namespace gb
-{
-    namespace utils
-    {
+GB_UTILS_NS_BEGIN
+
 	GB_UTILS_CLASS time
 	{
 	    GB_SINGLETON(time);
@@ -24,9 +22,9 @@ namespace gb
 	    /*
 	     *@brief, format seconds to [?d:][?h:][?m:]?s string
 	     */
-	    string format(const time_t seconds);
+	    gb::utils::string format(const time_t seconds);
 	};
-    };
-};
+
+GB_UTILS_NS_END
 
 
