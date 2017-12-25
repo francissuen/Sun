@@ -19,7 +19,8 @@
 #define GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE 9
 #define GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE 160
 
-#elif __GNUC__
+//#elif __GNUC__
+#else
 
 // ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS
 #define GB_LOGGER_COLOR_BEGIN "\033["
@@ -33,11 +34,6 @@
 #define GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE "1;32;42"
 #endif
 
-/*
- *TODO:
- *1.multi-threads support
- *2.permanent store
- */
 
 #define GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH 20
 #define GB_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH 64
@@ -45,78 +41,82 @@
 //len 10
 #define GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS ">>>[]100% "
 
+// multi thread support
+#ifdef GB_UTILS_MULTI_THREADS
+#include <mutex>
+#endif
+
+
 GB_UTILS_NS_BEGIN
 
-	GB_UTILS_CLASS  logger
-	{
+GB_UTILS_CLASS  logger
+{
 #ifdef _MSC_VER
-		typedef WORD color_code_t;
-#elif __GNUC__
-		typedef std::string color_code_t;
+    typedef WORD color_code_t;
+//#elif __GNUC__ || __clang__
+#else
+    typedef std::string color_code_t;
 #endif
-	    GB_SINGLETON_EXCLUDECTOR(logger);
-	    logger();
-	    ~logger();
-	public:
-	    void log(const char* msg)const;
-	    void set_log_color_code(const color_code_t szCode);
-	    /*
-	     *@param streambuf, if streambuf == nullptr,
-	     *then set back to default streambuf.
-	     */
-	    void set_log_streambuf(std::streambuf* streambuf);
-	    void error(const char* msg)const;
-	    void set_error_color_code(const color_code_t szCode);
-	    void set_error_streambuf(std::streambuf* streambuf);
-	    void warning(const char* msg)const;
-	    void set_warning_color_code(const color_code_t szCode);
+    GB_SINGLETON_EXCLUDECTOR(logger);
+    ~logger();
+public:
+    void log(const char* msg)const;
+    void set_log_color_code(const color_code_t szCode);
+    /*
+     *@param streambuf, if streambuf == nullptr,
+     *then set back to default streambuf.
+     */
+    void set_log_streambuf(std::streambuf* streambuf);
+    void error(const char* msg)const;
+    void set_error_color_code(const color_code_t szCode);
+    void set_error_streambuf(std::streambuf* streambuf);
+    void warning(const char* msg)const;
+    void set_warning_color_code(const color_code_t szCode);
 
-	    /*
-	     *@brief, progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
-	     *thread unsafe, will disable all other logger function until progress_done()
-	     */
-	    void progress(const float value, const char* title = nullptr);
-	    void progress_done();
+    /*
+     *@brief, progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
+     *thread unsafe, will disable all other logger function until progress_done()
+     */
+    void progress(const float value, const char* title = nullptr);
+    void progress_done();
 	    
-	    void set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth);
+    void set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth);
 
-	    inline void enable_color(bool bState = true)
-	    {
-		_bEnableColor = bState;
-	    }
-	private:
+    void enable_color(bool bState = true);
+private:
+    color_code_t _normal_color_code;
+    color_code_t _log_color_code;
+    color_code_t _error_color_code;
+    color_code_t _warning_color_code;
+    color_code_t _progress_color_code[2];
+	    
+    /*
+     *log and waring share same streambuf
+     */
+    std::streambuf* _log_default_streambuf;
+    std::streambuf* _error_default_streambuf;
+
+    std::uint8_t _progress_bar_width;
+    std::uint8_t _progress_total_width;
+    std::uint8_t _progress_flexible_width;
+    bool _bProgressing;
+    bool _bEnableColor;
 #ifdef _MSC_VER
-#elif __GNUC__
+    HANDLE _hConsole;
+    CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
 #endif
-		color_code_t _normal_color_code;
-		color_code_t _log_color_code;
-		color_code_t _error_color_code;
-		color_code_t _warning_color_code;
-		color_code_t _progress_color_code[2];
-	    
-	    /*
-	     *log and waring share same streambuf
-	     */
-	    std::streambuf* _log_default_streambuf;
-	    std::streambuf* _error_default_streambuf;
-
-	    std::uint8_t _progress_bar_width;
-	    std::uint8_t _progress_total_width;
-	    std::uint8_t _progress_flexible_width;
-	    bool _bProgressing;
-	    bool _bEnableColor;
-#ifdef _MSC_VER
-	    HANDLE _hConsole;
-	    CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
+    
+#ifdef GB_UTILS_MULTI_THREADS
+    std::mutex _mtx;
 #endif
 	    
-#ifdef gbLUAAPI
-	    gb_LC_EXPORT_FUNC(log);
-	    gb_LC_EXPORT_FUNC(error);
-	    gb_LC_EXPORT_FUNC(warning);
-	    gb_LC_Register_PrvCns(log);
-#endif
+// #ifdef gbLUAAPI
+//     gb_LC_EXPORT_FUNC(log);
+//     gb_LC_EXPORT_FUNC(error);
+//     gb_LC_EXPORT_FUNC(warning);
+//     gb_LC_Register_PrvCns(log);
+// #endif
 
-	};
+};
 	
 GB_UTILS_NS_END

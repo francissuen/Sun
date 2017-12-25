@@ -1,4 +1,4 @@
-#include <gbUtils/logger.h>
+#include "../src/logger.h"
 
 using gb::utils::logger;
 int logger_test()

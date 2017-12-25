@@ -20,6 +20,7 @@ inline void operator = (x const&){}
 	return _instance;			\
     }						\
 private:					\
+x();						\
 inline x(x const&) {}				\
 inline void operator = (x const&){}
 

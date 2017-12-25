@@ -13,32 +13,31 @@
 
 GB_UTILS_NS_BEGIN
 
-	GB_UTILS_CLASS filesystem
-	{
-	    GB_SINGLETON_EXCLUDECTOR(filesystem);
-	    filesystem();
-	public:
-	    ///if suffix is nullptr then all files here will be output 
-	    std::vector<gb::utils::string>  get_files_here(const char* path, const std::vector<const char*>* suffix = nullptr)const;
-	    inline const gb::utils::string& get_workingdir()const{ return _workingDir; }
+GB_UTILS_CLASS filesystem
+{
+    GB_SINGLETON_EXCLUDECTOR(filesystem);
+public:
+    ///if suffix is nullptr then all files here will be output 
+    std::vector<gb::utils::string>  get_files_here(const char* path, const std::vector<const char*>* suffix = nullptr)const;
+    inline const gb::utils::string& get_workingdir()const{ return _workingDir; }
 
-	    /*
-	     *@param, if szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
-	     *else it's a relative path.
-	     */
-	    gb::utils::string get_absolute_path(const char* szPath)const;
+    /*
+     *@param, if szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
+     *else it's a relative path.
+     */
+    gb::utils::string get_absolute_path(const char* szPath)const;
 //	    _LC_EXPORT_WRAP_FUNC(GetWorkPath, 
-	    // {
-	    // 	gbString val;
-	    // GetWorkPath(val);
-	    // lua_pushstring(L, (const char*)val);
-	    // return 1;
-	    // });
+    // {
+    // 	gbString val;
+    // GetWorkPath(val);
+    // lua_pushstring(L, (const char*)val);
+    // return 1;
+    // });
 
-	    // gb_LC_Register_PrvCns(filesystem);
+    // gb_LC_Register_PrvCns(filesystem);
 //	};
-	private:
-	    gb::utils::string _workingDir;
-	};
+private:
+    gb::utils::string _workingDir;
+};
 	
 GB_UTILS_NS_END

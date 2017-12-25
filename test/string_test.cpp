@@ -1,7 +1,9 @@
-#include <gbUtils/string.h>
 #include <iostream>
 #include <cassert>
-using gb::utils::string;
+#include "../src/string.h"
+
+using namespace gb::utils;
+
 void print_str(const string str)
 {
     std::cout <<(const char*) str << std::endl;
