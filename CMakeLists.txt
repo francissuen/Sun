@@ -8,6 +8,7 @@ set(GB_UTILS_VERSION_MINOR 0)
 
 option(GB_UTILS_LUA_API "bind lua api?" OFF)
 option(GB_UTILS_STATIC_LIB "build static lib?" ON)
+option(GB_UTILS_MULTI_THREADS "support multi-threads" ON)
 
 configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/src/config.h)
 
