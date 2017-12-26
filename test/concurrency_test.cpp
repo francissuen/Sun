@@ -1,9 +1,9 @@
-#include <gbUtils/concurrency.h>
+#include "../src/concurrency.h"
 #include <atomic>
 #include <cassert>
-#include <gbUtils/logger.h>
-#include <gbUtils/string.h>
-#include <gbUtils/time.h>
+#include "../src/logger.h"
+#include "../src/string.h"
+#include "../src/time.h"
 
 using gb::utils::concurrency;
 

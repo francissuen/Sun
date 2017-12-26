@@ -2,56 +2,71 @@
 #include "../src/string.h"
 #include "../src/filesystem.h"
 #include <vector>
+#include <algorithm>
 using namespace gb::utils;
 
 
-class luatable_0
+struct luatable_0
 {
-public:
-    void parse(const char* file)
+    luatable_0(){}
+    luatable_0(luatable* tbl)
 	{
-	    string path = filesystem::Instance().get_absolute_path(file);
-	    luatable tbl(path, luastate_mgr::Instance().getconfig_state());
-	    if(tbl.validate())
+	    assert(tbl != nullptr);
+	    if(tbl->validate())
 	    {
-		a = tbl.get_integer_by_key("a");
-		b = tbl.get_number_by_key("b");
-		c = tbl.get_string_by_key("c");
+		a = tbl->get_integer_by_key("a");
+		b = tbl->get_number_by_key("b");
+		c = tbl->get_string_by_key("c");
 	    }
 	}
-
-    void parse(luatable& tbl)
+    void print()
 	{
-	    
+	logger::Instance().log(string("luatable_0:") + "a:" + a +
+			       ", b:" + b +
+			       ", c:" + c);
 	}
-private:
     int a;
     float b;
     string c;
 };
 
-class luatable_1
+struct luatable_1
 {
-    void parse(const char* file)
+public:
+    luatable_1(){}
+    luatable_1(luatable* tbl)
 	{
-	    string path = filesystem::Instance().get_absolute_path(file);
-	    luatable tbl(path, luastate_mgr::Instance().getconfig_state());
-	    if(tbl.validate())
-	    {
-		const size_t len = tbl.objlen();
-		for(size_t i = 1; i <= len; i ++)
-		{
-		    luatable_0 tbl0;
-		    if(tbl.get_table_by_idx(i))
-		    {
-			tbl0.parse(tbl);
-			vTbl0.push_back(tbl0);
-		    }
-
-//		    lua_pop();
-		}
-	    }
+	    assert(tbl != nullptr);
+	    vTbl0 = tbl->get_tables<luatable_0>();
 	}
-private:
+    void print()
+	{
+	    std::for_each(vTbl0.begin(), vTbl0.end(), [](luatable_0& t)
+			  {
+			      t.print();
+			  });
+	}
     std::vector<luatable_0> vTbl0;
 };
+
+int luatable_test()
+{
+    luatable tl("../luatable_0", luastate_mgr::Instance().getconfig_state());
+    if(tl.validate())
+    {
+	luatable_0 lt0(&tl);
+	lt0.print();
+
+	luatable tl1("../luatable_1", luastate_mgr::Instance().getconfig_state());
+	if(tl1.validate())
+	{
+	    luatable_1 lt1(&tl1);
+	    lt1.print();
+	}
+	else
+	    return 1;
+    }
+    else
+	return 1;
+    return 0;
+}

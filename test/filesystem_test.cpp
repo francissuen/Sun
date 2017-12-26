@@ -1,5 +1,5 @@
-#include <gbUtils/filesystem.h>
-#include <gbUtils/logger.h>
+#include "../src/filesystem.h"
+#include "../src/logger.h"
 
 using gb::utils::logger;
 using gb::utils::filesystem;

@@ -1,4 +1,4 @@
-#include <gbUtils/args.h>
+#include "../src/args.h"
 
 //./gbtest -d -n hello -c 100 world fsgb
 int args_test(int argc, char** argv)

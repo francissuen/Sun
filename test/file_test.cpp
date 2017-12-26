@@ -1,7 +1,7 @@
-#include <gbUtils/file.h>
-#include <gbUtils/filesystem.h>
-using gb::utils::file;
-using gb::utils::filesystem;
+#include "../src/file.h"
+#include "../src/filesystem.h"
+
+using namespace gb::utils;
 #include <fstream>
 int file_test()
 {
