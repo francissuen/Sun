@@ -4,20 +4,25 @@ project(gbtest)
 include(../gbCMake/gbCommon.cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../gbCMake/)
 
-find_package(gbUtils REQUIRED)
-# include_directories(${gbUtils_INCLUDE_DIRS})
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 add_executable(gbtest
   test.cpp
   )
 
-  set(pthread_lib)
-  if(UNIX)
+set(pthread_lib)
+set(dl_lib)
+if(UNIX)
   set(pthread_lib -lpthread)
-  endif()
+  set(dl_lib -ldl)
+endif()
+
+find_package(lua REQUIRED)
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../ ${CMAKE_CURRENT_SOURCE_DIR}/../build)
+
 target_link_libraries(gbtest
-  ${gbUtils_LIBRARIES}
+  gbUtils
+  optimized ${lua_LIBRARIES}
+  debug ${lua_LIBRARIES_d}
   ${pthread_lib}
+  ${dl_lib}
   )

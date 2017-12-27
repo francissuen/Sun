@@ -5,4 +5,4 @@ GTAGS
 *build/
 config.h
 
-gbUtilsConfig.h
+*#*

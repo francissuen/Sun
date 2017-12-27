@@ -1,7 +1,7 @@
 #include "string.h"
 using gb::utils::string;
 
-#define _GB_UTILS_STRING_MAX_BUFFER_SIZE 12
+#define _GB_UTILS_STRING_MAX_BUFFER_SIZE 64
 
 bool string::operator==(const char* szStr)const
 {
