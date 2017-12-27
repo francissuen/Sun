@@ -16,124 +16,108 @@
 
 GB_UTILS_NS_BEGIN
 
-template<typename ... TaskArg>
-static void _task_thread(std::uint8_t threadIdx);
-
-template<typename ... TaskArg>
-class concurrency
+template<typename bindfunc_t>
+class task_base
 {
 public:
-    class task_t
+    /*
+     *@param func, threadCount is count of current left tasks, including this task
+     */
+    task_base(const bindfunc_t func, const std::uint8_t p = GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID) :
+	_bindFunc(func),
+	_p(p)
     {
-    public:
-	/*
-	 *@param func, threadCount is count of current left tasks, including this task
-	 */
-	task_t(const std::function<void(const std::uint8_t, const size_t, TaskArg ...)>& func, TaskArg ... arg, const std::uint8_t p = GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID) :
-	    _bindFunc(std::bind(func, std::placeholders::_1, std::placeholders::_2, arg ...)),
-	    _p(p)
-	    {
-	    }
+    }
 
-	task_t(const task_t& other) :
-	    _bindFunc(other._bindFunc),
-	    _p(other._p)
-	    {
-	    }
+    task_base(const task_base& other) :
+	_bindFunc(other._bindFunc),
+	_p(other._p)
+    {
+    }
 
-	task_t(task_t&& other) :
-	    _bindFunc(std::move(other._bindFunc)),
-	    _p(other._p)
-	    {
-	    }
+    task_base(task_base&& other) :
+	_bindFunc(std::move(other._bindFunc)),
+	_p(other._p)
+    {
+    }
 
-	void operator=(const task_t& other)
-	    {
-		_bindFunc = other._bindFunc;
-		_p = other._p;
-	    }
-	void operator=(task_t&& other)
-	    {
-		_bindFunc = std::move(other._bindFunc);
-		_p = other._p;
-	    }
+    void operator=(const task_base& other)
+    {
+	_bindFunc = other._bindFunc;
+	_p = other._p;
+    }
+    void operator=(task_base&& other)
+    {
+	_bindFunc = std::move(other._bindFunc);
+	_p = other._p;
+    }
 
 
-	bool operator<(const task_t& other)const { return _p < other._p; }
-	void run(const std::uint8_t threadIdx, const size_t taskCount)const { _bindFunc(threadIdx, taskCount); }
-    private:
-	std::function<void(const std::uint8_t, const size_t)> _bindFunc;
-	std::uint8_t _p;
-    };
+    bool operator<(const task_base& other)const { return _p < other._p; }
+    //	void run(const std::uint8_t threadIdx, const size_t taskCount)const { _bindFunc(threadIdx, taskCount); }
+protected:
+    bindfunc_t _bindFunc;
+    std::uint8_t _p;
+};
 
-
-    GB_SINGLETON(concurrency);
-    ~concurrency()
-	{
-	    done(true);
-	}
-public:
+template <typename task_t>
+class concurrency_base
+{
     /*
      *@param, threadCount, if threadCount == 0, then num of cores is used
      */
-    void initialize(std::uint8_t threadCount = 0)
-	{
-	    std::uint8_t count = threadCount == 0 ? std::thread::hardware_concurrency() : threadCount;
-	    assert(count != 0);
+    concurrency_base(const std::uint8_t threadCount)
+    {
+	_threadCount = threadCount == 0 ? std::thread::hardware_concurrency() : threadCount;
+	assert(_threadCount != 0);
 
-	    _bQuit = false;
-	    _bForceQuit = false;
-
-	    for (int i = 0; i < count; i++)
-	    {
-		_vThreads.push_back(std::thread(std::bind(_task_thread<TaskArg ...>, i)));
-	    }
-	}
-
+	_bQuit = false;
+	_bForceQuit = false;
+    }
     /*
      *@param, bForce, if !bForce, then block current thread until all pushed tasks completed,
      *else block current thread until all current running tasks completed
      */
     void done(bool bForceQuit = false)
+    {
 	{
-	    {
-		std::lock_guard<std::mutex> lck(_mtx);
-		if (!bForceQuit)
-		    _bQuit = true;
-		else
-		    _bForceQuit = true;
-	    }
-
-	    _cv.notify_all();
-
-	    _join();
+	    std::lock_guard<std::mutex> lck(_mtx);
+	    if (!bForceQuit)
+		_bQuit = true;
+	    else
+		_bForceQuit = true;
 	}
+
+	_cv.notify_all();
+
+	_join();
+    }
 
     /*
      *@brief, execute func when timeout expires until done()
      *@param, timeout, in milliseconds
      */
     void timeout_done(std::function<void(const size_t taskCount)> func, const std::uint32_t timeout = 1000)
+    {
 	{
-	    {
-		std::lock_guard<std::mutex> lck(_mtx);
-		_bQuit = true;
-	    }
+	    std::lock_guard<std::mutex> lck(_mtx);
+	    _bQuit = true;
+	}
 
-	    _cv.notify_all();
+	_cv.notify_all();
 
-	    std::unique_lock<std::mutex> lck(_mtx);
-	    size_t taskCount = 0;
-	    for (;;)
+	std::unique_lock<std::mutex> lck(_mtx);
+	size_t taskCount = 0;
+	for (;;)
 	    {
 		std::cv_status ret = _cv.wait_for(lck, std::chrono::milliseconds(timeout));
 		taskCount = _tasks.size();
 		lck.unlock();
 		if (taskCount == 0)
-		{
-		    func(taskCount);
-		    break;
-		}
+		    {
+			func(taskCount);
+			break;
+		    }
 
 		if (ret == std::cv_status::timeout)
 		    func(taskCount);
@@ -141,35 +125,33 @@ public:
 		lck.lock();
 	    }
 
-	    _join();
-	}
-
+	_join();
+    }
 
     void pushtask(const task_t& task)
+    {
 	{
-	    {
-		std::lock_guard<std::mutex> lck(_mtx);
-		_tasks.push(task);
-	    }
-
-	    _cv.notify_one();
+	    std::lock_guard<std::mutex> lck(_mtx);
+	    _tasks.push(task);
 	}
+
+	_cv.notify_one();
+    }
 
     void pushtask(task_t&& task)
+    {
 	{
-	    {
-		std::lock_guard<std::mutex> lck(_mtx);
-		_tasks.push(std::move(task));
-	    }
-
-	    _cv.notify_one();
+	    std::lock_guard<std::mutex> lck(_mtx);
+	    _tasks.push(std::move(task));
 	}
 
-    std::uint8_t get_threadscount()const { return _vThreads.size(); }
+	_cv.notify_one();
+    }
 
-    //retrive count in taskfunc, or timeoutfunc
-//	    size_t get_taskscount();
-private:
+    std::uint8_t get_threadscount()const { return _threadCount; }
+
+protected:
+    std::uint8_t _threadCount;
     std::vector<std::thread> _vThreads;
     bool _bQuit;
     bool _bForceQuit;
@@ -177,62 +159,142 @@ private:
     std::mutex _mtx;
     std::priority_queue<task_t> _tasks;
 
-    size_t _preTaskCount;
-    friend void _task_thread<TaskArg ...>(std::uint8_t threadIdx);
     void _join()
-	{
-	    std::for_each(_vThreads.begin(), _vThreads.end(), [](std::thread& th)
-			  {
-			      th.join();
-			  }
-		);
+    {
+	std::for_each(_vThreads.begin(), _vThreads.end(), [](std::thread& th)
+		      {
+			  th.join();
+		      }
+		      );
 
-	    _vThreads.clear();
-	}
-
-
+	_vThreads.clear();
+    }
 };
 
-template<typename ... TaskArg>
-static void _task_thread(std::uint8_t threadIdx)
-{
-    concurrency<TaskArg ...>& c = concurrency<TaskArg ...>::Instance();
-    std::unique_lock<std::mutex> lck(c._mtx);
-    std::condition_variable& cv = c._cv;
+// template<typename ... otherArgs>
+// class task_ti: public task_base<std::function<void(const std::uint8_t threadIdx)>>
+// {
+//  public:
+//     task_ti(const std::function<void(const std::uint8_t threadIdx, otherArgs ...)>& func,
+// 	    otherArgs ... args):
+// 	task_base(std::bind(func, std::placeholders::_1, args ...))
+// 	{}
+//     void run(const std::uint8_t threadIdx)const
+//     {
+// 	_bindFunc(threadIdx);
+//     }
+// };
 
-    std::priority_queue<typename concurrency<TaskArg ...>::task_t>& tasks = c._tasks;
-    bool& bQuit = c._bQuit;
-    bool& bForceQuit = c._bForceQuit;
-    for (;;)
-    {
-	cv.wait(lck, [&]()->bool
-		{
-		    return tasks.size() > 0 || bQuit || bForceQuit;
-		}
-	    );
-	if (!bForceQuit)
-	{
-	    const size_t taskCount = tasks.size();
-	    if (taskCount != 0)
-	    {
-		typename concurrency<TaskArg ...>::task_t task(tasks.top());
-		tasks.pop();
+#define _GB_UTILS_CONCURRENCY_TASK_DEFINE(name, task_base_bind_placeholders, bind_func_args, ...) \
+    template<typename ... otherArgs>					\
+    class name: public task_base<std::function<void(__VA_ARGS__)>>	\
+    {									\
+    public:								\
+	name(const std::function<void(__VA_ARGS__, otherArgs ...)>& func, \
+		otherArgs ... args):					\
+	    task_base(std::bind(func					\
+				GB_REMOVE_PARENTHESE			\
+				(,GB_REMOVE_PARENTHESE task_base_bind_placeholders) \
+				,args ...))				\
+	    {}								\
+	void run(__VA_ARGS__)const					\
+	{								\
+	    _bindFunc bind_func_args;					\
+	}								\
+    };    
 
-		lck.unlock();
+#define _GB_UNTILS_CONCURRENCY_DEFINE(name, task_t, task_thread_bind_args, task_run_args, ...) \
+    template <typename ... otherArgs>					\
+    class name: public concurrency_base<task_t<otherArgs ...>>		\
+    {									\
+    public:								\
+	name(const std::uint8_t threadCount = 0):			\
+	    concurrency_base<task_t<otherArgs ...>>(threadCount)	\
+	    {								\
+		for(std::uint8_t i = 0; i < this->_threadCount; i++)	\
+		    {							\
+			this->_vThreads.push_back(std::thread(std::bind task_thread_bind_args)); \
+		    }							\
+	    }								\
+    private:								\
+	static void _task_thread(concurrency_base<task_t<otherArgs ...>>* c __VA_ARGS__) \
+	{								\
+	    std::unique_lock<std::mutex> lck(c->_mtx);			\
+	    std::condition_variable& cv = c->_cv;			\
+	    std::priority_queue<task_t<otherArgs ...>>& tasks = c->_tasks; \
+	    bool& bQuit = c->_bQuit;					\
+	    bool& bForceQuit = c->_bForceQuit;				\
+	    for (;;)							\
+		{							\
+		    cv.wait(lck, [&]()->bool				\
+			    {						\
+				return tasks.size() > 0 || bQuit || bForceQuit; \
+			    }						\
+			    );						\
+		    if (!bForceQuit)					\
+			{						\
+			    const size_t taskCount = tasks.size();	\
+			    if (taskCount != 0)				\
+				{					\
+				    task_t<otherArgs ...> task(tasks.top()); \
+				    tasks.pop();			\
+				    lck.unlock();			\
+				    task.run task_run_args;		\
+				    lck.lock();				\
+				}					\
+			    else					\
+				{					\
+				    assert(bQuit);			\
+				    break;				\
+				}					\
+			}						\
+		    else						\
+			break;						\
+		}							\
+	}								\
+    };
 
-		task.run(threadIdx, taskCount);
+_GB_UTILS_CONCURRENCY_TASK_DEFINE(task_ti,
+				  (std::placeholders::_1),
+				  (threadIdx),
+				  const std::uint8_t threadIdx)
 
-		lck.lock();
-	    }
-	    else
-	    {
-		assert(bQuit);
-		break;
-	    }
-	}
-	else
-	    break;
-    }
-}
+_GB_UNTILS_CONCURRENCY_DEFINE(concurrency_ti,
+			      task_ti,
+			      (this, i),
+			      (threadIdx),
+			      , const std::uint8_t threadIdx)
+
+_GB_UTILS_CONCURRENCY_TASK_DEFINE(task_tc,
+				  (std::placeholders::_1),
+				  (taskCount),
+				  const size_t taskCount)
+
+_GB_UNTILS_CONCURRENCY_DEFINE(concurrency_tc,
+			      task_tc,
+			      (this),
+			      (taskCount))
+
+_GB_UTILS_CONCURRENCY_TASK_DEFINE(task_ti_tc,
+				  (std::placeholders::_1, std::placeholders::_2),
+				  (threadIdx, threadCount),
+				  const std::uint8_t threadIdx, const size_t threadCount)
+
+_GB_UNTILS_CONCURRENCY_DEFINE(concurrency_ti_tc,
+			      task_ti_tc,
+			      (this, i),
+			      (threadIdx, taskCount),
+			      , const size_t threadIdx)
+
+_GB_UTILS_CONCURRENCY_TASK_DEFINE(task, (), ())
+
+_GB_UNTILS_CONCURRENCY_DEFINE(concurrency
+			      task_ti_tc,
+			      (this, i),
+			      (threadIdx, taskCount),
+			      , const size_t threadIdx)
+
+
+
 
 GB_UTILS_NS_END

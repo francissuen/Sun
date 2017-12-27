@@ -50,6 +50,7 @@ inline void operator = (x const&){}
 	x = nullptr;				\
     }
 
+#define GB_REMOVE_PARENTHESE(...) __VA_ARGS__
 template<typename From, typename To>
 inline To* gb_safe_cast(From* from)
 {

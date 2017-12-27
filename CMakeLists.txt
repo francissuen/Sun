@@ -12,8 +12,6 @@ option(GB_UTILS_MULTI_THREADS "support multi-threads" ON)
 
 configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/src/config.h)
 
-set(LIB_NAME "gbUtils")
-
 set(srcs)
 gb_add_class(ns src srcs)
 gb_add_class(common src srcs)
@@ -28,7 +26,6 @@ if(GB_UTILS_LUA_API)
   gb_add_class(luatable src srcs)
 endif()
 
-
 # find_package(lua REQUIRED)
 # include_directories(SYSTEM ${lua_INCLUDE_DIRS})
 
@@ -40,35 +37,26 @@ gb_add_class(file src srcs)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(GB_UTILS_STATIC_LIB)
-  add_library(${LIB_NAME} STATIC
+  add_library(gbUtils
     ${srcs}
     )
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGB_UTILS_SHARED_LIB=1")
-  add_library(${LIB_NAME} SHARED
+  add_library(gbUtils SHARED
     ${srcs}
     )
 endif()
 
-if(GB_UTILS_LUA_API)
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/gbCMake/")
-  find_package(lua REQUIRED)
-  target_link_libraries(${LIB_NAME}
-    optimized ${lua_LIBRARIES}
-    debug ${lua_LIBRARIES_d}
-    )
-endif()
-
-set_target_properties(${LIB_NAME}
+set_target_properties(gbUtils
   PROPERTIES
-  DEBUG_OUTPUT_NAME ${LIB_NAME}d
-  RELEASE_OUTPUT_NAME ${LIB_NAME}
+  DEBUG_OUTPUT_NAME gbUtilsd
+  RELEASE_OUTPUT_NAME gbUtilsd
   )
 
 set(CMAKE_INSTALL_PREFIX ${GB_DEFAULT_INSTALL_DIR}/gbUtils)
 
 
-install(TARGETS ${LIB_NAME} ARCHIVE DESTINATION .)
+install(TARGETS gbUtils ARCHIVE DESTINATION .)
 
 set(headers)
 foreach(src IN LISTS srcs)

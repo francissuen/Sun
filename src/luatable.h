@@ -3,73 +3,49 @@
 #include "string.h"
 #include "luastate.h"
 #include <vector>
+#include <functional>
 
-#define _GB_UTILS_LUATABLE_GETTER_DECL(ret_type, name)	\
-    ret_type get_##name##_by_key(const char* key);	\
-    ret_type get_##name##_by_idx(const size_t idx);	\
-    std::vector<ret_type> get_##name##s();		
+#define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(ret_type, name)	\
+    ret_type get_##name##_by_key(const char* key) const;	\
+    ret_type get_##name##_by_idx(const size_t idx) const;	\
+    std::vector<ret_type> get_##name##s() const;		
 
 GB_UTILS_NS_BEGIN
 
-class luatable
+class luatable_mapper;
+
+struct luatable
+{
+    inline virtual ~luatable() {}
+    virtual void from_lua(const luatable_mapper& mapper) = 0;
+    inline virtual void to_lua(const
+#if defined(__GNUC__) || defined(__clang__)
+			       __attribute__((unused))
+#endif
+			       luatable_mapper& mapper) const {}
+
+    
+};
+
+class luatable_mapper
 {
 public:
-    luatable(const char* file, luastate& config_luastate);
+    luatable_mapper(const char* file, luastate& config_luastate);
 public:
     bool validate()const;
+    size_t objlen()const;
+    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Number, number);
+    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Integer, integer);
+    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(gb::utils::string, string);
     
-    _GB_UTILS_LUATABLE_GETTER_DECL(lua_Number, number);
-    _GB_UTILS_LUATABLE_GETTER_DECL(lua_Integer, integer);
-    _GB_UTILS_LUATABLE_GETTER_DECL(gb::utils::string, string);
-    
-    template<typename T> T get_table_by_key(const char* key)
-	{
-	    assert(key != nullptr);
-	    lua_getfield(_l, -1, key);
-	    if(lua_type(_l, -1) == LUA_TTABLE)
-	    {
-		T t(this);
-		lua_pop(_l, 1);
-		return t;
-	    }
-	    else
-	    {
-		lua_pop(_l, 1);
-		return T();
-	    }
-	}
-    
-    template<typename T> T get_table_by_idx(const size_t idx)
-	{
-	    assert(idx >= 1);
-	    lua_rawgeti(_l, -1, idx);
-	    if(lua_type(_l, -1) == LUA_TTABLE)
-	    {
-		T t(this);
-		lua_pop(_l, 1);
-		return t;
-	    }
-	    else
-	    {
-		lua_pop(_l, 1);
-		return T();
-	    }
-	}
+    void get_table_by_key(const char* key, luatable& table) const;
+    void get_table_by_idx(const size_t idx, luatable& table) const;
 
-    template<typename T> std::vector<T> get_tables()
-	{
-	    std::vector<T> ret;
-	    const size_t len = lua_objlen(_l, -1);
-	    for(size_t i = 1; i <= len; i++)
-	    {
-		ret.push_back(get_table_by_idx<T>(i));
-	    }
-	    return ret;
-	}
-    
+    void for_each(std::function<void(const size_t)> func) const;
+
     // scene::instantiate(const char* luafile)
     // 	{
-    // 	    luatable lt(luafile);
+    // 	    luatable_mapper lt(luafile);
     // 	    lt.get_cpps([](lua_State* l)
     // 			{
     // 			    Entity e;

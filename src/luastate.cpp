@@ -16,26 +16,36 @@ luastate::luastate()
     luaL_openlibs(_l);
 }
 
+luastate::~luastate()
+{
+    lua_close(_l);
+}
 bool luastate::dofile(const char* szLuaFile)
 {
     lua_pushcfunction(_l, _debug_traceback);
-    if(luaL_loadfile(_l, szLuaFile) !=0 )
+    const int errCode = luaL_loadfile(_l, szLuaFile);
+    if(errCode !=0 )
     {
-	logger::Instance().error(string("luastate::dofile luaL_loadfile err@ ") + szLuaFile);
+	logger::Instance().error(string("luastate::dofile luaL_loadfile err@ ")
+				 + lua_tostring(_l, -1)
+				 + ", file@ " + szLuaFile);
 	return false;
     }
-    return lua_pcall(_l, 0, 0, -2) == 0 ? true : false;
+    return lua_pcall(_l, 0, 1, -2) == 0 ? true : false;
 }
 
 bool luastate::dostring(const char* szLua)
 {
     lua_pushcfunction(_l, _debug_traceback);
-    if(luaL_loadstring(_l, szLua) !=0 )
+    const int errCode = luaL_loadstring(_l, szLua);
+    if(errCode !=0 )
     {
-	logger::Instance().error(string("luastate::dostring luaL_loadstring@ ") + szLua);
+	logger::Instance().error(string("luastate::dostring luaL_loadstring err@ ")
+				 + lua_tostring(_l, -1)
+				 + ", lua@ " + szLua);
 	return false;
     }
-    return lua_pcall(_l, 0, 0, -2) == 0 ? true : false;
+    return lua_pcall(_l, 0, 1, -2) == 0 ? true : false;
 }
 
 int luastate::_debug_traceback(lua_State* l)
@@ -67,8 +77,21 @@ lua_State* luastate::getstate()
     return _l;
 }
 
+luastate_mgr::luastate_mgr():
+    _threadCount(0),
+    _config_l(nullptr),
+    _logic_l(nullptr)
+{
+}
+
+luastate_mgr::~luastate_mgr()
+{
+    GB_SAFE_DELETE_ARRAY(_config_l);
+    GB_SAFE_DELETE_ARRAY(_logic_l);
+}
 void luastate_mgr::initialize(const unsigned char threadCount)
 {
+    assert(_threadCount == 0);
     _threadCount = threadCount;
     
     _config_l = new luastate[threadCount];
@@ -78,14 +101,14 @@ void luastate_mgr::initialize(const unsigned char threadCount)
 
 luastate& luastate_mgr::getconfig_state(const unsigned char threadIdx)
 {
-    assert(threadIdx > 0 && threadIdx < _threadCount);
+    assert(threadIdx >= 0 && threadIdx < _threadCount);
     
     return _config_l[threadIdx];
 }
 
 luastate& luastate_mgr::getlogic_state(const unsigned char threadIdx)
 {
-    assert(threadIdx > 0 && threadIdx < _threadCount);
+    assert(threadIdx >= 0 && threadIdx < _threadCount);
 
     return _logic_l[threadIdx];
 }

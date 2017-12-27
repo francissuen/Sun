@@ -1,27 +1,25 @@
 #include "../src/luatable.h"
 #include "../src/string.h"
 #include "../src/filesystem.h"
-#include <vector>
+#include <map>
 #include <algorithm>
 using namespace gb::utils;
 
 
-struct luatable_0
+struct luatable_0: luatable
 {
-    luatable_0(){}
-    luatable_0(luatable* tbl)
+    virtual void from_lua(const luatable_mapper& mapper) override
 	{
-	    assert(tbl != nullptr);
-	    if(tbl->validate())
+	    if(mapper.validate())
 	    {
-		a = tbl->get_integer_by_key("a");
-		b = tbl->get_number_by_key("b");
-		c = tbl->get_string_by_key("c");
+		a = mapper.get_integer_by_key("a");
+		b = mapper.get_number_by_key("b");
+		c = mapper.get_string_by_key("c");
 	    }
 	}
-    void print()
+    void print() const
 	{
-	logger::Instance().log(string("luatable_0:") + "a:" + a +
+	    logger::Instance().log(string("luatable_0:") + "a:" + a +
 			       ", b:" + b +
 			       ", c:" + c);
 	}
@@ -30,37 +28,50 @@ struct luatable_0
     string c;
 };
 
-struct luatable_1
+struct luatable_1:luatable
 {
 public:
-    luatable_1(){}
-    luatable_1(luatable* tbl)
+    ~luatable_1()
 	{
-	    assert(tbl != nullptr);
-	    vTbl0 = tbl->get_tables<luatable_0>();
+	    std::for_each(tbl0s.begin(), tbl0s.end(), [](std::pair<string, luatable_0*>&& t)
+			  {
+			      GB_SAFE_DELETE(t.second);
+			  });
+	}
+    virtual void from_lua(const luatable_mapper& mapper) override
+	{
+	    mapper.for_each([this, mapper](const size_t idx)
+			     {
+				 luatable_0* t = new luatable_0;
+				 mapper.get_table_by_idx(idx, *t);
+				 tbl0s.insert(std::pair<string, luatable_0*>(t->c, t));
+			     });
 	}
     void print()
 	{
-	    std::for_each(vTbl0.begin(), vTbl0.end(), [](luatable_0& t)
+	    std::for_each(tbl0s.begin(), tbl0s.end(), [](std::pair<string, luatable_0*>&& t)
 			  {
-			      t.print();
+			      t.second->print();
 			  });
 	}
-    std::vector<luatable_0> vTbl0;
+    std::map<string, luatable_0*> tbl0s;
 };
 
 int luatable_test()
 {
-    luatable tl("../luatable_0", luastate_mgr::Instance().getconfig_state());
-    if(tl.validate())
+    luastate_mgr::Instance().initialize();
+    luatable_mapper mapper(filesystem::Instance().get_absolute_path("../luatable_0.lua"), luastate_mgr::Instance().getconfig_state());
+    if(mapper.validate())
     {
-	luatable_0 lt0(&tl);
+	luatable_0 lt0;
+	lt0.from_lua(mapper);
 	lt0.print();
 
-	luatable tl1("../luatable_1", luastate_mgr::Instance().getconfig_state());
-	if(tl1.validate())
+	luatable_mapper mapper1(filesystem::Instance().get_absolute_path("../luatable_1.lua"), luastate_mgr::Instance().getconfig_state());
+	if(mapper1.validate())
 	{
-	    luatable_1 lt1(&tl1);
+	    luatable_1 lt1;
+	    lt1.from_lua(mapper1);
 	    lt1.print();
 	}
 	else

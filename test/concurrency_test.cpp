@@ -19,7 +19,7 @@ int concurrency_test(const unsigned int count = 1000)
 
     unsigned int idx = 0;
 
-	std::function<void(const std::uint8_t, const size_t)> task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount)
+    std::function<void(const std::uint8_t, const size_t)> task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
@@ -32,11 +32,11 @@ int concurrency_test(const unsigned int count = 1000)
     for(unsigned int i = 0; i < count; i++)
     {
 	concurrency<>::Instance().pushtask(
-		concurrency<>::task_t(task_func
+	    concurrency<>::task_t(task_func
 #ifdef _MSC_VER
-		, GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+				  , GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
 #endif
-	));
+		));
     }
 
     const unsigned int timeout = 100;
@@ -73,9 +73,9 @@ int concurrency_test(const unsigned int count = 1000)
     for(unsigned int i = 0; i < count; i++)
 	concurrency<int>::Instance().pushtask(concurrency<int>::task_t(task_func_2, i
 #ifdef _MSC_VER
-		, GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+								       , GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
 #endif
-	));
+						  ));
 
     concurrency<int>::Instance().done();
     logger::Instance().progress_done();

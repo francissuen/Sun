@@ -17,12 +17,12 @@ int main(int argc, char** argv)
 {
     try
     {
-	// test(args_test, argc, argv);
-	// test(string_test);
-	// test(logger_test);
-	// test(filesystem_test);
-	// test(concurrency_test);
-	// test(file_test);
+	test(args_test, argc, argv);
+	test(string_test);
+	test(logger_test);
+	test(filesystem_test);
+	test(concurrency_test);
+	test(file_test);
 	test(luatable_test);
     }
     catch(string& err)

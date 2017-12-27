@@ -1,8 +1,7 @@
--- basic type
-
 return
    {
-      a = 1,
-      b = 3.21
-      c = "hello world"
+      a = 123,
+      b = 3.21,
+      c = "hello world abc"
    }
+
