@@ -74,39 +74,39 @@ _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(string, string, LUA_TSTRING, lua_tostring, 
 
 void luatable_mapper::get_table_by_key(const char* key, luatable& table) const
 {
-assert(key != nullptr);
-lua_getfield(_l, -1, key);
-if(lua_type(_l, -1) == LUA_TTABLE)
-{
-table.from_lua(*this);
-lua_pop(_l, 1);
-}
-else
-{
-lua_pop(_l, 1);
-}
+    assert(key != nullptr);
+    lua_getfield(_l, -1, key);
+    if(lua_type(_l, -1) == LUA_TTABLE)
+    {
+	table.from_lua(*this);
+	lua_pop(_l, 1);
+    }
+    else
+    {
+	lua_pop(_l, 1);
+    }
 }
     
 void luatable_mapper::get_table_by_idx(const size_t idx, luatable& table) const
 {
-assert(idx >= 1);
-lua_rawgeti(_l, -1, idx);
-if(lua_type(_l, -1) == LUA_TTABLE)
-{
-table.from_lua(*this);
-lua_pop(_l, 1);
-}
-else
-{
-lua_pop(_l, 1);
-}
+    assert(idx >= 1);
+    lua_rawgeti(_l, -1, idx);
+    if(lua_type(_l, -1) == LUA_TTABLE)
+    {
+	table.from_lua(*this);
+	lua_pop(_l, 1);
+    }
+    else
+    {
+	lua_pop(_l, 1);
+    }
 }
 
 void luatable_mapper::for_each(std::function<void(const size_t idx)> func) const
 {
-const size_t len = lua_objlen(_l, -1);
-for(size_t i = 1; i <= len; i++)
-{
-func(i);
-}
+    const size_t len = lua_objlen(_l, -1);
+    for(size_t i = 1; i <= len; i++)
+    {
+	func(i);
+    }
 }
