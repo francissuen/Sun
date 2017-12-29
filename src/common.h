@@ -51,6 +51,93 @@ inline void operator = (x const&){}
     }
 
 #define GB_REMOVE_PARENTHESE(...) __VA_ARGS__
+
+#define _GB_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
+#define GB_EXCLUDE_FIRST_ARG(...) _GB_EXCLUDE_FIRST_ARG_(__VA_ARGS__)
+
+#define _GB_GET32TH_ARGS_(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, \
+		       _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
+		       _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, \
+		       _31, n, ...) n
+
+#define GB_GET32TH_ARGS(...) _GB_GET32TH_ARGS_(__VA_ARGS__)
+
+#define GB_GET32TH_ARGS_FROM_2ND(...) GB_GET32TH_ARGS(GB_EXCLUDE_FIRST_ARG(__VA_ARGS__))
+
+#ifdef _MSC_VER
+//#define _GB_COMMA__VA_ARGS__OTHER_(other, ...) , __VA_ARGS__, other
+#define GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(other, ...) GB_GET32TH_ARGS_FROM_2ND \
+    (_GB_COMMA__VA_ARGS__OTHER(other, __VA_ARGS__))
+#elif defined(__GNUC__) || defined(__clang__)
+//#define _GB_COMMA__VA_ARGS__OTHER_(other, ...) , ##__VA_ARGS__, other
+#define GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(other, ...) GB_GET32TH_ARGS_FROM_2ND \
+    (, ##__VA_ARGS__, other)
+
+#endif
+
+/**********************************/
+// GB__VA_ARGS__R_COMMA
+
+
+#define _GB__VA_ARGS__R_COMMA_ARGS_					\
+  _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, \
+  _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, \
+  _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, \
+  _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_EMPTY_ 
+
+
+// #define aa cc,cc,
+// #define ff(a, b, c) a
+// #define fff(...) ff(__VA_ARGS__)
+// int fff(aa) = 1;
+// #define tt fff(aa)
+// #define cc int
+// tt x = 1;
+
+#define GB__VA_ARGS__R_COMMA(...) GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER \
+  (_GB__VA_ARGS__R_COMMA_ARGS_, ##__VA_ARGS__)
+
+
+int func(int a, int b){}
+#define aa GB__VA_ARGS__R_COMMA()
+
+#define _GB_COMMA_ -
+
+#define _GB_EMPTY_ coma
+#define coma
+int a = func(1 aa 2);
+static_assert(2 aa 1 == 1, "er");
+/**********************************/
+
+/**********************************/
+// GB_ARGC, support 0-31 args
+
+#define _GB_ARGC_GET32TH_PRESET_ARGS_ 31, 30, 	\
+	29, 28, 27, 26, 25, 24, 23, 22, 21, 20, \
+	19, 18, 17, 16, 15, 14, 13, 12, 11, 10, \
+	9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+
+// trailing comma suppressing
+//https://msdn.microsoft.com/en-us/library/ms177415.aspx
+//https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html 
+#ifdef _MSC_VER
+#define GB_ARGC(...)							\
+    GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(_GB_ARGC_GET32TH_PRESET_ARGS_, __VA_ARGS__)
+#elif defined(__GNUC__) || defined(__clang__)
+#define GB_ARGC(...)							\
+    GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(_GB_ARGC_GET32TH_PRESET_ARGS_, ##__VA_ARGS__)
+#endif
+
+static_assert( GB_ARGC() == 0, "GB_ARGC error 0");
+static_assert( GB_ARGC(a) == 1, "GB_ARGC error 1");
+static_assert( GB_ARGC(a, a) == 2, "GB_ARGC error 2");
+static_assert(GB_ARGC(a, a, a, a, a, a, a, a, a, a,
+ 		      a, a, a, a, a, a, a, a, a, a,
+		      a, a, a, a, a, a, a, a, a, a,
+ 		      a) == 31, "GB_ARGC error 31");
+
+/**********************************/
+
 template<typename From, typename To>
 inline To* gb_safe_cast(From* from)
 {
