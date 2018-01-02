@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 
 #define GB_SINGLETON(x)			\
     public:					\
@@ -65,25 +66,23 @@ inline void operator = (x const&){}
 #define GB_GET32TH_ARGS_FROM_2ND(...) GB_GET32TH_ARGS(GB_EXCLUDE_FIRST_ARG(__VA_ARGS__))
 
 #ifdef _MSC_VER
-//#define _GB_COMMA__VA_ARGS__OTHER_(other, ...) , __VA_ARGS__, other
 #define GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(other, ...) GB_GET32TH_ARGS_FROM_2ND \
     (_GB_COMMA__VA_ARGS__OTHER(other, __VA_ARGS__))
 #elif defined(__GNUC__) || defined(__clang__)
-//#define _GB_COMMA__VA_ARGS__OTHER_(other, ...) , ##__VA_ARGS__, other
 #define GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(other, ...) GB_GET32TH_ARGS_FROM_2ND \
     (, ##__VA_ARGS__, other)
 
 #endif
 
 /**********************************/
-// GB__VA_ARGS__R_COMMA
+// GB_SMART_COMMA
 
 
-#define _GB__VA_ARGS__R_COMMA_ARGS_					\
+#define _GB_SMART_COMMA_ARGS_						\
   _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, \
   _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, \
   _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, \
-  _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_EMPTY_ 
+  _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_COMMA_, _GB_EMPTY_
 
 
 // #define aa cc,cc,
@@ -94,19 +93,19 @@ inline void operator = (x const&){}
 // #define cc int
 // tt x = 1;
 
-#define GB__VA_ARGS__R_COMMA(...) GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER \
-  (_GB__VA_ARGS__R_COMMA_ARGS_, ##__VA_ARGS__)
+#define _GB_SMART_COMMA_(...) GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER \
+  (_GB_SMART_COMMA_ARGS_, ##__VA_ARGS__)
 
+// prevent _GB_COMMA_ expanding issue
+#define _GB_COMMA_REAL_ ,
 
-int func(int a, int b){}
-#define aa GB__VA_ARGS__R_COMMA()
+#define _GB_EMPTY_REAL_
 
-#define _GB_COMMA_ -
+#define GB_MERGE(a, b) a##b
+#define _GB_SMART_COMMA_REAL_(a) GB_MERGE(a, REAL_)
 
-#define _GB_EMPTY_ coma
-#define coma
-int a = func(1 aa 2);
-static_assert(2 aa 1 == 1, "er");
+#define GB_SMART_COMMA(...) _GB_SMART_COMMA_REAL_(_GB_SMART_COMMA_(__VA_ARGS__))
+
 /**********************************/
 
 /**********************************/
@@ -123,7 +122,7 @@ static_assert(2 aa 1 == 1, "er");
 #ifdef _MSC_VER
 #define GB_ARGC(...)							\
     GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(_GB_ARGC_GET32TH_PRESET_ARGS_, __VA_ARGS__)
-#elif defined(__GNUC__) || defined(__clang__)
+#elif defined(__GNUG__) || defined(__clang__)
 #define GB_ARGC(...)							\
     GB_SMART_GET32TH_FROM_COMMA__VA_ARGS__OTHER(_GB_ARGC_GET32TH_PRESET_ARGS_, ##__VA_ARGS__)
 #endif

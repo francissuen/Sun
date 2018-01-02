@@ -5,21 +5,19 @@
 #include "../src/string.h"
 #include "../src/time.h"
 
-using gb::utils::concurrency;
+using namespace gb::utils;
 
-using gb::utils::logger;
-using gb::utils::string;
-using gb::utils::time;
 int concurrency_test(const unsigned int count = 1000)
 {
     const std::uint8_t threadCount = 4;
-    concurrency<>::Instance().initialize(threadCount);
-
+    
+    concurrency_ti<> c_ti(threadCount);
+    
     std::atomic<std::uint8_t> threadSafe_val[threadCount]{{0}};
 
     unsigned int idx = 0;
 
-    std::function<void(const std::uint8_t, const size_t)> task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount)
+    std::function<void(const std::uint8_t)> task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx)
 	{
 	    threadSafe_val[threadIdx]++;
 	    threadSafe_val[threadIdx]--;
@@ -31,12 +29,11 @@ int concurrency_test(const unsigned int count = 1000)
     
     for(unsigned int i = 0; i < count; i++)
     {
-	concurrency<>::Instance().pushtask(
-	    concurrency<>::task_t(task_func
+	c_ti.pushtask(task_ti<>(task_func
 #ifdef _MSC_VER
-				  , GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+				, GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
 #endif
-		));
+			  ));
     }
 
     const unsigned int timeout = 100;
@@ -47,7 +44,7 @@ int concurrency_test(const unsigned int count = 1000)
 
 	};
 
-    concurrency<>::Instance().timeout_done(timeout_func, timeout);
+    c_ti.timeout_done(timeout_func, timeout);
     logger::Instance().progress_done();
 
     logger::Instance().log("task_func_2");
@@ -69,15 +66,15 @@ int concurrency_test(const unsigned int count = 1000)
 	    
 	};
 
-    concurrency<int>::Instance().initialize(threadCount);
+    concurrency_ti_tc<int> c_ti_tc(threadCount);
     for(unsigned int i = 0; i < count; i++)
-	concurrency<int>::Instance().pushtask(concurrency<int>::task_t(task_func_2, i
+	c_ti_tc.pushtask(task_ti_tc<int>(task_func_2, i
 #ifdef _MSC_VER
-								       , GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+					 , GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
 #endif
 						  ));
 
-    concurrency<int>::Instance().done();
+    c_ti_tc.done();
     logger::Instance().progress_done();
     
     return idx == count ? 0 : 1;
