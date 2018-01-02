@@ -63,6 +63,7 @@ protected:
 template <typename task_t>
 class concurrency_base
 {
+protected:
     /*
      *@param, threadCount, if threadCount == 0, then num of cores is used
      */
@@ -74,6 +75,7 @@ class concurrency_base
 	_bQuit = false;
 	_bForceQuit = false;
     }
+public:
     /*
      *@param, bForce, if !bForce, then block current thread until all pushed tasks completed,
      *else block current thread until all current running tasks completed
@@ -190,12 +192,12 @@ protected:
     class name: public task_base<std::function<void(__VA_ARGS__)>>	\
     {									\
     public:								\
-	name(const std::function<void(__VA_ARGS__, otherArgs ...)>& func, \
+	name(const std::function<void(__VA_ARGS__ GB_SMART_COMMA(__VA_ARGS__) otherArgs ...)>& func, \
 		otherArgs ... args):					\
-	    task_base(std::bind(func					\
-				GB_REMOVE_PARENTHESE			\
-				(,GB_REMOVE_PARENTHESE task_base_bind_placeholders) \
-				,args ...))				\
+	    task_base(std::bind(func,					\
+				GB_REMOVE_PARENTHESE task_base_bind_placeholders \
+				GB_SMART_COMMA task_base_bind_placeholders \
+				args ...))				\
 	    {}								\
 	void run(__VA_ARGS__)const					\
 	{								\
@@ -217,7 +219,7 @@ protected:
 		    }							\
 	    }								\
     private:								\
-	static void _task_thread(concurrency_base<task_t<otherArgs ...>>* c __VA_ARGS__) \
+	static void _task_thread(concurrency_base<task_t<otherArgs ...>>* c, ##__VA_ARGS__) \
 	{								\
 	    std::unique_lock<std::mutex> lck(c->_mtx);			\
 	    std::condition_variable& cv = c->_cv;			\
@@ -254,6 +256,7 @@ protected:
 	}								\
     };
 
+// task_ti(threadIdx, ...)
 _GB_UTILS_CONCURRENCY_TASK_DEFINE(task_ti,
 				  (std::placeholders::_1),
 				  (threadIdx),
@@ -263,8 +266,9 @@ _GB_UNTILS_CONCURRENCY_DEFINE(concurrency_ti,
 			      task_ti,
 			      (this, i),
 			      (threadIdx),
-			      , const std::uint8_t threadIdx)
+			      const std::uint8_t threadIdx)
 
+// task_tc(taskCount, ...)
 _GB_UTILS_CONCURRENCY_TASK_DEFINE(task_tc,
 				  (std::placeholders::_1),
 				  (taskCount),
@@ -275,6 +279,7 @@ _GB_UNTILS_CONCURRENCY_DEFINE(concurrency_tc,
 			      (this),
 			      (taskCount))
 
+// task_ti_tc(threadIdx, taskCount)
 _GB_UTILS_CONCURRENCY_TASK_DEFINE(task_ti_tc,
 				  (std::placeholders::_1, std::placeholders::_2),
 				  (threadIdx, threadCount),
@@ -284,17 +289,14 @@ _GB_UNTILS_CONCURRENCY_DEFINE(concurrency_ti_tc,
 			      task_ti_tc,
 			      (this, i),
 			      (threadIdx, taskCount),
-			      , const size_t threadIdx)
+			      const size_t threadIdx)
 
+// task(...)
 _GB_UTILS_CONCURRENCY_TASK_DEFINE(task, (), ())
 
-_GB_UNTILS_CONCURRENCY_DEFINE(concurrency
-			      task_ti_tc,
-			      (this, i),
-			      (threadIdx, taskCount),
-			      , const size_t threadIdx)
-
-
-
+_GB_UNTILS_CONCURRENCY_DEFINE(concurrency,
+			      task,
+			      (this),
+			      ())
 
 GB_UTILS_NS_END
