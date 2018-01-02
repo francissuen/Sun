@@ -215,11 +215,13 @@ protected:
 	    {								\
 		for(std::uint8_t i = 0; i < this->_threadCount; i++)	\
 		    {							\
-			this->_vThreads.push_back(std::thread(std::bind task_thread_bind_args)); \
+			this->_vThreads.push_back(std::thread(std::bind (_task_thread, \
+									 GB_REMOVE_PARENTHESE \
+									 task_thread_bind_args ))); \
 		    }							\
 	    }								\
     private:								\
-	static void _task_thread(concurrency_base<task_t<otherArgs ...>>* c, ##__VA_ARGS__) \
+	static void _task_thread(name* c, ##__VA_ARGS__) \
 	{								\
 	    std::unique_lock<std::mutex> lck(c->_mtx);			\
 	    std::condition_variable& cv = c->_cv;			\
