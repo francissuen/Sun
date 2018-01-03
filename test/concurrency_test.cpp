@@ -29,7 +29,7 @@ int concurrency_test(const unsigned int count = 1000)
     
     for(unsigned int i = 0; i < count; i++)
     {
-	c_ti.pushtask(task_ti<>(task_func
+	c_ti.pushtask(concurrency_ti<>::task(task_func
 #ifdef _MSC_VER
 				, GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
 #endif
@@ -56,19 +56,19 @@ int concurrency_test(const unsigned int count = 1000)
 	    threadSafe_val[threadIdx]--;
 	    assert(threadSafe_val[threadIdx] == 0);
 
-	    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+	    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	    float value = float(count - (taskCount - 1)) / count;
 	    
 	    {
 		std::lock_guard<std::mutex> lck(mtx);
-		logger::Instance().progress(value, string("arg:") + arg);	
+		logger::Instance().progress(value, string("arg:") + arg);
 	    }
 	    
 	};
 
     concurrency_ti_tc<int> c_ti_tc(threadCount);
     for(unsigned int i = 0; i < count; i++)
-	c_ti_tc.pushtask(task_ti_tc<int>(task_func_2, i
+	c_ti_tc.pushtask(concurrency_ti_tc<int>::task(task_func_2, i
 #ifdef _MSC_VER
 					 , GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
 #endif
@@ -76,6 +76,6 @@ int concurrency_test(const unsigned int count = 1000)
 
     c_ti_tc.done();
     logger::Instance().progress_done();
-    
+
     return idx == count ? 0 : 1;
 }
