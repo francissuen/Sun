@@ -54,16 +54,28 @@ private:					\
 
 #define GB_EXPAND(...) __VA_ARGS__
 #define GB_MERGE(a, b) a##b
+#define GB_CALL(func, param) func param
 
 #define _GB_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
+#ifdef _MSC_VER
+//MS preprocessor issue. see https://stackoverflow.com/questions/48088834/how-to-implement-exclude-first-argument-macro-in-msvc
+#define GB_EXCLUDE_FIRST_ARG(...) GB_CALL(_GB_EXCLUDE_FIRST_ARG_, (__VA_ARGS__))
+#else
 #define GB_EXCLUDE_FIRST_ARG(...) _GB_EXCLUDE_FIRST_ARG_(__VA_ARGS__)
+#endif
+
 
 #define _GB_GET32TH_ARGS_(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10,	\
 			  _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
 			  _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, \
 			  _31, n, ...) n
 
+#ifdef _MSC_VER
+#define GB_GET32TH_ARGS(...) GB_CALL(_GB_GET32TH_ARGS_, (__VA_ARGS__))
+#else
 #define GB_GET32TH_ARGS(...) _GB_GET32TH_ARGS_(__VA_ARGS__)
+#endif
+
 
 #define GB_GET32TH_ARGS_FROM_2ND(...) GB_GET32TH_ARGS(GB_EXCLUDE_FIRST_ARG(__VA_ARGS__))
 
