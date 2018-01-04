@@ -31,7 +31,7 @@ cd build			# cd to test build dir
 
 if [ "$1" = "-c" ]		# clean
 then
-    rm -rfv build/* 
+    rm -rfv ./* 
 fi
 
 cmake .. && cmake --build . && 	./gbtest -d -n hello -c 100 world fsgb # build and run
