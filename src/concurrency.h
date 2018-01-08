@@ -23,7 +23,7 @@ public:
     /*
      *@param func, threadCount is count of current left tasks, including this task
      */
-    _task_base(const bindfunc_t func, const std::uint8_t p = GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID) :
+    _task_base(const bindfunc_t func, const std::uint8_t p) :
 	_bindFunc(func),
 	_p(p)
 	{
@@ -193,11 +193,11 @@ protected:
     {									\
     public:								\
 	name(const std::function<void(__VA_ARGS__ GB__VA_ARGS__COMMA(__VA_ARGS__) otherArgs ...)>& func, \
-	     otherArgs ... args):					\
+	     otherArgs ... args, const std::uint8_t p = GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID):					\
 	    _task_base(std::bind(func,					\
 				 GB_EXPAND task_base_bind_placeholders	\
 				 GB__VA_ARGS__COMMA task_base_bind_placeholders \
-				 args ...))				\
+				 args ...), p)				\
 	{}								\
 	void run(__VA_ARGS__)const					\
 	{								\
@@ -292,7 +292,7 @@ _GB_UNTILS_CONCURRENCY_DEFINE(concurrency_ti_tc,
 			      _task_ti_tc,
 			      (this, i),
 			      (threadIdx, taskCount),
-			      const size_t threadIdx)
+			      const std::uint8_t threadIdx)
 
 // task(...)
 _GB_UTILS_CONCURRENCY_TASK_DEFINE(_task, (), ())
