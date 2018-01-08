@@ -50,7 +50,7 @@ endif()
 set_target_properties(gbUtils
   PROPERTIES
   DEBUG_OUTPUT_NAME gbUtilsd
-  RELEASE_OUTPUT_NAME gbUtilsd
+  RELEASE_OUTPUT_NAME gbUtils
   )
 
 set(CMAKE_INSTALL_PREFIX ${GB_DEFAULT_INSTALL_DIR}/gbUtils)
