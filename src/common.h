@@ -115,8 +115,14 @@ private:					\
 
 #define _GB__VA_ARGS__COMMA_MERGE_(a) GB_MERGE(a, REAL_)
 
+#ifdef _MSC_VER
+#define _GB__VA_ARGS__COMMA_MERGE_MSC_WRAPPER_(a) _GB__VA_ARGS__COMMA_MERGE_(a)
+#define GB__VA_ARGS__COMMA(...) _GB__VA_ARGS__COMMA_MERGE_MSC_WRAPPER_ \
+    (_GB__VA_ARGS__COMMA_(__VA_ARGS__)) 
+#elif
 #define GB__VA_ARGS__COMMA(...) _GB__VA_ARGS__COMMA_MERGE_	\
     (_GB__VA_ARGS__COMMA_(__VA_ARGS__)) 
+#endif
 /**********************************/
 
 /**********************************/

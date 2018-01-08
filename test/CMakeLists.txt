@@ -26,3 +26,7 @@ target_link_libraries(gbtest
   ${pthread_lib}
   ${dl_lib}
   )
+
+set_target_properties(gbtest
+  PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}")
