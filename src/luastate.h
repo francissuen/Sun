@@ -29,7 +29,10 @@ class luastate_mgr
     GB_SINGLETON_EXCLUDECTOR(luastate_mgr);
     ~luastate_mgr();
 public:
-    void initialize(const unsigned char threadCount = 1);
+	/**
+	*@param, if threadCount == 0, then using num of cores
+	*/
+    void initialize(const unsigned char threadCount = 0);
     luastate& getconfig_state(const unsigned char threadIdx = 0);
     luastate& getlogic_state(const unsigned char threadIdx = 0);
 private:
