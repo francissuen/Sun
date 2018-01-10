@@ -7,6 +7,8 @@ extern "C"
 #include <cassert>
 #include "logger.h"
 #include "string.h"
+#include <thread>
+
 using namespace gb::utils;
 
 luastate::luastate()
@@ -92,10 +94,9 @@ luastate_mgr::~luastate_mgr()
 void luastate_mgr::initialize(const unsigned char threadCount)
 {
     assert(_threadCount == 0);
-    _threadCount = threadCount;
-    
-    _config_l = new luastate[threadCount];
-    _logic_l = new luastate[threadCount];
+	_threadCount = threadCount == 0 ? std::thread::hardware_concurrency() : threadCount;
+    _config_l = new luastate[_threadCount];
+    _logic_l = new luastate[_threadCount];
     
 }
 

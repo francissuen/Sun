@@ -52,6 +52,44 @@ private:					\
 	    x = nullptr;			\
 	}
 
+#define GB_PROPERTY_R(type, name)		\
+    private:					\
+    type _##name;				\
+public:						\
+inline const type& Get##name()const		\
+{						\
+    return _##name;				\
+}
+
+#define GB_PROPERTY_W(type, name)		\
+    private:					\
+    type _##name;				\
+public:						\
+inline void Set##name(const type& val)		\
+{						\
+    _##name = val;				\
+}						\
+inline void Set##name(type&& val)		\
+{						\
+    _##name = std::move(val);			\
+}
+
+#define GB_PROPERTY(type, name)			\
+    private:					\
+    type _##name;				\
+public:						\
+inline const type& Get##name()const		\
+{						\
+    return _##name;				\
+}						\
+inline void Set##name(const type& val)		\
+{						\
+    _##name = val;				\
+}						\
+inline void Set##name(type&& val)		\
+{						\
+    _##name = std::move(val);			\
+}
 #define GB_EXPAND(...) __VA_ARGS__
 #define GB_MERGE(a, b) a##b
 #define GB_CALL(func, param) func param

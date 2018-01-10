@@ -99,3 +99,15 @@ private:
 };
 
 GB_UTILS_NS_END
+
+namespace std
+{
+    template <>
+    struct hash<gb::utils::string>
+    {
+	std::size_t operator()(const gb::utils::string& str) const noexcept
+	    {
+		return std::hash<std::string>()((std::string)str);
+	    }
+    };
+}

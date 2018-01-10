@@ -33,6 +33,6 @@ int main(int argc, char** argv)
     {
 	logger::Instance().error("unknown error");
     }
-    
+	::getchar();
     return 0;
 }
