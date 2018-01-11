@@ -22,5 +22,9 @@ int string_test()
     assert((string("hello") + "world" + 'x') != "helloworld");
 
     print_str("hello" + string("world"));
+
+	string str = "world";
+	print_str(string("hello") + str);
+
     return 0;
 }

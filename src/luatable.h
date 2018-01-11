@@ -36,6 +36,7 @@ public:
 public:
     bool validate()const;
     size_t objlen()const;
+	bool has_key(const char* key)const;
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Number, number);
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Integer, integer);
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(gb::utils::string, string);
@@ -123,6 +124,7 @@ public:
     // 	}
 private:
     lua_State* _l;
+	GB_PROPERTY_R(File, gb::utils::string);
 };
 
 GB_UTILS_NS_END

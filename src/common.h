@@ -2,6 +2,9 @@
 #include <cassert>
 #include <iostream>
 
+////////////////////////////////
+// common useful macros
+////////////////////////////////
 #define GB_SINGLETON(x)				\
     public:					\
     static inline x& Instance()			\
@@ -10,9 +13,9 @@
 	return _instance;			\
     }						\
 private:					\
- inline x(){};					\
- inline x(x const&) {}				\
- inline void operator = (x const&){}
+inline x(){};					\
+inline x(x const&) {}				\
+inline void operator = (x const&){}
 
 #define GB_SINGLETON_EXCLUDECTOR(x)		\
     public:					\
@@ -22,9 +25,9 @@ private:					\
 	return _instance;			\
     }						\
 private:					\
- x();						\
- inline x(x const&) {}				\
- inline void operator = (x const&){}
+x();						\
+inline x(x const&) {}				\
+inline void operator = (x const&){}
 
 #define GB_FRIEND_BINARY_OPERATOR_DECLARE(return_t, operator_, operand_1_t, operand_2_t) \
     friend return_t operator operator_ (operand_1_t, operand_2_t);	\
@@ -40,59 +43,70 @@ private:					\
 
 #define GB_SAFE_DELETE_ARRAY(x)			\
     if(x != nullptr)				\
-	{					\
-	    delete [] x;			\
-	    x = nullptr;			\
-	}
+    {						\
+	delete [] x;				\
+	x = nullptr;				\
+    }
 
 #define GB_SAFE_DELETE(x)			\
     if(x != nullptr)				\
-	{					\
-	    delete x;				\
-	    x = nullptr;			\
-	}
+    {						\
+	delete x;				\
+	x = nullptr;				\
+    }
 
-#define GB_PROPERTY_R(type, name)		\
-    private:					\
-    type _##name;				\
-public:						\
-inline const type& Get##name()const		\
-{						\
-    return _##name;				\
-}
-
-#define GB_PROPERTY_W(type, name)		\
-    private:					\
-    type _##name;				\
-public:						\
-inline void Set##name(const type& val)		\
-{						\
-    _##name = val;				\
-}						\
-inline void Set##name(type&& val)		\
-{						\
-    _##name = std::move(val);			\
-}
-
-#define GB_PROPERTY(type, name)			\
-    private:					\
-    type _##name;				\
-public:						\
-inline const type& Get##name()const		\
-{						\
-    return _##name;				\
-}						\
-inline void Set##name(const type& val)		\
-{						\
-    _##name = val;				\
-}						\
-inline void Set##name(type&& val)		\
-{						\
-    _##name = std::move(val);			\
-}
 #define GB_EXPAND(...) __VA_ARGS__
 #define GB_MERGE(a, b) a##b
 #define GB_CALL(func, param) func param
+
+// using variadic macro for the type contains comma, such as std::map<int, int>
+#define GB_PROPERTY_R(name, ...)		\
+    private:					\
+    __VA_ARGS__ _##name;			\
+public:						\
+inline const __VA_ARGS__ & Get##name()const	\
+{						\
+    return _##name;				\
+}						\
+inline __VA_ARGS__& Get##name()			\
+{						\
+    return _##name;				\
+}
+
+#define GB_PROPERTY_W(name, ...)		\
+    private:					\
+    __VA_ARGS__ _##name;			\
+public:						\
+inline void Set##name(const __VA_ARGS__& val)	\
+{						\
+    _##name = val;				\
+}						\
+inline void Set##name(__VA_ARGS__&& val)	\
+{						\
+    _##name = std::move(val);			\
+}						
+
+
+#define GB_PROPERTY(name, ...)			\
+    private:					\
+    __VA_ARGS__ _##name;			\
+public:						\
+inline const __VA_ARGS__& Get##name()const	\
+{						\
+    return _##name;				\
+}						\
+inline void Set##name(const __VA_ARGS__& val)	\
+{						\
+    _##name = val;				\
+}						\
+inline void Set##name(__VA_ARGS__&& val)	\
+{						\
+    _##name = std::move(val);			\
+}						\
+inline __VA_ARGS__& Get##name()			\
+{						\
+    return _##name;				\
+}
 
 #define _GB_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
 #ifdef _MSC_VER
@@ -155,9 +169,9 @@ inline void Set##name(type&& val)		\
 
 #ifdef _MSC_VER
 #define _GB__VA_ARGS__COMMA_MERGE_MSC_WRAPPER_(a) _GB__VA_ARGS__COMMA_MERGE_(a)
-#define GB__VA_ARGS__COMMA(...) _GB__VA_ARGS__COMMA_MERGE_MSC_WRAPPER_ \
+#define GB__VA_ARGS__COMMA(...) _GB__VA_ARGS__COMMA_MERGE_MSC_WRAPPER_	\
     (_GB__VA_ARGS__COMMA_(__VA_ARGS__)) 
-#elif
+#else
 #define GB__VA_ARGS__COMMA(...) _GB__VA_ARGS__COMMA_MERGE_	\
     (_GB__VA_ARGS__COMMA_(__VA_ARGS__)) 
 #endif
@@ -191,20 +205,61 @@ static_assert(GB_ARGC(a, a, a, a, a, a, a, a, a, a,
     static_assert(GB_ARGC(__VA_ARGS__) == 0 || GB_ARGC(__VA_ARGS__) == 1, \
 		  "GB_ASSERT can take only zero or one MSG arg");	\
     if(!(condition))							\
-	{								\
-	    std::cerr << "**************** GB_ASSERT FAILED ****************" \
-		      << std::endl;					\
-	    std::cerr << "CONDITION@ " << #condition << std::endl;	\
-	    std::cerr << "LINE@ " << __LINE__ << std::endl		\
-		      << "FILE@ " << __FILE__ << std::endl;		\
-	    std::cerr << "MSG@ " GB__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__ \
-		      << std::endl;					\
-	    std::cerr << "**************** GB_ASSERT FAILED ****************" \
-		      << std::endl;					\
-	    assert(false);						\
-	}
+    {									\
+     std::cerr << "**************** GB_ASSERT FAILED ****************"	\
+	       << std::endl;						\
+     std::cerr << "CONDITION@ " << #condition << std::endl;		\
+     std::cerr << "LINE@ " << __LINE__ << std::endl			\
+	       << "FILE@ " << __FILE__ << std::endl;			\
+     std::cerr << "MSG@ " GB__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__	\
+	       << std::endl;						\
+     std::cerr << "**************** GB_ASSERT FAILED ****************"	\
+	       << std::endl;						\
+     assert(false);							\
+    }
 #endif
 
+////////////////////////////////
+// type tarits
+////////////////////////////////
+namespace gb
+{
+#include <type_traits>
+    template <typename T>
+    struct rm_cv_ref { using type = T; };
+    // specialization
+#define _GB_RM_CV_REF_SPEC_(cv_ref)	\
+    template <typename T> struct rm_cv_ref< cv_ref T> { using type = T; };
+
+    // const | non-const, volatile | non-volatile, l-ref(&) | r-ref(&&) | non-ref. 2*2*3=12
+    _GB_RM_RV_REF_SPEC_(const volatile &);
+    _GB_RM_RV_REF_SPEC_(const volatile &&);
+    _GB_RM_RV_REF_SPEC_(const volatile);
+    _GB_RM_RV_REF_SPEC_(const &);
+    _GB_RM_RV_REF_SPEC_(const &&);
+    _GB_RM_RV_REF_SPEC_(const );
+    _GB_RM_RV_REF_SPEC_(volatile &);
+    _GB_RM_RV_REF_SPEC_(volatile &&);
+    _GB_RM_RV_REF_SPEC_(volatile);
+    _GB_RM_RV_REF_SPEC_(&);
+    _GB_RM_RV_REF_SPEC_(&&);
+//    _GB_RM_RV_REF_SPEC_();
+    template<bool value, typename T>
+    struct enable_if_t_no_cv_ref {};
+    template<typename T>
+    struct enable_if_t_no_cv_ref<true, T> { using type = T; }
+    
+    template <typename T>
+    struct is_std_string: false_type {};
+    template <> struct is_std_string <std::string> : std::true_type {};
+
+	
+}
+
+
+////////////////////////////////
+// misc
+////////////////////////////////
 template<typename From, typename To>
 inline To* gb_safe_cast(From* from)
 {
@@ -226,3 +281,5 @@ inline To& gb_safe_cast(From& from)
     return static_cast<To&>(from);
 #endif    
 }
+
+

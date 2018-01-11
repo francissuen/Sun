@@ -41,14 +41,14 @@ struct luatable_1
 public:
 	~luatable_1()
 	{
-		std::for_each(tbl0s.begin(), tbl0s.end(), [](std::pair<string, luatable_0*>&& t)
+		std::for_each(tbl0s.begin(), tbl0s.end(), [](std::pair<const string, luatable_0*>& t)
 		{
 			GB_SAFE_DELETE(t.second);
 		});
 	}
 	void from_lua(const luatable_mapper& mapper)
 	{
-		mapper.for_each([this, mapper](const size_t idx)
+		mapper.for_each([this, &mapper](const size_t idx)
 		{
 			luatable_0* t = new luatable_0(mapper.get_table_by_idx<luatable_0>(idx));
 			tbl0s.insert(std::pair<string, luatable_0*>(t->c, t));
@@ -56,12 +56,12 @@ public:
 	}
 	void print()
 	{
-		std::for_each(tbl0s.begin(), tbl0s.end(), [](std::pair<string, luatable_0*>&& t)
+		std::for_each(tbl0s.begin(), tbl0s.end(), [](std::pair<const string, luatable_0*>& t)
 		{
 			t.second->print();
 		});
 	}
-	std::map<string, luatable_0*> tbl0s;
+	std::map<const string, luatable_0*> tbl0s;
 };
 
 int luatable_test()
