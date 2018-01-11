@@ -4,7 +4,8 @@
 using namespace gb::utils;
 
 luatable_mapper::luatable_mapper(const char* file, luastate& config_luastate):
-    _l(config_luastate.getstate())
+    _l(config_luastate.getstate()),
+	_File(file)
 {
     assert(_l != nullptr);
     
@@ -20,6 +21,14 @@ bool luatable_mapper::validate()const
 size_t luatable_mapper::objlen()const
 {
     return lua_objlen(_l, -1);
+}
+
+bool luatable_mapper::has_key(const char* key)const
+{
+	lua_getfield(_l, -1, key);
+	bool ret = lua_type(_l, -1) != LUA_TNIL;
+	lua_pop(_l, 1);
+	return ret;
 }
 
 #define _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(ret_type, name, type, lua_to_func, default_value) \
@@ -120,6 +129,7 @@ void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func,
 	for_each(func);
     else
 	logger::Instance().warning(string("luatable_mapper::for_each_in, type not a table key@ ") + key);
+	lua_pop(_l, 1);
 }
 void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func, const size_t idx) const
 {
@@ -129,4 +139,5 @@ void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func,
 	for_each(func);
     else
 	logger::Instance().warning(string("luatable_mapper::for_each_in, type not a table idx@ ") + idx);
+	lua_pop(_l, 1);
 }
