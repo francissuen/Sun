@@ -21,24 +21,24 @@ GB_UTILS_CLASS string
 {
 public:
 
+    template <typename T> struct is_string : std::false_type {};
+    template <> struct is_string<string> : std:true_type {};
     // ctor
     inline string() {}
-    inline string(const char* str) :_data(str) {}
+    inline string(const char* str) :_data(str) { GB_ASSERT(str != nullptr); }
 
 /*
  *if std::string can conver to string implicit,
  *then operator+ may have ambiguous issue with std::string::operator+
  */
-    explicit string(std::string && str) :
+    template <typename std_string>
+	explicit string(GB_ENABLE_IF_T(gb::is_std_string, std_string) && str) :
 	_data(std::move(str))
-    {}
-    explicit string(const std::string& str) :
-	_data(str)
     {}
 
     // copy ctor
     template<typename string_t>
-	string(string_t && other) :
+	string(GB_ENABLE_IF_T(is_string, string_t) && other) :
 	_data(std::forward<string_t>(other._data))
     {}
 
@@ -78,56 +78,43 @@ public:
 	return !operator==(str);
     }
 
-    // operator +=, +
+    // operator +=
     // string
-    inline void operator +=(const string & other)
+    inline void operator += (const string & other)
     {
 	_data += other._data;
     }
-    template<typename string_t>
-	string operator+(string_t && other)const &
+    // std::string & const char*
+    template <typename T>
+	void operator += (T && other)
     {
-	return string(_data + std::forward<string_t>(other._data));
-    }
-    template<typename string_t>
-	string operator+(string_t && other) &&
-    {
-	return string(_data + std::forward<string_t>(other._data));
+	_data += std::forward<T>(other);
     }
 
-    // std::string
-    inline void operator +=(const std::string& str)
-    {
-	_data += str;
-    }
-    template<typename string_t, typename std_string>
-	friend string operator + (string_t && str, std_string && ot)
-    {
-	return string(std::forward<string_t>(str._data) + std::forward<std_string>(ot));
-    }
-    template <typename string_t, typename std_string>
-	friend string operator + (std_string && ot, string_t && str)
-    {
-	return string(std::forward<std_string>(ot) + std::forward<string_t>(str._data));
-    }
+    
+    // operator +
+    // string
+ //   template <typename string_t>
+	//string operator + (string_t && other)const &
+ //   {
+	//return string(_data + std::forward(string_t)(other)._data);
+ //   }
+ //   template<typename string_t>
+	//string operator+(string_t && other) &&
+ //   {
+	//return string(_data + std::forward<string_t>(other)._data);
+ //   }
 
-    // const char*
-    inline void string::operator+=(const char* szStr)
+    // std::string & const char*
+    template<typename string_t, typename T>
+	friend string operator + (string_t && str, T && ot)
     {
-	GB_ASSERT(szStr != nullptr);
-	this->_data += szStr;
+	return string(std::forward<string_t>(str)._data + std::forward<T>(ot));
     }
-    template<typename string_t>
-	friend string operator+(string_t&& str, const char* szStr)
+    template <typename string_t, typename T>
+	friend string operator + (T && ot, string_t && str)
     {
-	GB_ASSERT(szStr != nullptr);
-	return string(std::forward<string_t>(str._data) + szStr);
-    }
-    template<typename string_t>
-	friend string operator+(const char* szStr, string_t && str)
-    {
-	GB_ASSERT(szStr != nullptr);
-	return string(szStr + std::forward<string_t>(str._data));
+	return string(std::forward<T>(ot) + std::forward<string_t>(str)._data);
     }
 
     // misc type
@@ -153,12 +140,12 @@ public:
 	return string(szVal + std::forward<string_t>(str._data));	\
     }		
 
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
+    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
+    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
+    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
+    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
+    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
+    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
 
     // misc
     inline size_t length()const { return _data.length(); }
@@ -184,7 +171,7 @@ namespace std
     {
 	std::size_t operator()(gb::utils::string& str) const noexcept
 	    {
-		return std::hash<std::string>()((std::string)str);
+		return std::hash<std::string>()(std::string((const char*)str));
 	    }
     };
 
@@ -193,7 +180,7 @@ namespace std
     {
 	std::size_t operator()(const gb::utils::string& str) const noexcept
 	    {
-		return std::hash< std::string>()((const std::string)str);
+		return std::hash< std::string>()(std::string((const char*)str));
 	    }
     };
 }
