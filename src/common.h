@@ -228,29 +228,25 @@ namespace gb
     template <typename T>
     struct rm_cv_ref { using type = T; };
     // specialization
-#define _GB_RM_CV_REF_SPEC_(cv_ref)	\
-    template <typename T> struct rm_cv_ref< cv_ref T> { using type = T; };
+#define _GB_RM_CV_REF_SPEC_(cv_ref_t)	\
+    template <typename T> struct rm_cv_ref< cv_ref_t> { using type = T; };
 
     // const | non-const, volatile | non-volatile, l-ref(&) | r-ref(&&) | non-ref. 2*2*3=12
-    _GB_RM_RV_REF_SPEC_(const volatile &);
-    _GB_RM_RV_REF_SPEC_(const volatile &&);
-    _GB_RM_RV_REF_SPEC_(const volatile);
-    _GB_RM_RV_REF_SPEC_(const &);
-    _GB_RM_RV_REF_SPEC_(const &&);
-    _GB_RM_RV_REF_SPEC_(const );
-    _GB_RM_RV_REF_SPEC_(volatile &);
-    _GB_RM_RV_REF_SPEC_(volatile &&);
-    _GB_RM_RV_REF_SPEC_(volatile);
-    _GB_RM_RV_REF_SPEC_(&);
-    _GB_RM_RV_REF_SPEC_(&&);
+	_GB_RM_CV_REF_SPEC_(const volatile T &);
+	_GB_RM_CV_REF_SPEC_(const volatile T &&);
+	_GB_RM_CV_REF_SPEC_(const volatile T);
+	_GB_RM_CV_REF_SPEC_(const T &);
+	_GB_RM_CV_REF_SPEC_(const T &&);
+	_GB_RM_CV_REF_SPEC_(const T);
+	_GB_RM_CV_REF_SPEC_(volatile T &);
+	_GB_RM_CV_REF_SPEC_(volatile T &&);
+	_GB_RM_CV_REF_SPEC_(volatile T);
+	_GB_RM_CV_REF_SPEC_(T &);
+	_GB_RM_CV_REF_SPEC_(T &&);
 //    _GB_RM_RV_REF_SPEC_();
-    template<bool value, typename T>
-    struct enable_if_t_no_cv_ref {};
-    template<typename T>
-    struct enable_if_t_no_cv_ref<true, T> { using type = T; }
     
     template <typename T>
-    struct is_std_string: false_type {};
+    struct is_std_string: std::false_type {};
     template <> struct is_std_string <std::string> : std::true_type {};
 
 	
