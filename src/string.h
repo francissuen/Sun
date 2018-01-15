@@ -22,7 +22,7 @@ GB_UTILS_CLASS string
  public:
 
     template <typename T> struct is_string : std::false_type {};
-    template <> struct is_string<string> : std::true_type {};
+
     // ctor
     inline string() {}
     inline string(const char* str) :_data(str) { GB_ASSERT(str != nullptr); }
@@ -68,7 +68,6 @@ GB_UTILS_CLASS string
 
     // conversion
     inline operator const char*()const { return _data.c_str(); }
-    inline explicit operator const std::string&()const { return _data; }
 
     // comparision
     bool operator==(const char* szStr)const;
@@ -95,8 +94,7 @@ GB_UTILS_CLASS string
 	typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>>::value, void>
 	::type operator += (std_string && other)
     {
-	_data += std::forward<T>(other);
-    }
+	_data += std::forward<std_string>(other);    }
     // const char*
     void operator +=(const char* szStr)
     {
@@ -171,6 +169,8 @@ GB_UTILS_CLASS string
 
     // misc
     inline size_t length()const { return _data.length(); }
+    inline const std::string & GetStdString()const { return _data; }
+    inline std::string& GetStdString() { return _data; }
 
     //extract block with back delimiters as map's key
     std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;
@@ -184,6 +184,8 @@ GB_UTILS_CLASS string
 
 };
 
+template <> struct string::is_string<string> : std::true_type {};
+
 GB_UTILS_NS_END
 
 namespace std
@@ -193,7 +195,7 @@ namespace std
     {
 	std::size_t operator()(gb::utils::string& str) const noexcept
 	{
-	    return std::hash<std::string>()(std::string(str));
+	    return std::hash<std::string>()(str.GetStdString());
 	}
     };
 
@@ -202,7 +204,7 @@ namespace std
     {
 	std::size_t operator()(const gb::utils::string& str) const noexcept
 	{
-	    return std::hash< std::string>()(std::string());
+	    return std::hash< std::string>()(str.GetStdString());
 	}
     };
 }
