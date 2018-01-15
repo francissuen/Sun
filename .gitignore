@@ -6,3 +6,6 @@ GTAGS
 config.h
 
 *#*
+
+*.dir/
+test/Win32/

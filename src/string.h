@@ -41,11 +41,11 @@ GB_UTILS_CLASS string
     // copy ctor
     string(const string & str):
 	_data(str._data)
-    {}
+	{}
 
     string(string && str):
 	_data(std::move(str._data))
-    {}
+	{}
     
     // assigment
     inline void operator=(const char* szStr)
@@ -55,13 +55,13 @@ GB_UTILS_CLASS string
 	}
     template<typename std_string>
 	typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>::type>::value, void>
-		       ::type operator=(std_string && str)
+	::type operator=(std_string && str)
 	{
 	    _data = std::forward<std_string>(str);
 	}
     template<typename string_t>
 	typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t>::type>::value, void>
-		       ::type operator=(string_t && other)
+	::type operator=(string_t && other)
 	{
 	    _data = std::forward<string_t>(other)._data;
 	}
@@ -86,14 +86,14 @@ GB_UTILS_CLASS string
     // string
     template <typename string_t>
 	typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t>::type>::value, void>
-			  ::type operator += (string_t && other)
+	::type operator += (string_t && other)
     {
 	_data += other._data;
     }
     // std::string 
     template <typename std_string>
 	typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>>::value, void>
-			  ::type operator += (std_string && other)
+	::type operator += (std_string && other)
     {
 	_data += std::forward<T>(other);
     }
@@ -109,7 +109,7 @@ GB_UTILS_CLASS string
     template <typename string_t_l, typename string_t_r>
 	friend typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t_l>::type>::value &&
 				       is_string<typename gb::rm_cv_ref<string_t_r>::type>::value, string>
-				  ::type operator + (string_t_l && l, string_t_r && r)
+	::type operator + (string_t_l && l, string_t_r && r)
     {
 	return string(std::forward<string_t_l>(l)._data + std::forward<string_t_r>(r)._data);
     }
@@ -117,13 +117,13 @@ GB_UTILS_CLASS string
     // std::string
     template<typename string_t, typename std_string>
 	friend typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>::type>::value, string>
-				  ::type operator + (string_t && l, std_string && r)
+	::type operator + (string_t && l, std_string && r)
     {
 	return string(std::forward<string_t>(l)._data + std::forward<std_string>(r));
     }
     template <typename string_t, typename std_string>
 	friend typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>::type>::value, string>
-				  ::type operator + (std_string && l, string_t && r)
+	::type operator + (std_string && l, string_t && r)
     {
 	return string(std::forward<std_string>(l) + std::forward<string_t>(r)._data);
     }
@@ -162,12 +162,12 @@ GB_UTILS_CLASS string
 	return string(szVal + std::forward<string_t>(r)._data);	\
     }		
 
-    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
-    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
-    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
-    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
-    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
-    // _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
 
     // misc
     inline size_t length()const { return _data.length(); }
@@ -184,25 +184,25 @@ GB_UTILS_CLASS string
 
 };
 
- GB_UTILS_NS_END
+GB_UTILS_NS_END
 
-     namespace std
- {
+namespace std
+{
     template <>
-	struct hash<gb::utils::string>
+    struct hash<gb::utils::string>
     {
-    std::size_t operator()(gb::utils::string& str) const noexcept
-    {
-    return std::hash<std::string>()(std::string((const char*)str));
-}
-};
+	std::size_t operator()(gb::utils::string& str) const noexcept
+	{
+	    return std::hash<std::string>()(std::string(str));
+	}
+    };
 
     template <>
-	struct hash<const gb::utils::string>
+    struct hash<const gb::utils::string>
     {
-    std::size_t operator()(const gb::utils::string& str) const noexcept
-    {
-    return std::hash< std::string>()(std::string((const char*)str));
-}
-};
+	std::size_t operator()(const gb::utils::string& str) const noexcept
+	{
+	    return std::hash< std::string>()(std::string());
+	}
+    };
 }
