@@ -13,9 +13,9 @@
 	return _instance;			\
     }						\
 private:					\
-inline x(){};					\
-inline x(x const&) {}				\
-inline void operator = (x const&){}
+ inline x(){};					\
+ inline x(x const&) {}				\
+ inline void operator = (x const&){}
 
 #define GB_SINGLETON_EXCLUDECTOR(x)		\
     public:					\
@@ -25,9 +25,9 @@ inline void operator = (x const&){}
 	return _instance;			\
     }						\
 private:					\
-x();						\
-inline x(x const&) {}				\
-inline void operator = (x const&){}
+ x();						\
+ inline x(x const&) {}				\
+ inline void operator = (x const&){}
 
 #define GB_FRIEND_BINARY_OPERATOR_DECLARE(return_t, operator_, operand_1_t, operand_2_t) \
     friend return_t operator operator_ (operand_1_t, operand_2_t);	\
@@ -43,17 +43,17 @@ inline void operator = (x const&){}
 
 #define GB_SAFE_DELETE_ARRAY(x)			\
     if(x != nullptr)				\
-    {						\
-	delete [] x;				\
-	x = nullptr;				\
-    }
+	{					\
+	    delete [] x;			\
+	    x = nullptr;			\
+	}
 
 #define GB_SAFE_DELETE(x)			\
     if(x != nullptr)				\
-    {						\
-	delete x;				\
-	x = nullptr;				\
-    }
+	{					\
+	    delete x;				\
+	    x = nullptr;			\
+	}
 
 #define GB_EXPAND(...) __VA_ARGS__
 #define GB_MERGE(a, b) a##b
@@ -64,49 +64,57 @@ inline void operator = (x const&){}
     private:					\
     __VA_ARGS__ _##name;			\
 public:						\
-inline const __VA_ARGS__ & Get##name()const	\
-{						\
-    return _##name;				\
-}						\
-inline __VA_ARGS__& Get##name()			\
-{						\
-    return _##name;				\
-}
+ inline const __VA_ARGS__ & Get##name()const&	\
+ {						\
+     return _##name;				\
+ }						\
+ inline __VA_ARGS__& Get##name()&		\
+ {						\
+     return _##name;				\
+ }						\
+ inline __VA_ARGS__&& Get##name()&&		\
+ {						\
+     return std::move(_##name);			\
+ }
 
 #define GB_PROPERTY_W(name, ...)		\
     private:					\
     __VA_ARGS__ _##name;			\
 public:						\
-inline void Set##name(const __VA_ARGS__& val)	\
-{						\
-    _##name = val;				\
-}						\
-inline void Set##name(__VA_ARGS__&& val)	\
-{						\
-    _##name = std::move(val);			\
-}						
+ inline void Set##name(const __VA_ARGS__& val)	\
+ {						\
+     _##name = val;				\
+ }						\
+ inline void Set##name(__VA_ARGS__&& val)	\
+ {						\
+     _##name = std::move(val);			\
+ }						
 
 
 #define GB_PROPERTY(name, ...)			\
     private:					\
     __VA_ARGS__ _##name;			\
 public:						\
-inline const __VA_ARGS__& Get##name()const	\
-{						\
-    return _##name;				\
-}						\
-inline void Set##name(const __VA_ARGS__& val)	\
-{						\
-    _##name = val;				\
-}						\
-inline void Set##name(__VA_ARGS__&& val)	\
-{						\
-    _##name = std::move(val);			\
-}						\
-inline __VA_ARGS__& Get##name()			\
-{						\
-    return _##name;				\
-}
+ inline void Set##name(const __VA_ARGS__& val)	\
+ {						\
+     _##name = val;				\
+ }						\
+ inline void Set##name(__VA_ARGS__&& val)	\
+ {						\
+     _##name = std::move(val);			\
+ }						\
+ inline const __VA_ARGS__ & Get##name()const&	\
+ {						\
+     return _##name;				\
+ }						\
+ inline __VA_ARGS__& Get##name()&		\
+ {						\
+     return _##name;				\
+ }						\
+ inline __VA_ARGS__&& Get##name()&&		\
+ {						\
+     return std::move(_##name);			\
+ }
 
 #define _GB_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
 #ifdef _MSC_VER
@@ -205,18 +213,18 @@ static_assert(GB_ARGC(a, a, a, a, a, a, a, a, a, a,
     static_assert(GB_ARGC(__VA_ARGS__) == 0 || GB_ARGC(__VA_ARGS__) == 1, \
 		  "GB_ASSERT can take only zero or one MSG arg");	\
     if(!(condition))							\
-    {									\
-     std::cerr << "**************** GB_ASSERT FAILED ****************"	\
-	       << std::endl;						\
-     std::cerr << "CONDITION@ " << #condition << std::endl;		\
-     std::cerr << "LINE@ " << __LINE__ << std::endl			\
-	       << "FILE@ " << __FILE__ << std::endl;			\
-     std::cerr << "MSG@ " GB__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__	\
-	       << std::endl;						\
-     std::cerr << "**************** GB_ASSERT FAILED ****************"	\
-	       << std::endl;						\
-     assert(false);							\
-    }
+	{								\
+	    std::cerr << "**************** GB_ASSERT FAILED ****************" \
+		      << std::endl;					\
+	    std::cerr << "CONDITION@ " << #condition << std::endl;	\
+	    std::cerr << "LINE@ " << __LINE__ << std::endl		\
+		      << "FILE@ " << __FILE__ << std::endl;		\
+	    std::cerr << "MSG@ " GB__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__ \
+		      << std::endl;					\
+	    std::cerr << "**************** GB_ASSERT FAILED ****************" \
+		      << std::endl;					\
+	    assert(false);						\
+	}
 #endif
 
 ////////////////////////////////
@@ -228,28 +236,26 @@ namespace gb
     template <typename T>
     struct rm_cv_ref { using type = T; };
     // specialization
-#define _GB_RM_CV_REF_SPEC_(cv_ref_t)	\
+#define _GB_RM_CV_REF_SPEC_(cv_ref_t)					\
     template <typename T> struct rm_cv_ref< cv_ref_t> { using type = T; };
 
     // const | non-const, volatile | non-volatile, l-ref(&) | r-ref(&&) | non-ref. 2*2*3=12
-	_GB_RM_CV_REF_SPEC_(const volatile T &);
-	_GB_RM_CV_REF_SPEC_(const volatile T &&);
-	_GB_RM_CV_REF_SPEC_(const volatile T);
-	_GB_RM_CV_REF_SPEC_(const T &);
-	_GB_RM_CV_REF_SPEC_(const T &&);
-	_GB_RM_CV_REF_SPEC_(const T);
-	_GB_RM_CV_REF_SPEC_(volatile T &);
-	_GB_RM_CV_REF_SPEC_(volatile T &&);
-	_GB_RM_CV_REF_SPEC_(volatile T);
-	_GB_RM_CV_REF_SPEC_(T &);
-	_GB_RM_CV_REF_SPEC_(T &&);
-//    _GB_RM_RV_REF_SPEC_();
+    _GB_RM_CV_REF_SPEC_(const volatile T &);
+    _GB_RM_CV_REF_SPEC_(const volatile T &&);
+    _GB_RM_CV_REF_SPEC_(const volatile T);
+    _GB_RM_CV_REF_SPEC_(const T &);
+    _GB_RM_CV_REF_SPEC_(const T &&);
+    _GB_RM_CV_REF_SPEC_(const T);
+    _GB_RM_CV_REF_SPEC_(volatile T &);
+    _GB_RM_CV_REF_SPEC_(volatile T &&);
+    _GB_RM_CV_REF_SPEC_(volatile T);
+    _GB_RM_CV_REF_SPEC_(T &);
+    _GB_RM_CV_REF_SPEC_(T &&);
+    //    _GB_RM_RV_REF_SPEC_();
     
     template <typename T>
     struct is_std_string: std::false_type {};
     template <> struct is_std_string <std::string> : std::true_type {};
-
-	
 }
 
 

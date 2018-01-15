@@ -67,7 +67,7 @@ public:
     std::vector<Table> get_tables_by_key(const char* key) const
 	{
 	    GB_ASSERT(key != nullptr);
-	    lua_getfiled(_l, -1, key);
+	    lua_getfield(_l, -1, key);
 	    std::vector<Table> ret;
 	    if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
@@ -84,12 +84,12 @@ public:
     std::vector<Table> get_tables_by_idx(const size_t idx) const
 	{
 	    GB_ASSERT( idx>= 1);
-	    lua_rawgeti(_l, -1, idx)
+	    lua_rawgeti(_l, -1, idx);
 	    std::vector<Table> ret;
 	    if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
 		const size_t len = lua_objlen(_l, -1);
-		for(int i = 1; i <= len; i++)
+		for(size_t i = 1; i <= len; i++)
 		{
 		    ret.push_back(get_table_by_idx<Table>(i));
 		}

@@ -19,10 +19,10 @@ GB_UTILS_NS_BEGIN
  */
 GB_UTILS_CLASS string
 {
- public:
+public:
 
     template <typename T> struct is_string : std::false_type {};
-    template <> struct is_string<string> : std::true_type {};
+
     // ctor
     inline string() {}
     inline string(const char* str) :_data(str) { GB_ASSERT(str != nullptr); }
@@ -41,34 +41,42 @@ GB_UTILS_CLASS string
     // copy ctor
     string(const string & str):
 	_data(str._data)
-	{}
+    {}
 
     string(string && str):
 	_data(std::move(str._data))
-	{}
+    {}
     
-    // assigment
-    inline void operator=(const char* szStr)
+    // copy assignment operator
+    inline string & operator=(const string & other)
+	{
+	    _data = other._data;
+	    return *this;
+	}
+    // move assignment operator
+    inline string & operator=(string && other)
+	{
+	    _data = std::move(other._data);
+	    return *this;
+	}
+
+    // assignment operator overloading for other types
+    inline string & operator=(const char* szStr)
 	{
 	    GB_ASSERT(szStr != nullptr);
 	    _data = szStr;
+	    return *this;
 	}
     template<typename std_string>
-	typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>::type>::value, void>
+	typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>::type>::value, string &>
 	::type operator=(std_string && str)
 	{
 	    _data = std::forward<std_string>(str);
-	}
-    template<typename string_t>
-	typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t>::type>::value, void>
-	::type operator=(string_t && other)
-	{
-	    _data = std::forward<string_t>(other)._data;
+	    return *this;
 	}
 
     // conversion
     inline operator const char*()const { return _data.c_str(); }
-    inline explicit operator const std::string&()const { return _data; }
 
     // comparision
     bool operator==(const char* szStr)const;
@@ -95,7 +103,7 @@ GB_UTILS_CLASS string
 	typename std::enable_if<gb::is_std_string<typename gb::rm_cv_ref<std_string>>::value, void>
 	::type operator += (std_string && other)
     {
-	_data += std::forward<T>(other);
+	_data += std::forward<std_string>(other);    
     }
     // const char*
     void operator +=(const char* szStr)
@@ -129,12 +137,14 @@ GB_UTILS_CLASS string
     }
     // const char*
     template<typename string_t>
-	friend string operator + (string_t && l, const char* r)
+	friend typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t>::type>::value, string>
+	::type operator + (string_t && l, const char* r)
     {
 	return string(std::forward<string_t>(l)._data + r);
     }
     template<typename string_t>
-	friend string operator + (const char* l, string_t && r)
+	friend typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t>::type>::value, string>
+	::type operator + (const char* l, string_t && r)
     {
 	return string(l + std::forward<string_t>(r)._data);
     }
@@ -163,6 +173,8 @@ GB_UTILS_CLASS string
     }		
 
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const signed char, "%hhd");
+    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned char, "%hhu");
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
@@ -171,6 +183,8 @@ GB_UTILS_CLASS string
 
     // misc
     inline size_t length()const { return _data.length(); }
+    inline const std::string & GetStdString()const { return _data; }
+    inline std::string& GetStdString() { return _data; }
 
     //extract block with back delimiters as map's key
     std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;
@@ -179,10 +193,12 @@ GB_UTILS_CLASS string
     string substr_at_l_lastof(const char val, const bool exclude = true);
     string substr_at_r_lastof(const char val, const bool exclude = true);
 
- private:
+private:
     std::string _data;
 
 };
+
+template <> struct string::is_string<string> : std::true_type {};
 
 GB_UTILS_NS_END
 
@@ -192,17 +208,17 @@ namespace std
     struct hash<gb::utils::string>
     {
 	std::size_t operator()(gb::utils::string& str) const noexcept
-	{
-	    return std::hash<std::string>()(std::string(str));
-	}
+	    {
+		return std::hash<std::string>()(str.GetStdString());
+	    }
     };
 
     template <>
     struct hash<const gb::utils::string>
     {
 	std::size_t operator()(const gb::utils::string& str) const noexcept
-	{
-	    return std::hash< std::string>()(std::string());
-	}
+	    {
+		return std::hash< std::string>()(str.GetStdString());
+	    }
     };
 }
