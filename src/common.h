@@ -64,7 +64,7 @@ private:					\
     private:					\
     __VA_ARGS__ _##name;			\
 public:						\
- inline const __VA_ARGS__ & Get##name()const&	\
+ inline __VA_ARGS__ const & Get##name()const&	\
  {						\
      return _##name;				\
  }						\
@@ -81,7 +81,7 @@ public:						\
     private:					\
     __VA_ARGS__ _##name;			\
 public:						\
- inline void Set##name(const __VA_ARGS__& val)	\
+ inline void Set##name(__VA_ARGS__ const & val)	\
  {						\
      _##name = val;				\
  }						\
@@ -95,7 +95,7 @@ public:						\
     private:					\
     __VA_ARGS__ _##name;			\
 public:						\
- inline void Set##name(const __VA_ARGS__& val)	\
+ inline void Set##name(__VA_ARGS__ const & val)	\
  {						\
      _##name = val;				\
  }						\
@@ -103,7 +103,7 @@ public:						\
  {						\
      _##name = std::move(val);			\
  }						\
- inline const __VA_ARGS__ & Get##name()const&	\
+ inline __VA_ARGS__ const & Get##name()const&	\
  {						\
      return _##name;				\
  }						\
