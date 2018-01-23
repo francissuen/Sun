@@ -60,9 +60,8 @@ private:					\
 #define GB_CALL(func, param) func param
 
 // using variadic macro for the type contains comma, such as std::map<int, int>
-#define GB_PROPERTY_R(name, ...)		\
-    private:					\
-    __VA_ARGS__ _##name;			\
+#define GB_PROPERTY_R(acc_spec, name, ...)	\
+    acc_spec:    __VA_ARGS__ _##name;		\
 public:						\
  inline __VA_ARGS__ const & Get##name()const&	\
  {						\
@@ -75,11 +74,11 @@ public:						\
  inline __VA_ARGS__&& Get##name()&&		\
  {						\
      return std::move(_##name);			\
- }
+ }						\
+private:			// back to default access specifier
 
-#define GB_PROPERTY_W(name, ...)		\
-    private:					\
-    __VA_ARGS__ _##name;			\
+#define GB_PROPERTY_W(acc_spec, name, ...)	\
+    acc_spec: __VA_ARGS__ _##name;		\
 public:						\
  inline void Set##name(__VA_ARGS__ const & val)	\
  {						\
@@ -88,12 +87,12 @@ public:						\
  inline void Set##name(__VA_ARGS__&& val)	\
  {						\
      _##name = std::move(val);			\
- }						
+ }						\
+private:
 
 
-#define GB_PROPERTY(name, ...)			\
-    private:					\
-    __VA_ARGS__ _##name;			\
+#define GB_PROPERTY(acc_spec, name, ...)	\
+    acc_spec: __VA_ARGS__ _##name;		\
 public:						\
  inline void Set##name(__VA_ARGS__ const & val)	\
  {						\
@@ -114,7 +113,8 @@ public:						\
  inline __VA_ARGS__&& Get##name()&&		\
  {						\
      return std::move(_##name);			\
- }
+ }						\
+private:					
 
 #define _GB_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
 #ifdef _MSC_VER

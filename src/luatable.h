@@ -42,6 +42,15 @@ public:
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(gb::utils::string, string);
 
     template <typename Table>
+    Table get_table() const
+	{
+	    Table table;
+	    if(lua_type(_l, -1) == LUA_TTABLE)
+		table.from_lua(*this);
+	    return table;
+	}
+
+    template <typename Table>
     Table get_table_by_key(const char* key) const
 	{
 	    GB_ASSERT(key != nullptr);
@@ -124,7 +133,7 @@ public:
     // 	}
 private:
     lua_State* _l;
-	GB_PROPERTY_R(File, gb::utils::string);
+    GB_PROPERTY_R(private, File, gb::utils::string);
 };
 
 GB_UTILS_NS_END
