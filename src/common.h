@@ -13,9 +13,9 @@
 	return _instance;			\
     }						\
 private:					\
- inline x(){};					\
- inline x(x const&) {}				\
- inline void operator = (x const&){}
+inline x(){};					\
+inline x(x const&) {}				\
+inline void operator = (x const&){}
 
 #define GB_SINGLETON_EXCLUDECTOR(x)		\
     public:					\
@@ -25,9 +25,9 @@ private:					\
 	return _instance;			\
     }						\
 private:					\
- x();						\
- inline x(x const&) {}				\
- inline void operator = (x const&){}
+x();						\
+inline x(x const&) {}				\
+inline void operator = (x const&){}
 
 #define GB_FRIEND_BINARY_OPERATOR_DECLARE(return_t, operator_, operand_1_t, operand_2_t) \
     friend return_t operator operator_ (operand_1_t, operand_2_t);	\
@@ -43,77 +43,77 @@ private:					\
 
 #define GB_SAFE_DELETE_ARRAY(x)			\
     if(x != nullptr)				\
-	{					\
-	    delete [] x;			\
-	    x = nullptr;			\
-	}
+    {						\
+	delete [] x;				\
+	x = nullptr;				\
+    }
 
 #define GB_SAFE_DELETE(x)			\
     if(x != nullptr)				\
-	{					\
-	    delete x;				\
-	    x = nullptr;			\
-	}
+    {						\
+	delete x;				\
+	x = nullptr;				\
+    }
 
 #define GB_EXPAND(...) __VA_ARGS__
 #define GB_MERGE(a, b) a##b
 #define GB_CALL(func, param) func param
 
 // using variadic macro for the type contains comma, such as std::map<int, int>
-#define GB_PROPERTY_R(acc_spec, name, ...)	\
-    acc_spec:    __VA_ARGS__ _##name;		\
-public:						\
- inline __VA_ARGS__ const & Get##name()const&	\
- {						\
-     return _##name;				\
- }						\
- inline __VA_ARGS__& Get##name()&		\
- {						\
-     return _##name;				\
- }						\
- inline __VA_ARGS__&& Get##name()&&		\
- {						\
-     return std::move(_##name);			\
- }						\
+#define GB_PROPERTY_R(acc_spec, name, ...)				\
+    acc_spec:    __VA_ARGS__ _##name;					\
+public:									\
+inline __VA_ARGS__ const & Get##name()const&				\
+{									\
+    return _##name;							\
+}									\
+inline __VA_ARGS__& Get##name()&					\
+{									\
+    return _##name;							\
+}									\
+inline __VA_ARGS__&& Get##name()&&					\
+{									\
+    return std::move(_##name);						\
+}									\
 private:			// back to default access specifier
 
 #define GB_PROPERTY_W(acc_spec, name, ...)	\
     acc_spec: __VA_ARGS__ _##name;		\
 public:						\
- inline void Set##name(__VA_ARGS__ const & val)	\
- {						\
-     _##name = val;				\
- }						\
- inline void Set##name(__VA_ARGS__&& val)	\
- {						\
-     _##name = std::move(val);			\
- }						\
+inline void Set##name(__VA_ARGS__ const & val)	\
+{						\
+    _##name = val;				\
+}						\
+inline void Set##name(__VA_ARGS__&& val)	\
+{						\
+    _##name = std::move(val);			\
+}						\
 private:
 
 
 #define GB_PROPERTY(acc_spec, name, ...)	\
     acc_spec: __VA_ARGS__ _##name;		\
 public:						\
- inline void Set##name(__VA_ARGS__ const & val)	\
- {						\
-     _##name = val;				\
- }						\
- inline void Set##name(__VA_ARGS__&& val)	\
- {						\
-     _##name = std::move(val);			\
- }						\
- inline __VA_ARGS__ const & Get##name()const&	\
- {						\
-     return _##name;				\
- }						\
- inline __VA_ARGS__& Get##name()&		\
- {						\
-     return _##name;				\
- }						\
- inline __VA_ARGS__&& Get##name()&&		\
- {						\
-     return std::move(_##name);			\
- }						\
+inline void Set##name(__VA_ARGS__ const & val)	\
+{						\
+    _##name = val;				\
+}						\
+inline void Set##name(__VA_ARGS__&& val)	\
+{						\
+    _##name = std::move(val);			\
+}						\
+inline __VA_ARGS__ const & Get##name()const&	\
+{						\
+    return _##name;				\
+}						\
+inline __VA_ARGS__& Get##name()&		\
+{						\
+    return _##name;				\
+}						\
+inline __VA_ARGS__&& Get##name()&&		\
+{						\
+    return std::move(_##name);			\
+}						\
 private:					
 
 #define _GB_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
@@ -213,26 +213,26 @@ static_assert(GB_ARGC(a, a, a, a, a, a, a, a, a, a,
     static_assert(GB_ARGC(__VA_ARGS__) == 0 || GB_ARGC(__VA_ARGS__) == 1, \
 		  "GB_ASSERT can take only zero or one MSG arg");	\
     if(!(condition))							\
-	{								\
-	    std::cerr << "**************** GB_ASSERT FAILED ****************" \
-		      << std::endl;					\
-	    std::cerr << "CONDITION@ " << #condition << std::endl;	\
-	    std::cerr << "LINE@ " << __LINE__ << std::endl		\
-		      << "FILE@ " << __FILE__ << std::endl;		\
-	    std::cerr << "MSG@ " GB__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__ \
-		      << std::endl;					\
-	    std::cerr << "**************** GB_ASSERT FAILED ****************" \
-		      << std::endl;					\
-	    assert(false);						\
-	}
+    {									\
+	std::cerr << "**************** GB_ASSERT FAILED ****************" \
+		  << std::endl;						\
+	std::cerr << "CONDITION@ " << #condition << std::endl;		\
+	std::cerr << "LINE@ " << __LINE__ << std::endl			\
+		  << "FILE@ " << __FILE__ << std::endl;			\
+	std::cerr << "MSG@ " GB__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__ \
+		  << std::endl;						\
+	std::cerr << "**************** GB_ASSERT FAILED ****************" \
+		  << std::endl;						\
+	assert(false);							\
+    }
 #endif
 
 ////////////////////////////////
 // type tarits
 ////////////////////////////////
+#include <type_traits>
 namespace gb
 {
-#include <type_traits>
     template <typename T>
     struct rm_cv_ref { using type = T; };
     // specialization
@@ -262,26 +262,39 @@ namespace gb
 ////////////////////////////////
 // misc
 ////////////////////////////////
-template<typename From, typename To>
-inline To* gb_safe_cast(From* from)
+namespace gb
 {
+    namespace utils
+    {
+	template<typename From, typename To>
+	inline To* safe_cast(From* from)
+	{
 #ifdef GB_DEBUG
-    To* to = dynamic_cast<To*>(from);
-    assert(to != nullptr);
-    return to;
+	    To* to = dynamic_cast<To*>(from);
+	    assert(to != nullptr);
+	    return to;
 #else
-    return static_cast<To*>(from);
+	    return static_cast<To*>(from);
 #endif    
-}
+	}
 
-template<typename From, typename To>
-inline To& gb_safe_cast(From& from)
-{
+	template<typename From, typename To>
+	inline To& safe_cast(From& from)
+	{
 #ifdef GB_DEBUG
-    return dynamic_cast<To&>(from);
+	    return dynamic_cast<To&>(from);
 #else
-    return static_cast<To&>(from);
+	    return static_cast<To&>(from);
 #endif    
+	}
+
+	template <typename T>
+	struct less_ptr
+	{
+	    bool operator()(const T* l, const T* r) const
+		{
+		    return (*l) < (*r);
+		}
+	};
+    }
 }
-
-
