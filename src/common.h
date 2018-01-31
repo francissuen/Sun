@@ -42,18 +42,12 @@ inline void operator = (x const&){}
     }
 
 #define GB_SAFE_DELETE_ARRAY(x)			\
-    if(x != nullptr)				\
-    {						\
 	delete [] x;				\
 	x = nullptr;				\
-    }
 
 #define GB_SAFE_DELETE(x)			\
-    if(x != nullptr)				\
-    {						\
 	delete x;				\
 	x = nullptr;				\
-    }
 
 #define GB_EXPAND(...) __VA_ARGS__
 #define GB_MERGE(a, b) a##b
@@ -269,22 +263,22 @@ namespace gb
 	template<typename From, typename To>
 	inline To* safe_cast(From* from)
 	{
-#ifdef GB_DEBUG
+#ifdef NDEBUG
+	    return static_cast<To*>(from);
+#else
 	    To* to = dynamic_cast<To*>(from);
 	    assert(to != nullptr);
 	    return to;
-#else
-	    return static_cast<To*>(from);
 #endif    
 	}
 
 	template<typename From, typename To>
 	inline To& safe_cast(From& from)
 	{
-#ifdef GB_DEBUG
-	    return dynamic_cast<To&>(from);
-#else
+#ifdef NDEBUG
 	    return static_cast<To&>(from);
+#else
+	    return dynamic_cast<To&>(from);
 #endif    
 	}
 
