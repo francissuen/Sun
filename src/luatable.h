@@ -2,15 +2,16 @@
 #include "ns.h"
 #include "string.h"
 #include "luastate.h"
-#include <vector>
+#include "vector.h"
+
 #include <functional>
 
 #define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(ret_type, name)		\
     ret_type get_##name##_by_key(const char* key) const;		\
     ret_type get_##name##_by_idx(const size_t idx) const;		\
-    std::vector<ret_type> get_##name##s() const;			\
-    std::vector<ret_type> get_##name##s_by_key(const char* key) const;	\
-    std::vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	\
+    vector<ret_type> get_##name##s() const;			\
+    vector<ret_type> get_##name##s_by_key(const char* key) const;	\
+    vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	\
 
 GB_UTILS_NS_BEGIN
 
@@ -36,7 +37,7 @@ public:
 public:
     bool validate()const;
     size_t objlen()const;
-	bool has_key(const char* key)const;
+    bool has_key(const char* key)const;
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Number, number);
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Integer, integer);
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(gb::utils::string, string);
@@ -73,14 +74,15 @@ public:
 	    return table;	    
 	}
     template<typename Table>
-    std::vector<Table> get_tables_by_key(const char* key) const
+    vector<Table> get_tables_by_key(const char* key) const
 	{
 	    GB_ASSERT(key != nullptr);
 	    lua_getfield(_l, -1, key);
-	    std::vector<Table> ret;
+	    vector<Table> ret;
 	    if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
 		const size_t len = lua_objlen(_l, -1);
+		ret.reserve(len);
 		for(int i = 1; i <= len; i++)
 		{
 		    ret.push_back(get_table_by_idx<Table>(i));
@@ -90,14 +92,15 @@ public:
 	    return ret;
 	}
     template<typename Table>
-    std::vector<Table> get_tables_by_idx(const size_t idx) const
+    vector<Table> get_tables_by_idx(const size_t idx) const
 	{
 	    GB_ASSERT( idx>= 1);
 	    lua_rawgeti(_l, -1, idx);
-	    std::vector<Table> ret;
+	    vector<Table> ret;
 	    if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
 		const size_t len = lua_objlen(_l, -1);
+		ret.reserve(len);
 		for(size_t i = 1; i <= len; i++)
 		{
 		    ret.push_back(get_table_by_idx<Table>(i));

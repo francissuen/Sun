@@ -18,6 +18,7 @@ gb_add_class(common src srcs)
 gb_add_class(logger src srcs)
 gb_add_class(time src srcs)
 gb_add_class(string src srcs)
+gb_add_class(vector src srcs)
 gb_add_class(concurrency src srcs)
 gb_add_class(filesystem src srcs)
 
