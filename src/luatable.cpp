@@ -5,7 +5,7 @@ using namespace gb::utils;
 
 luatable_mapper::luatable_mapper(const char* file, luastate& config_luastate):
     _l(config_luastate.getstate()),
-	_File(file)
+    _File(file)
 {
     assert(_l != nullptr);
     
@@ -25,10 +25,10 @@ size_t luatable_mapper::objlen()const
 
 bool luatable_mapper::has_key(const char* key)const
 {
-	lua_getfield(_l, -1, key);
-	bool ret = lua_type(_l, -1) != LUA_TNIL;
-	lua_pop(_l, 1);
-	return ret;
+    lua_getfield(_l, -1, key);
+    bool ret = lua_type(_l, -1) != LUA_TNIL;
+    lua_pop(_l, 1);
+    return ret;
 }
 
 #define _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(ret_type, name, type, lua_to_func, default_value) \
@@ -49,9 +49,9 @@ bool luatable_mapper::has_key(const char* key)const
 	    return default_value;					\
 	}								\
     }									\
-    std::vector<ret_type> luatable_mapper::get_##name##s() const	\
+    vector<ret_type> luatable_mapper::get_##name##s() const		\
     {									\
-	std::vector<ret_type> ret;					\
+	vector<ret_type> ret;						\
 	const size_t len = lua_objlen(_l, -1);				\
 	for(size_t i = 1; i <= len; i++)				\
 	{								\
@@ -59,14 +59,15 @@ bool luatable_mapper::has_key(const char* key)const
 	}								\
 	return ret;							\
     }									\
-    std::vector<ret_type> luatable_mapper::get_##name##s_by_key(const char* key) const	\
+    vector<ret_type> luatable_mapper::get_##name##s_by_key(const char* key) const \
     {									\
 	GB_ASSERT(key != nullptr);					\
-	std::vector<ret_type> ret;					\
+	vector<ret_type> ret;						\
 	lua_getfield(_l, -1, key);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	{								\
 	    const size_t len = lua_objlen(_l, -1);			\
+	    ret.reserve(len);						\
 	    for(size_t i = 1; i <= len; i++)				\
 	    {								\
 		ret.push_back(get_##name##_by_idx(i));			\
@@ -75,14 +76,15 @@ bool luatable_mapper::has_key(const char* key)const
 	lua_pop(_l, 1);							\
 	return ret;							\
     }									\
-    std::vector<ret_type> luatable_mapper::get_##name##s_by_idx(const size_t idx) const	\
+    vector<ret_type> luatable_mapper::get_##name##s_by_idx(const size_t idx) const \
     {									\
 	GB_ASSERT(idx >= 1);						\
-	std::vector<ret_type> ret;					\
+	vector<ret_type> ret;						\
 	lua_rawgeti(_l, -1, idx);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	{								\
 	    const size_t len = lua_objlen(_l, -1);			\
+	    ret.reserve(len);						\
 	    for(size_t i = 1; i <= len; i++)				\
 	    {								\
 		ret.push_back(get_##name##_by_idx(i));			\
@@ -129,7 +131,7 @@ void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func,
 	for_each(func);
     else
 	logger::Instance().warning(string("luatable_mapper::for_each_in, type not a table key@ ") + key);
-	lua_pop(_l, 1);
+    lua_pop(_l, 1);
 }
 void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func, const size_t idx) const
 {
@@ -139,5 +141,5 @@ void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func,
 	for_each(func);
     else
 	logger::Instance().warning(string("luatable_mapper::for_each_in, type not a table idx@ ") + idx);
-	lua_pop(_l, 1);
+    lua_pop(_l, 1);
 }
