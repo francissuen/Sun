@@ -49,9 +49,9 @@ bool luatable_mapper::has_key(const char* key)const
 	    return default_value;					\
 	}								\
     }									\
-    vector<ret_type> luatable_mapper::get_##name##s() const		\
+    std::vector<ret_type> luatable_mapper::get_##name##s() const		\
     {									\
-	vector<ret_type> ret;						\
+	std::vector<ret_type> ret;						\
 	const size_t len = lua_objlen(_l, -1);				\
 	for(size_t i = 1; i <= len; i++)				\
 	{								\
@@ -59,10 +59,10 @@ bool luatable_mapper::has_key(const char* key)const
 	}								\
 	return ret;							\
     }									\
-    vector<ret_type> luatable_mapper::get_##name##s_by_key(const char* key) const \
+    std::vector<ret_type> luatable_mapper::get_##name##s_by_key(const char* key) const \
     {									\
 	GB_ASSERT(key != nullptr);					\
-	vector<ret_type> ret;						\
+	std::vector<ret_type> ret;						\
 	lua_getfield(_l, -1, key);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	{								\
@@ -76,10 +76,10 @@ bool luatable_mapper::has_key(const char* key)const
 	lua_pop(_l, 1);							\
 	return ret;							\
     }									\
-    vector<ret_type> luatable_mapper::get_##name##s_by_idx(const size_t idx) const \
+    std::vector<ret_type> luatable_mapper::get_##name##s_by_idx(const size_t idx) const \
     {									\
 	GB_ASSERT(idx >= 1);						\
-	vector<ret_type> ret;						\
+	std::vector<ret_type> ret;						\
 	lua_rawgeti(_l, -1, idx);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	{								\

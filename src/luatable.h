@@ -2,16 +2,16 @@
 #include "ns.h"
 #include "string.h"
 #include "luastate.h"
-#include "vector.h"
+#include <vector>
 
 #include <functional>
 
 #define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(ret_type, name)		\
     ret_type get_##name##_by_key(const char* key) const;		\
     ret_type get_##name##_by_idx(const size_t idx) const;		\
-    vector<ret_type> get_##name##s() const;			\
-    vector<ret_type> get_##name##s_by_key(const char* key) const;	\
-    vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	\
+    std::vector<ret_type> get_##name##s() const;			\
+    std::vector<ret_type> get_##name##s_by_key(const char* key) const;	\
+    std::vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	\
 
 GB_UTILS_NS_BEGIN
 
@@ -74,16 +74,16 @@ public:
 	    return table;	    
 	}
     template<typename Table>
-    vector<Table> get_tables_by_key(const char* key) const
+    std::vector<Table> get_tables_by_key(const char* key) const
 	{
 	    GB_ASSERT(key != nullptr);
 	    lua_getfield(_l, -1, key);
-	    vector<Table> ret;
+	    std::vector<Table> ret;
 	    if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
-		const size_t len = lua_objlen(_l, -1);
+		const std::size_t len = lua_objlen(_l, -1);
 		ret.reserve(len);
-		for(int i = 1; i <= len; i++)
+		for(std::size_t i = 1; i <= len; i++)
 		{
 		    ret.push_back(get_table_by_idx<Table>(i));
 		}
@@ -92,16 +92,16 @@ public:
 	    return ret;
 	}
     template<typename Table>
-    vector<Table> get_tables_by_idx(const size_t idx) const
+    std::vector<Table> get_tables_by_idx(const size_t idx) const
 	{
 	    GB_ASSERT( idx>= 1);
 	    lua_rawgeti(_l, -1, idx);
-	    vector<Table> ret;
+	    std::vector<Table> ret;
 	    if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
-		const size_t len = lua_objlen(_l, -1);
+		const std::size_t len = lua_objlen(_l, -1);
 		ret.reserve(len);
-		for(size_t i = 1; i <= len; i++)
+		for(std::size_t i = 1; i <= len; i++)
 		{
 		    ret.push_back(get_table_by_idx<Table>(i));
 		}
@@ -110,9 +110,9 @@ public:
 	    return ret;
 	}
     
-    void for_each(const std::function<void(const size_t)>& func) const;
-    void for_each_in(const std::function<void(const size_t)>& func, const char* key) const;
-    void for_each_in(const std::function<void(const size_t)>& func, const size_t idx) const;
+    void for_each(const std::function<void(const std::size_t)>& func) const;
+    void for_each_in(const std::function<void(const std::size_t)>& func, const char* key) const;
+    void for_each_in(const std::function<void(const std::size_t)>& func, const std::size_t idx) const;
     // scene::instantiate(const char* luafile)
     // 	{
     // 	    luatable_mapper lt(luafile);
