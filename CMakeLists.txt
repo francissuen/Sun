@@ -21,6 +21,7 @@ gb_add_class(string src srcs)
 # gb_add_class(vector src srcs)
 gb_add_class(concurrency src srcs)
 gb_add_class(filesystem src srcs)
+gb_add_class(callback src srcs)
 
 if(GB_UTILS_LUA_API)
   gb_add_class(luastate src srcs)
