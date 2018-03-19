@@ -57,7 +57,7 @@ GB_UTILS_CLASS  logger
 #else
     typedef std::string color_code_t;
 #endif
-    GB_SINGLETON_EXCLUDECTOR(logger);
+    GB_SINGLETON_NO_CTORDEF(logger);
     ~logger();
 public:
     void log(const char* msg)const;

@@ -15,7 +15,7 @@ GB_UTILS_NS_BEGIN
 
 GB_UTILS_CLASS filesystem
 {
-    GB_SINGLETON_EXCLUDECTOR(filesystem);
+    GB_SINGLETON_NO_CTORDEF(filesystem);
 public:
     ///if suffix is nullptr then all files here will be output 
     std::vector<gb::utils::string>  get_files_here(const char* path, const std::vector<const char*>* suffix = nullptr)const;

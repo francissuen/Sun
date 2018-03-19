@@ -14,10 +14,10 @@
     }						\
 private:					\
 inline x(){};					\
-inline x(x const&) {}				\
+inline x(x const&) = delete;			\
 inline void operator = (x const&){}
 
-#define GB_SINGLETON_EXCLUDECTOR(x)		\
+#define GB_SINGLETON_NO_CTORDEF(x)		\
     public:					\
     static inline x& Instance()			\
     {						\
@@ -26,7 +26,7 @@ inline void operator = (x const&){}
     }						\
 private:					\
 x();						\
-inline x(x const&) {}				\
+inline x(x const&)  = delete;			\
 inline void operator = (x const&){}
 
 #define GB_FRIEND_BINARY_OPERATOR_DECLARE(return_t, operator_, operand_1_t, operand_2_t) \
