@@ -3,12 +3,13 @@
 #include "ns.h"
 #include <functional>
 #include <unordered_map>
-#include <string>
 
+#include "string.h"
+#include "logger.h"
 GB_UTILS_NS_BEGIN
 
-#define GB_UTILS_CALLBACK_REG(cbObj, triggerKey, className, memFunc, ...) \
-    cbObj.RegisterCB(triggerKey, #memFunc, std::bind(&(className::memFunc), this, __VA_ARGS__));
+#define GB_UTILS_CALLBACK_REG(cbObj, triggerKey, memFunc, ...) \
+    cbObj.RegisterCB(triggerKey, #memFunc, std::bind(&memFunc, this, __VA_ARGS__));
 
 #define GB_UTILS_CALLBACK_UNREG(cbObj, triggerKey, memFunc)	\
     cbObj.UnregisterCB(triggerKey, #memFunc);
@@ -23,10 +24,12 @@ public:
 	    auto triggerItr = _mpCBs.find(triggerKey);
 	    if (triggerItr != _mpCBs.end())
 	    {
-		triggerItr->second.insert(std::make_pair(std::string(szFuncName), cb));
+		auto ret = triggerItr->second.insert(std::make_pair(std::string(szFuncName), cb));
+		if(!ret.second)
+		    logger::Instance().warning(string("callback::RegisterCB failed funcname@ ") + szFuncName + "triggerkey@ " + triggerKey);
 	    }
 	    else
-		_mpCBs.insert(std::make_pair(triggerKey, std::unordered_map<std::string, std::function<void(void)>>{ {funcName, cb}}));
+		_mpCBs.insert(std::make_pair(triggerKey, std::unordered_map<std::string, std::function<void(void)>>{ {szFuncName, cb}}));
 
 	}
     void UnregisterCB(const std::uint32_t triggerKey, const char* szFuncName)
