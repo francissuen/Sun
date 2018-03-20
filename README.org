@@ -1,4 +1,5 @@
 * Macros
   - GB_UTILS_MULTI_THREAD :: support multi-threads?
-  -  :: 
+  - GB_UTILS_LOGGER_LAZY :: if defined, then using logger in lay way 
+  which means need call flush manually
 
