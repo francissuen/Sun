@@ -86,7 +86,7 @@ lua_State* luastate::getstate()
 // {
 // }
 
-#if GB_UTILS_MULTI_THREAD
+#if GB_UTILS_MULTI_THREADS
 std::uint8_t luastate_mt::_threadCount = std::thread::hardware_concurrency();
 #else
 std::uint8_t luastate_mt::_threadCount = 1;

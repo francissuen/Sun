@@ -86,7 +86,7 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
     GB_GET_LOCALTIME(timeBuf);					\
     if(_bEnableColor)						\
 	::SetConsoleTextAttribute(_hConsole, win_color_code);	\
-    ostream << timeBuf << std::endl				\
+    ostream << timeBuf << '\n'					\
     << title << szMsg << std::endl;
 
 //#elif __GNUC__
@@ -99,7 +99,7 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
     GB_GET_LOCALTIME(timeBuf);				\
     if(_bEnableColor)					\
 	ostream << color_code;				\
-    ostream << timeBuf << std::endl			\
+    ostream << timeBuf << '\n'				\
     << title << szMsg;					\
     ostream << std::endl;	
 
