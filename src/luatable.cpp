@@ -13,6 +13,11 @@ luatable_mapper::luatable_mapper(const char* file, luastate& config_luastate):
 	logger::Instance().error(string("luatable::luatable config_luastate->dofile error@ ") + file);
 }
 
+luatable_mapper::~luatable_mapper()
+{
+    lua_pop(_l, 1);
+}
+
 bool luatable_mapper::validate()const
 {
     return lua_type(_l, -1) == LUA_TTABLE;
