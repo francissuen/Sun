@@ -34,6 +34,7 @@ class luatable_mapper
 {
 public:
     luatable_mapper(const char* file, luastate& config_luastate);
+    ~luatable_mapper();
 public:
     bool validate()const;
     size_t objlen()const;
