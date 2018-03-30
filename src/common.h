@@ -29,6 +29,17 @@ x();						\
 inline x(x const&)  = delete;			\
 inline void operator = (x const&){}
 
+#define GB_SINGLETON_NO_CTORDCLR(x)		\
+    public:					\
+    static inline x& Instance()			\
+    {						\
+	static x _instance;			\
+	return _instance;			\
+    }						\
+private:					\
+inline x(x const&)  = delete;			\
+inline void operator = (x const&){}
+
 #define GB_FRIEND_BINARY_OPERATOR_DECLARE(return_t, operator_, operand_1_t, operand_2_t) \
     friend return_t operator operator_ (operand_1_t, operand_2_t);	\
     friend return_t operator operator_ (operand_2_t, operand_1_t);	\

@@ -33,10 +33,11 @@ class luatable_mapper;
 class luatable_mapper
 {
 public:
-    luatable_mapper(const char* file, luastate& config_luastate);
+    luatable_mapper(luastate& ls);
+    luatable_mapper(const char* file, luastate& ls);
     ~luatable_mapper();
 public:
-    bool validate()const;
+    bool validate();
     size_t objlen()const;
     bool has_key(const char* key)const;
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Number, number);
@@ -138,6 +139,7 @@ public:
 private:
     lua_State* _l;
     GB_PROPERTY_R(private, File, gb::utils::string);
+    GB_PROPERTY_R(private, Validated, bool);
 };
 
 GB_UTILS_NS_END
