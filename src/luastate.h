@@ -22,6 +22,8 @@ private:
 
 private:
     static int _debug_traceback(lua_State* l);
+
+    GB_PROPERTY(private, Lock, bool);
 };
 
 class luastate_mt
