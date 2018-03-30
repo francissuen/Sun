@@ -11,7 +11,8 @@ extern "C"
 
 using namespace gb::utils;
 
-luastate::luastate()
+luastate::luastate():
+    _Lock(false)
 {
     _l = luaL_newstate();
     assert(_l != nullptr);
@@ -24,30 +25,46 @@ luastate::~luastate()
 }
 bool luastate::dofile(const char* szLuaFile)
 {
-    lua_pushcfunction(_l, _debug_traceback);
-    const int errCode = luaL_loadfile(_l, szLuaFile);
-    if(errCode !=0 )
+    if(!_Lock)
     {
-	logger::Instance().error(string("luastate::dofile luaL_loadfile err@ ")
-				 + lua_tostring(_l, -1)
-				 + ", file@ " + szLuaFile);
+	lua_pushcfunction(_l, _debug_traceback);
+	const int errCode = luaL_loadfile(_l, szLuaFile);
+	if(errCode !=0 )
+	{
+	    logger::Instance().error(string("luastate::dofile luaL_loadfile err@ ")
+				     + lua_tostring(_l, -1)
+				     + ", file@ " + szLuaFile);
+	    return false;
+	}
+	return lua_pcall(_l, 0, 1, -2) == 0 ? true : false;
+    }
+    else
+    {
+	logger::Instance().error(string("luastate::dofile locked szLuaFile@ ") + szLuaFile);
 	return false;
     }
-    return lua_pcall(_l, 0, 1, -2) == 0 ? true : false;
 }
 
 bool luastate::dostring(const char* szLua)
 {
-    lua_pushcfunction(_l, _debug_traceback);
-    const int errCode = luaL_loadstring(_l, szLua);
-    if(errCode !=0 )
+    if(!_Lock)
     {
-	logger::Instance().error(string("luastate::dostring luaL_loadstring err@ ")
-				 + lua_tostring(_l, -1)
-				 + ", lua@ " + szLua);
+	lua_pushcfunction(_l, _debug_traceback);
+	const int errCode = luaL_loadstring(_l, szLua);
+	if(errCode !=0 )
+	{
+	    logger::Instance().error(string("luastate::dostring luaL_loadstring err@ ")
+				     + lua_tostring(_l, -1)
+				     + ", lua@ " + szLua);
+	    return false;
+	}
+	return lua_pcall(_l, 0, 1, -2) == 0 ? true : false;
+    }
+    else
+    {
+	logger::Instance().error(string("luastate::dostring locked szLua@ ") + szLua);
 	return false;
     }
-    return lua_pcall(_l, 0, 1, -2) == 0 ? true : false;
 }
 
 int luastate::_debug_traceback(lua_State* l)
@@ -62,16 +79,21 @@ int luastate::_debug_traceback(lua_State* l)
 
 void luastate::append_packagepath(const char* path)
 {
-    lua_getglobal(_l, "package");
-    lua_getfield(_l, -1, "path");
-    string cur_path(lua_tostring(_l, -1));
-    cur_path += ";";
-    cur_path += path;
-    cur_path += "/?.lua";
-    lua_pop(_l, 1);
-    lua_pushstring(_l, cur_path);
-    lua_setfield(_l, -2, "path");
-    lua_pop(_l, 1);
+    if(!_Lock)
+    {
+	lua_getglobal(_l, "package");
+	lua_getfield(_l, -1, "path");
+	string cur_path(lua_tostring(_l, -1));
+	cur_path += ";";
+	cur_path += path;
+	cur_path += "/?.lua";
+	lua_pop(_l, 1);
+	lua_pushstring(_l, cur_path);
+	lua_setfield(_l, -2, "path");
+	lua_pop(_l, 1);
+    }
+    else
+	logger::Instance().error(string("luastate::append_packagepath locked path@ ") + path);
 }
 
 lua_State* luastate::getstate()

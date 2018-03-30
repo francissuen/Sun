@@ -5,32 +5,67 @@ using namespace gb::utils;
 
 luatable_mapper::luatable_mapper(luastate& ls):
     _l(ls.getstate()),
-    _Validated(false)
+    _ls(ls),
+    _MappedOk(false)
 {
     assert(_l != nullptr);
-}
-
-luatable_mapper::luatable_mapper(const char* file, luastate& ls):
-    _l(ls.getstate()),
-    _File(file),
-    _Validated(false)
-{
-    assert(_l != nullptr);
-    
-    if(!ls.dofile(file))
-	logger::Instance().error(string("luatable::luatable config_luastate->dofile error@ ") + file);
 }
 
 luatable_mapper::~luatable_mapper()
 {
-    if(_Validated)
+    if(_MappedOk)
+    {
 	lua_pop(_l, 1);
+	_ls.SetLock(false);
+    }
+
 }
 
-bool luatable_mapper::validate()
+bool luatable_mapper::map_file(const char* file)
 {
-    _Validated = (lua_type(_l, -1) == LUA_TTABLE);
-    return _Validated;
+    if(_MappedOk)
+	lua_pop(_l, 1);
+    
+    _Data = file;
+    if(_ls.dofile(file) && _validate())
+	return _MappedOk;
+    else
+    {
+	logger::Instance().error("luatable_mapper::map_file file@ " + _Data);
+	return false;
+    }
+}
+
+bool luatable_mapper::map_string(const char* luaCode)
+{
+    if(_MappedOk)
+	lua_pop(_l, 1);
+    
+    _Data = luaCode;
+    if(_ls.dostring(luaCode) && _validate())
+	return _MappedOk;
+    else
+    {
+	logger::Instance().error("luatable_mapper::map_string fileCode@ " + _Data);
+	return false;
+    }
+}
+
+void luatable_mapper::unmap()
+{
+    if(_MappedOk)
+    {
+	lua_pop(_l, 1);
+	_MappedOk = false;
+	_ls.SetLock(false);
+    }
+}
+bool luatable_mapper::_validate()
+{
+    _MappedOk = (lua_type(_l, -1) == LUA_TTABLE);
+    if(_MappedOk)
+	_ls.SetLock(true);
+    return _MappedOk;
 }
 
 size_t luatable_mapper::objlen()const
