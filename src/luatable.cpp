@@ -3,24 +3,34 @@
 
 using namespace gb::utils;
 
-luatable_mapper::luatable_mapper(const char* file, luastate& config_luastate):
-    _l(config_luastate.getstate()),
-    _File(file)
+luatable_mapper::luatable_mapper(luastate& ls):
+    _l(ls.getstate()),
+    _Validated(false)
+{
+    assert(_l != nullptr);
+}
+
+luatable_mapper::luatable_mapper(const char* file, luastate& ls):
+    _l(ls.getstate()),
+    _File(file),
+    _Validated(false)
 {
     assert(_l != nullptr);
     
-    if(!config_luastate.dofile(file))
+    if(!ls.dofile(file))
 	logger::Instance().error(string("luatable::luatable config_luastate->dofile error@ ") + file);
 }
 
 luatable_mapper::~luatable_mapper()
 {
-    lua_pop(_l, 1);
+    if(_Validated)
+	lua_pop(_l, 1);
 }
 
-bool luatable_mapper::validate()const
+bool luatable_mapper::validate()
 {
-    return lua_type(_l, -1) == LUA_TTABLE;
+    _Validated = (lua_type(_l, -1) == LUA_TTABLE);
+    return _Validated;
 }
 
 size_t luatable_mapper::objlen()const
