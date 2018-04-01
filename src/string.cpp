@@ -21,18 +21,17 @@ std::map<const std::string, std::string> string::extract_blocks(const std::vecto
 
     for (std::vector<std::string>::const_iterator i = pairDelimiters.begin(); i != pairDelimiters.end(); i++)
     {
-	const std::string& dlmtr = *i;
-	const size_t startPos = _data.find(dlmtr, 0);
-	const size_t dlmtrLen = dlmtr.size();
+	const size_t startPos = _data.find(*i, 0);
+	const size_t dlmtrLen = i->size();
 	i++;
 	if (startPos != std::string::npos)
 	{
 	    const size_t blockStartPos = startPos + dlmtrLen;
 
-	    const size_t endPos = _data.find(dlmtr, blockStartPos);
+	    const size_t endPos = _data.find(*i, blockStartPos);
 	    if (endPos != std::string::npos)
 	    {
-		ret.insert(std::pair<const std::string, std::string>(dlmtr, _data.substr(blockStartPos, endPos - blockStartPos)));
+		ret.insert(std::pair<const std::string, std::string>(*i, _data.substr(blockStartPos, endPos - blockStartPos)));
 	    }
 	}
     }
