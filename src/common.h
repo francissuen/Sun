@@ -271,8 +271,8 @@ namespace gb
 {
     namespace utils
     {
-	template<typename From, typename To>
-	inline To* safe_cast(From* from)
+	template<typename To, typename From>
+	inline To* gb_cast(From* from)
 	{
 #ifdef NDEBUG
 	    return static_cast<To*>(from);
@@ -283,13 +283,13 @@ namespace gb
 #endif    
 	}
 
-	template<typename From, typename To>
-	inline To& safe_cast(From& from)
+	template<typename To, typename From>
+	inline To& gb_cast(From && from)
 	{
 #ifdef NDEBUG
-	    return static_cast<To&>(from);
+	    return static_cast<To&&>(from);
 #else
-	    return dynamic_cast<To&>(from);
+	    return dynamic_cast<To&&>(from);
 #endif    
 	}
 
