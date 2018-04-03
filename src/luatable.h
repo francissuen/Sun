@@ -17,8 +17,8 @@
     std::vector<ret_type> get_##name##s() const;			\
     std::vector<ret_type> get_##name##s_by_key(const char* key) const;	\
     std::vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	\
-    void checkout_##name##_by_key(const char* key, ret_type& out_val) const; \
-    void checkout_##name##_by_idx(const size_t idx, ret_type& out_val) const; \
+    void checkout_##name##_by_key(const char* key, ret_type* out_val) const; \
+    void checkout_##name##_by_idx(const size_t idx, ret_type* out_val) const; \
     void checkout_##name##s(std::vector<ret_type>& out_val) const;	\
     void checkout_##name##s_by_key(const char* key, std::vector<ret_type>& out_val) const; \
     void checkout_##name##s_by_idx(const size_t idx, std::vector<ret_type>& out_val) const;
@@ -35,7 +35,7 @@ public:
     bool map_string(const char* luaCode);
     void unmap();
     bool load_table(const char* key);
-    void unload();
+    void unload_table();
     size_t objlen()const;
     bool has_key(const char* key)const;
     _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Number, number);

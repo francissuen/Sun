@@ -71,7 +71,7 @@ bool luatable_mapper::load_table(const char* key)
 	return false;
 }
 
-void luatable_mapper::unload()
+void luatable_mapper::unload_table()
 {
     lua_pop(_l, 1);
     _UnbalancedStack -= 1;
@@ -121,13 +121,13 @@ bool luatable_mapper::has_key(const char* key)const
 	    return default_value;					\
 	}								\
     }									\
-    void luatable_mapper::checkout_##name##_by_key(const char* key, ret_type& out_val) const \
+    void luatable_mapper::checkout_##name##_by_key(const char* key, ret_type* out_val) const \
     {									\
 	assert(key != nullptr);						\
 	lua_getfield(_l, -1, key);					\
 	if(lua_type(_l, -1) == type)					\
 	{								\
-	    out_val =  (ret_type)(lua_to_func(_l, -1));			\
+	    *out_val =  (ret_type)(lua_to_func(_l, -1));			\
 	    lua_pop(_l, 1);						\
 	}								\
 	else								\
@@ -243,13 +243,13 @@ bool luatable_mapper::has_key(const char* key)const
 	    return default_value;					\
 	}								\
     }									\
-    void luatable_mapper::checkout_##name##_by_idx(const size_t idx, ret_type& out_val) const \
+    void luatable_mapper::checkout_##name##_by_idx(const size_t idx, ret_type* out_val) const \
     {									\
 	assert(idx >= 1);						\
 	lua_rawgeti(_l, -1, idx);					\
 	if(lua_type(_l, -1) == type)					\
 	{								\
-	    out_val = (ret_type)(lua_to_func(_l, -1));			\
+	    *out_val = (ret_type)(lua_to_func(_l, -1));			\
 	    lua_pop(_l, 1);						\
 	}								\
 	else								\
