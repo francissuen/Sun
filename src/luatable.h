@@ -11,17 +11,78 @@
  * checkout* set out_val only when exists
  */
 
-#define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(ret_type, name)		\
+#define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(ret_type, name)		\
     ret_type get_##name##_by_key(const char* key) const;		\
     ret_type get_##name##_by_idx(const size_t idx) const;		\
     std::vector<ret_type> get_##name##s() const;			\
     std::vector<ret_type> get_##name##s_by_key(const char* key) const;	\
-    std::vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	\
-    void checkout_##name##_by_key(const char* key, ret_type* out_val) const; \
-    void checkout_##name##_by_idx(const size_t idx, ret_type* out_val) const; \
-    void checkout_##name##s(std::vector<ret_type>& out_val) const;	\
-    void checkout_##name##s_by_key(const char* key, std::vector<ret_type>& out_val) const; \
-    void checkout_##name##s_by_idx(const size_t idx, std::vector<ret_type>& out_val) const;
+    std::vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	
+
+#define _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(ret_type, name, type, lua_to_func, default_value) \
+    template<typename out_t>						\
+    void checkout_##name##_by_key(const char* key, out_t& out_val) const \
+    {									\
+	assert(key != nullptr);						\
+	lua_getfield(_l, -1, key);					\
+	if(lua_type(_l, -1) == type)					\
+	    out_val =  (out_t)(lua_to_func(_l, -1));			\
+	lua_pop(_l, 1);							\
+    }									\
+    template<typename out_t>						\
+    void checkout_##name##s(std::vector<out_t>& out_val) const		\
+    {									\
+	const size_t len = lua_objlen(_l, -1);				\
+	out_val.clear();						\
+	out_val.reserve(len);						\
+	for(size_t i = 1; i <= len; i++)				\
+	    {								\
+		out_val.push_back(get_##name##_by_idx(i));		\
+	    }								\
+    }									\
+    template<typename out_t>						\
+    void checkout_##name##s_by_key(const char* key, std::vector<out_t>& out_val) const \
+    {									\
+	GB_ASSERT(key != nullptr);					\
+	lua_getfield(_l, -1, key);					\
+	if(lua_type(_l, -1) == LUA_TTABLE)				\
+	    {								\
+		const size_t len = lua_objlen(_l, -1);			\
+		out_val.clear();					\
+		out_val.reserve(len);					\
+		for(size_t i = 1; i <= len; i++)			\
+		    {							\
+			out_val.push_back(get_##name##_by_idx(i));	\
+		    }							\
+	    }								\
+	lua_pop(_l, 1);							\
+    }									\
+    template<typename out_t>						\
+    void checkout_##name##s_by_idx(const size_t idx, std::vector<out_t>& out_val) const \
+    {									\
+	GB_ASSERT(idx >= 1);						\
+	lua_rawgeti(_l, -1, idx);					\
+	if(lua_type(_l, -1) == LUA_TTABLE)				\
+	    {								\
+		const size_t len = lua_objlen(_l, -1);			\
+		out_val.clear();					\
+		out_val.reserve(len);					\
+		for(size_t i = 1; i <= len; i++)			\
+		    {							\
+			out_val.push_back(get_##name##_by_idx(i));	\
+		    }							\
+	    }								\
+	lua_pop(_l, 1);							\
+    }									\
+    template<typename out_t>						\
+    void checkout_##name##_by_idx(const size_t idx, out_t& out_val) const \
+    {									\
+	assert(idx >= 1);						\
+	lua_rawgeti(_l, -1, idx);					\
+	if(lua_type(_l, -1) == type)					\
+	    out_val = (out_t)(lua_to_func(_l, -1));			\
+	lua_pop(_l, 1);							\
+    }
+
 
 GB_UTILS_NS_BEGIN
 
@@ -38,10 +99,16 @@ public:
     void unload_table();
     size_t objlen()const;
     bool has_key(const char* key)const;
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Number, number);
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(lua_Integer, integer);
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(gb::utils::string, string);
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL(bool, boolean);
+    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(lua_Number, number);
+    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(lua_Integer, integer);
+    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(gb::utils::string, string);
+    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(bool, boolean);
+
+    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);
+    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Integer, integer, LUA_TNUMBER, lua_tointeger, 0);
+    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(string, string, LUA_TSTRING, lua_tostring, string());
+    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(bool, boolean, LUA_TBOOLEAN, lua_toboolean, false);
+
     template <typename Table>
     Table get_table() const
     {

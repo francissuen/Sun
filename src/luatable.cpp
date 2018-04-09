@@ -121,21 +121,6 @@ bool luatable_mapper::has_key(const char* key)const
 	    return default_value;					\
 	}								\
     }									\
-    void luatable_mapper::checkout_##name##_by_key(const char* key, ret_type* out_val) const \
-    {									\
-	assert(key != nullptr);						\
-	lua_getfield(_l, -1, key);					\
-	if(lua_type(_l, -1) == type)					\
-	{								\
-	    *out_val =  (ret_type)(lua_to_func(_l, -1));			\
-	    lua_pop(_l, 1);						\
-	}								\
-	else								\
-	{								\
-	    logger::Instance().warning(string("luatable_mapper::checkout_" #name "_by_key unmatched type@") + key); \
-	    lua_pop(_l, 1);						\
-	}								\
-    }									\
 									\
     std::vector<ret_type> luatable_mapper::get_##name##s() const	\
     {									\
@@ -146,16 +131,6 @@ bool luatable_mapper::has_key(const char* key)const
 	    ret.push_back(get_##name##_by_idx(i));			\
 	}								\
 	return ret;							\
-    }									\
-    void luatable_mapper::checkout_##name##s(std::vector<ret_type>& out_val) const \
-    {									\
-	const size_t len = lua_objlen(_l, -1);				\
-	out_val.clear();						\
-	out_val.reserve(len);						\
-	for(size_t i = 1; i <= len; i++)				\
-	{								\
-	    out_val.push_back(get_##name##_by_idx(i));			\
-	}								\
     }									\
 									\
     std::vector<ret_type> luatable_mapper::get_##name##s_by_key(const char* key) const \
@@ -175,22 +150,6 @@ bool luatable_mapper::has_key(const char* key)const
 	lua_pop(_l, 1);							\
 	return ret;							\
     }									\
-    void luatable_mapper::checkout_##name##s_by_key(const char* key, std::vector<ret_type>& out_val) const \
-    {									\
-	GB_ASSERT(key != nullptr);					\
-	lua_getfield(_l, -1, key);					\
-	if(lua_type(_l, -1) == LUA_TTABLE)				\
-	{								\
-	    const size_t len = lua_objlen(_l, -1);			\
-	    out_val.clear();						\
-	    out_val.reserve(len);					\
-	    for(size_t i = 1; i <= len; i++)				\
-	    {								\
-		out_val.push_back(get_##name##_by_idx(i));		\
-	    }								\
-	}								\
-	lua_pop(_l, 1);							\
-    }									\
 									\
     std::vector<ret_type> luatable_mapper::get_##name##s_by_idx(const size_t idx) const \
     {									\
@@ -209,22 +168,6 @@ bool luatable_mapper::has_key(const char* key)const
 	lua_pop(_l, 1);							\
 	return ret;							\
     }									\
-    void luatable_mapper::checkout_##name##s_by_idx(const size_t idx, std::vector<ret_type>& out_val) const \
-    {									\
-	GB_ASSERT(idx >= 1);						\
-	lua_rawgeti(_l, -1, idx);					\
-	if(lua_type(_l, -1) == LUA_TTABLE)				\
-	{								\
-	    const size_t len = lua_objlen(_l, -1);			\
-	    out_val.clear();						\
-	    out_val.reserve(len);					\
-	    for(size_t i = 1; i <= len; i++)				\
-	    {								\
-		out_val.push_back(get_##name##_by_idx(i));		\
-	    }								\
-	}								\
-	lua_pop(_l, 1);							\
-    }									\
 									\
     ret_type luatable_mapper::get_##name##_by_idx(const size_t idx) const \
     {									\
@@ -242,22 +185,7 @@ bool luatable_mapper::has_key(const char* key)const
 	    lua_pop(_l, 1);						\
 	    return default_value;					\
 	}								\
-    }									\
-    void luatable_mapper::checkout_##name##_by_idx(const size_t idx, ret_type* out_val) const \
-    {									\
-	assert(idx >= 1);						\
-	lua_rawgeti(_l, -1, idx);					\
-	if(lua_type(_l, -1) == type)					\
-	{								\
-	    *out_val = (ret_type)(lua_to_func(_l, -1));			\
-	    lua_pop(_l, 1);						\
-	}								\
-	else								\
-	{								\
-	    logger::Instance().warning(string("luatable_mapper::checkout_" #name "_by_idx unmatched type@") + idx); \
-	    lua_pop(_l, 1);						\
-	}								\
-    }
+    }									
 
 
 _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);

@@ -185,6 +185,7 @@ public:
     inline size_t length()const { return _data.length(); }
     inline const std::string & GetStdString()const { return _data; }
     inline std::string& GetStdString() { return _data; }
+    bool operator < (const string& other) const;
 
     //extract block with back delimiters as map's key
     std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;
@@ -207,7 +208,7 @@ namespace std
     template <>
     struct hash<gb::utils::string>
     {
-	std::size_t operator()(gb::utils::string& str) const noexcept
+	std::size_t operator()(const gb::utils::string& str) const noexcept
 	    {
 		return std::hash<std::string>()(str.GetStdString());
 	    }
@@ -218,7 +219,7 @@ namespace std
     {
 	std::size_t operator()(const gb::utils::string& str) const noexcept
 	    {
-		return std::hash< std::string>()(str.GetStdString());
+		return std::hash<std::string>()(str.GetStdString());
 	    }
     };
 }
