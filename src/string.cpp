@@ -11,6 +11,10 @@ bool string::operator==(const std::string& str)const
     return _data.compare(str) == 0? true : false;
 }
 
+bool string::operator < (const string& other) const
+{
+    return _data < other._data;
+}
 std::map<const std::string, std::string> string::extract_blocks(const std::vector<std::string>& pairDelimiters)const
 {
     std::map<const std::string, std::string> ret;
