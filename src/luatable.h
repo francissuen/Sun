@@ -14,6 +14,7 @@
 #define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(ret_type, name)		\
     ret_type get_##name##_by_key(const char* key) const;		\
     ret_type get_##name##_by_idx(const size_t idx) const;		\
+    ret_type get_##name##() const;					\
     std::vector<ret_type> get_##name##s() const;			\
     std::vector<ret_type> get_##name##s_by_key(const char* key) const;	\
     std::vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	
