@@ -66,7 +66,7 @@ public:
 	    std::for_each(_mpCBs.begin(), _mpCBs.end(), [&func_params ...](const std::pair<string,
 							   std::unordered_map<std::uintptr_t, std::function<void(FuncParams ...)>>>& funcs)
 			  {
-			      const auto func = funcs.second;
+			      auto& func = funcs.second;
 
 			      std::for_each(func.begin(), func.end(), [&func_params ...](const std::pair<std::uintptr_t, std::function<void(FuncParams ...)>>& f)
 					    {
