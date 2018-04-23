@@ -159,14 +159,14 @@ void logger::progress(const float value, const char* title)
 
     static std::uint64_t preTime = 0;
     const std::uint64_t curTime = time::Instance().timestamp();
-    static const std::uint8_t etaCount = 5;
-    static std::uint64_t eta[etaCount] = { 0 };
+    static constexpr std::uint8_t etaCount = 5;
+    static std::uint64_t eta[etaCount] = {};
 
     string strEta;
     std::uint8_t widthLeft;
     if (value < 1.0f)
     {
-	if (curTime - preTime > 1000)//sample per second
+	if (curTime - preTime > 1000)//take sample per second
 	{
 	    static float preValue = 0;
 	    if (preValue != 0)

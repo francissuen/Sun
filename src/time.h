@@ -7,7 +7,7 @@
 #define GB_TIMEBUFFER_MAX_LEN 64
 
 #define GB_GET_LOCALTIME(buffer)		\
-    char buffer[GB_TIMEBUFFER_MAX_LEN] = { 0 };	\
+    char buffer[GB_TIMEBUFFER_MAX_LEN] = {};	\
     time::Instance().get_localtime(buffer);
 
 GB_UTILS_NS_BEGIN
