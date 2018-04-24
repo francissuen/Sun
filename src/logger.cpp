@@ -160,7 +160,7 @@ void logger::progress(const float value, const char* title)
     static std::uint64_t preTime = 0;
     const std::uint64_t curTime = time::Instance().timestamp();
     static constexpr std::uint8_t etaCount = 5;
-    static std::uint64_t eta[etaCount] = {};
+    static std::uint64_t eta[etaCount] = {0};
 
     string strEta;
     std::uint8_t widthLeft;
