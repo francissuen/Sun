@@ -208,7 +208,12 @@ bool luatable_mapper::has_key(const char* key)const
 _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);
 _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(lua_Integer, integer, LUA_TNUMBER, lua_tointeger, 0);
 _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(string, string, LUA_TSTRING, lua_tostring, string());
-_GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(bool, boolean, LUA_TBOOLEAN, lua_toboolean, false);
+
+static __forceinline bool _lua_toboolean_to_bool(lua_State *L, int idx)
+{
+	return lua_toboolean(L, idx) ? true : false;
+}
+_GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(bool, boolean, LUA_TBOOLEAN, _lua_toboolean_to_bool, false);
 
 void luatable_mapper::for_each(const std::function<void(const size_t idx)>& func) const
 {

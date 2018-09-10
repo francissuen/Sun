@@ -150,25 +150,27 @@ public:
     }
 
     // misc type
-#define _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(type, fmt)	\
-    inline void operator+=(type ot)				\
+#define _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(TYPE, FMT)	\
+    inline void operator+=(TYPE ot)				\
     {								\
 	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};	\
-	sprintf(szVal, fmt, ot);				\
+	sprintf(szVal, FMT, ot);				\
 	this->_data += szVal;					\
     }								\
     template<typename string_t>					\
-	friend string operator + (string_t && l, type r)	\
+	friend typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t>::type>::value, string> \
+	::type operator + (string_t && l, TYPE r)	\
     {								\
 	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};	\
-	sprintf(szVal, fmt, r);					\
+	sprintf(szVal, FMT, r);					\
 	return string(std::forward<string_t>(l)._data + szVal);	\
     }								\
     template<typename string_t>					\
-	friend string operator + (type l, string_t && r)	\
+	friend typename std::enable_if<is_string<typename gb::rm_cv_ref<string_t>::type>::value, string> \
+	::type operator + (TYPE l, string_t && r)	\
     {								\
 	char szVal[_GB_UTILS_STRING_MAX_BUFFER_SIZE] = {'\0'};	\
-	sprintf(szVal, fmt, l);					\
+	sprintf(szVal, FMT, l);					\
 	return string(szVal + std::forward<string_t>(r)._data);	\
     }		
 
