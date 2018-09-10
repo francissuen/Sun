@@ -169,7 +169,7 @@ bool luatable_mapper::has_key(const char* key)const
     {									\
 	GB_ASSERT(idx >= 1);						\
 	std::vector<ret_type> ret;					\
-	lua_rawgeti(_l, -1, idx);					\
+	lua_rawgeti(_l, -1, (int)idx);					\
 	const int tl = lua_type(_l, -1);				\
 	if(tl == LUA_TTABLE)						\
 	{								\
@@ -189,7 +189,7 @@ bool luatable_mapper::has_key(const char* key)const
     ret_type luatable_mapper::get_##name##_by_idx(const size_t idx) const \
     {									\
 	assert(idx >= 1);						\
-	lua_rawgeti(_l, -1, idx);					\
+	lua_rawgeti(_l, -1, (int)idx);					\
 	if(lua_type(_l, -1) == type)					\
 	{								\
 	    ret_type ret(lua_to_func(_l, -1));				\
@@ -236,7 +236,7 @@ void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func,
 void luatable_mapper::for_each_in(const std::function<void(const size_t)>& func, const size_t idx) const
 {
     GB_ASSERT( idx >= 1 );
-    lua_rawgeti(_l, -1, idx);
+    lua_rawgeti(_l, -1, (int)idx);
     if(lua_type(_l, -1) == LUA_TTABLE)
 	for_each(func);
     else

@@ -7,6 +7,8 @@
 #include "config.h"
 #include <iostream>
 #include <cassert>
+#include <cinttypes>
+
 #include "ns.h"
 
 
@@ -175,10 +177,21 @@ public:
     }		
 
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const signed char, "%hhd");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned char, "%hhu");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
-    _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
+
+	//integer
+#define _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_INTEGER(SIZE) \
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const std::int##SIZE##_t, "%" PRId##SIZE) \
+_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const std::uint##SIZE##_t, "%" PRIu##SIZE) 
+
+	_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_INTEGER(8);
+	_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_INTEGER(16);
+	_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_INTEGER(32);
+	_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_INTEGER(64);
+
+    //_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const signed char, "%hhd");
+    //_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned char, "%hhu");
+    //_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
+    //_GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
     _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
