@@ -13,11 +13,11 @@
 
 #define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(ret_type, name)		\
     ret_type get_##name##_by_key(const char* key) const;		\
-    ret_type get_##name##_by_idx(const size_t idx) const;		\
+    ret_type get_##name##_by_idx(const int idx) const;			\
     ret_type get_##name##() const;					\
     std::vector<ret_type> get_##name##s() const;			\
     std::vector<ret_type> get_##name##s_by_key(const char* key) const;	\
-    std::vector<ret_type> get_##name##s_by_idx(const size_t idx) const;	
+    std::vector<ret_type> get_##name##s_by_idx(const int idx) const;	
 
 #define _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(ret_type, name, type, lua_to_func, default_value) \
     template<typename out_t>						\
@@ -32,12 +32,12 @@
     template<typename out_t>						\
     void checkout_##name##s(std::vector<out_t>& out_val) const		\
     {									\
-	const size_t len = lua_objlen(_l, -1);				\
+	const int len = (int)lua_objlen(_l, -1);			\
 	out_val.clear();						\
 	out_val.reserve(len);						\
-	for(size_t i = 1; i <= len; i++)				\
+	for(int i = 1; i <= len; i++)					\
 	    {								\
-		out_val.push_back(get_##name##_by_idx(i));		\
+		out_val.push_back((out_t)(get_##name##_by_idx(i)));	\
 	    }								\
     }									\
     template<typename out_t>						\
@@ -47,35 +47,35 @@
 	lua_getfield(_l, -1, key);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	    {								\
-		const size_t len = lua_objlen(_l, -1);			\
+		const int len = (int)lua_objlen(_l, -1);		\
 		out_val.clear();					\
 		out_val.reserve(len);					\
-		for(size_t i = 1; i <= len; i++)			\
+		for(int i = 1; i <= len; i++)				\
 		    {							\
-			out_val.push_back(get_##name##_by_idx(i));	\
+			out_val.push_back((out_t)(get_##name##_by_idx(i))); \
 		    }							\
 	    }								\
 	lua_pop(_l, 1);							\
     }									\
     template<typename out_t>						\
-    void checkout_##name##s_by_idx(const size_t idx, std::vector<out_t>& out_val) const \
+    void checkout_##name##s_by_idx(const int idx, std::vector<out_t>& out_val) const \
     {									\
 	GB_ASSERT(idx >= 1);						\
 	lua_rawgeti(_l, -1, idx);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	    {								\
-		const size_t len = lua_objlen(_l, -1);			\
+		const int len = (int)lua_objlen(_l, -1);		\
 		out_val.clear();					\
 		out_val.reserve(len);					\
-		for(size_t i = 1; i <= len; i++)			\
+		for(int i = 1; i <= len; i++)				\
 		    {							\
-			out_val.push_back(get_##name##_by_idx(i));	\
+			out_val.push_back((out_t)(get_##name##_by_idx(i))); \
 		    }							\
 	    }								\
 	lua_pop(_l, 1);							\
     }									\
     template<typename out_t>						\
-    void checkout_##name##_by_idx(const size_t idx, out_t& out_val) const \
+    void checkout_##name##_by_idx(const int idx, out_t& out_val) const	\
     {									\
 	assert(idx >= 1);						\
 	lua_rawgeti(_l, -1, idx);					\
@@ -108,7 +108,7 @@ public:
     _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);
     _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Integer, integer, LUA_TNUMBER, lua_tointeger, 0);
     _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(string, string, LUA_TSTRING, lua_tostring, string());
-    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(bool, boolean, LUA_TBOOLEAN, lua_toboolean, false);
+    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(bool, boolean, LUA_TBOOLEAN, _lua_toboolean_to_bool, false);
 
     template <typename Table>
     Table get_table() const
@@ -148,7 +148,7 @@ public:
     }
 
     template<typename Table>
-    Table get_table_by_idx(const size_t idx) const
+    Table get_table_by_idx(const int idx) const
     {
 	GB_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
@@ -159,7 +159,7 @@ public:
 	return table;	    
     }
     template<typename Table>
-    void checkout_table_by_idx(const size_t idx, Table& out_val) const
+    void checkout_table_by_idx(const int idx, Table& out_val) const
     {
 	GB_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
@@ -176,9 +176,9 @@ public:
 	std::vector<Table> ret;
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
-		const std::size_t len = lua_objlen(_l, -1);
+		const int len = (int)lua_objlen(_l, -1);
 		ret.reserve(len);
-		for(std::size_t i = 1; i <= len; i++)
+		for(int i = 1; i <= len; i++)
 		    {
 			ret.push_back(get_table_by_idx<Table>(i));
 		    }
@@ -193,10 +193,10 @@ public:
 	lua_getfield(_l, -1, key);
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
-		const std::size_t len = lua_objlen(_l, -1);
+		const int len = (int)lua_objlen(_l, -1);
 		out_val.clear();
 		out_val.reserve(len);
-		for(std::size_t i = 1; i <= len; i++)
+		for(int i = 1; i <= len; i++)
 		    {
 			out_val.push_back(get_table_by_idx<Table>(i));
 		    }
@@ -205,16 +205,16 @@ public:
     }
 
     template<typename Table>
-    std::vector<Table> get_tables_by_idx(const size_t idx) const
+    std::vector<Table> get_tables_by_idx(const int idx) const
     {
 	GB_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
 	std::vector<Table> ret;
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
-		const std::size_t len = lua_objlen(_l, -1);
+		const int len = (int)lua_objlen(_l, -1);
 		ret.reserve(len);
-		for(std::size_t i = 1; i <= len; i++)
+		for(int i = 1; i <= len; i++)
 		    {
 			ret.push_back(get_table_by_idx<Table>(i));
 		    }
@@ -223,16 +223,16 @@ public:
 	return ret;
     }
     template<typename Table>
-    void checkout_tables_by_idx(const size_t idx, std::vector<Table>& out_val) const
+    void checkout_tables_by_idx(const int idx, std::vector<Table>& out_val) const
     {
 	GB_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
-		const std::size_t len = lua_objlen(_l, -1);
+		const int len = (int)lua_objlen(_l, -1);
 		out_val.clear();
 		out_val.reserve(len);
-		for(std::size_t i = 1; i <= len; i++)
+		for(int i = 1; i <= len; i++)
 		    {
 			out_val.push_back(get_table_by_idx<Table>(i));
 		    }
@@ -240,9 +240,9 @@ public:
 	lua_pop(_l, 1);
     }
     
-    void for_each(const std::function<void(const std::size_t)>& func) const;
-    void for_each_in(const std::function<void(const std::size_t)>& func, const char* key) const;
-    void for_each_in(const std::function<void(const std::size_t)>& func, const std::size_t idx) const;
+    void for_each(const std::function<void(const int)>& func) const;
+    void for_each_in(const std::function<void(const int)>& func, const char* key) const;
+    void for_each_in(const std::function<void(const int)>& func, const int idx) const;
 private:
     
     lua_State* _l;
@@ -256,6 +256,12 @@ private:
 
 private:
     bool _validate();
+
+    static __forceinline bool _lua_toboolean_to_bool(lua_State *L, int idx)
+    {
+	return lua_toboolean(L, idx) ? true : false;
+    }
+
 };
 
 GB_UTILS_NS_END
