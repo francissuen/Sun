@@ -75,7 +75,7 @@ void string::replace(const char* old_str, const char* new_str)
 	_data.replace(pos, len, new_str);
     }
 }
-string string::substr_at_l_lastof(const char val, const bool exclude)
+string string::substr_at_l_lastof(const char val, const bool exclude) const
 {
     const size_t pos =  _data.find_last_of(val);
     if(pos == std::string::npos)
@@ -84,11 +84,15 @@ string string::substr_at_l_lastof(const char val, const bool exclude)
 	return string(_data.substr(0, exclude?pos:pos + 1));
 }
 
-string string::substr_at_r_lastof(const char val, const bool exclude)
+string string::substr_at_r_lastof(const char val, const bool exclude) const
 {
     const size_t pos =  _data.find_last_of(val);
     if(pos == std::string::npos)
 	return string(_data);
     else
 	return string(_data.substr(exclude ? pos + 1 : pos));
+}
+string string::file_extension() const
+{
+    return substr_at_r_lastof('.', true);
 }

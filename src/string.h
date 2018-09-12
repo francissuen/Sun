@@ -206,9 +206,9 @@ _GB_UTILS_STRING_OPERATOR_PLUS_DEFINE_(const std::uint##SIZE##_t, "%" PRIu##SIZE
     std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;
     std::vector<string> split(const char* delimiter)const;
     void replace(const char* old_str, const char* new_str);
-    string substr_at_l_lastof(const char val, const bool exclude = true);
-    string substr_at_r_lastof(const char val, const bool exclude = true);
-
+    string substr_at_l_lastof(const char val, const bool exclude = true) const;
+    string substr_at_r_lastof(const char val, const bool exclude = true) const;
+string file_extension() const;
 private:
     std::string _data;
 
