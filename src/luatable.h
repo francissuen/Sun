@@ -11,7 +11,7 @@
  * checkout* set out_val only when exists
  */
 
-#define _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(ret_type, name)		\
+#define _FS_COMMON_LUATABLE_MAPPER_GETTER_DECL_(ret_type, name)		\
     ret_type get_##name##_by_key(const char* key) const;		\
     ret_type get_##name##_by_idx(const int idx) const;			\
     ret_type get_##name##() const;					\
@@ -19,7 +19,7 @@
     std::vector<ret_type> get_##name##s_by_key(const char* key) const;	\
     std::vector<ret_type> get_##name##s_by_idx(const int idx) const;	
 
-#define _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(ret_type, name, type, lua_to_func, default_value) \
+#define _FS_COMMON_LUATABLE_MAPPER_CHECKOUT_DEF_(ret_type, name, type, lua_to_func, default_value) \
     template<typename out_t>						\
     void checkout_##name##_by_key(const char* key, out_t& out_val) const \
     {									\
@@ -43,7 +43,7 @@
     template<typename out_t>						\
     void checkout_##name##s_by_key(const char* key, std::vector<out_t>& out_val) const \
     {									\
-	GB_ASSERT(key != nullptr);					\
+	FS_ASSERT(key != nullptr);					\
 	lua_getfield(_l, -1, key);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	    {								\
@@ -60,7 +60,7 @@
     template<typename out_t>						\
     void checkout_##name##s_by_idx(const int idx, std::vector<out_t>& out_val) const \
     {									\
-	GB_ASSERT(idx >= 1);						\
+	FS_ASSERT(idx >= 1);						\
 	lua_rawgeti(_l, -1, idx);					\
 	if(lua_type(_l, -1) == LUA_TTABLE)				\
 	    {								\
@@ -85,7 +85,7 @@
     }
 
 
-GB_UTILS_NS_BEGIN
+FS_COMMON_NS_BEGIN
 
 class luatable_mapper
 {
@@ -100,15 +100,15 @@ public:
     void unload_table();
     size_t objlen()const;
     bool has_key(const char* key)const;
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(lua_Number, number);
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(lua_Integer, integer);
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(gb::utils::string, string);
-    _GB_UTILS_LUATABLE_MAPPER_GETTER_DECL_(bool, boolean);
+    _FS_COMMON_LUATABLE_MAPPER_GETTER_DECL_(lua_Number, number);
+    _FS_COMMON_LUATABLE_MAPPER_GETTER_DECL_(lua_Integer, integer);
+    _FS_COMMON_LUATABLE_MAPPER_GETTER_DECL_(fs::common::string, string);
+    _FS_COMMON_LUATABLE_MAPPER_GETTER_DECL_(bool, boolean);
 
-    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);
-    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Integer, integer, LUA_TNUMBER, lua_tointeger, 0);
-    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(string, string, LUA_TSTRING, lua_tostring, string());
-    _GB_UTILS_LUATABLE_MAPPER_CHECKOUT_DEF_(bool, boolean, LUA_TBOOLEAN, _lua_toboolean_to_bool, false);
+    _FS_COMMON_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);
+    _FS_COMMON_LUATABLE_MAPPER_CHECKOUT_DEF_(lua_Integer, integer, LUA_TNUMBER, lua_tointeger, 0);
+    _FS_COMMON_LUATABLE_MAPPER_CHECKOUT_DEF_(string, string, LUA_TSTRING, lua_tostring, string());
+    _FS_COMMON_LUATABLE_MAPPER_CHECKOUT_DEF_(bool, boolean, LUA_TBOOLEAN, _lua_toboolean_to_bool, false);
 
     template <typename Table>
     Table get_table() const
@@ -129,7 +129,7 @@ public:
     template <typename Table>
     Table get_table_by_key(const char* key) const
     {
-	GB_ASSERT(key != nullptr);
+	FS_ASSERT(key != nullptr);
 	lua_getfield(_l, -1, key);
 	Table table;
 	if(lua_type(_l, -1) == LUA_TTABLE)
@@ -140,7 +140,7 @@ public:
     template <typename Table>
     void checkout_table_by_key(const char* key, Table& out_val) const
     {
-	GB_ASSERT(key != nullptr);
+	FS_ASSERT(key != nullptr);
 	lua_getfield(_l, -1, key);
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    out_val.from_lua(*this);
@@ -150,7 +150,7 @@ public:
     template<typename Table>
     Table get_table_by_idx(const int idx) const
     {
-	GB_ASSERT( idx>= 1);
+	FS_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
 	Table table;
 	if(lua_type(_l, -1) == LUA_TTABLE)
@@ -161,7 +161,7 @@ public:
     template<typename Table>
     void checkout_table_by_idx(const int idx, Table& out_val) const
     {
-	GB_ASSERT( idx>= 1);
+	FS_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    out_val.from_lua(*this);
@@ -171,7 +171,7 @@ public:
     template<typename Table>
     std::vector<Table> get_tables_by_key(const char* key) const
     {
-	GB_ASSERT(key != nullptr);
+	FS_ASSERT(key != nullptr);
 	lua_getfield(_l, -1, key);
 	std::vector<Table> ret;
 	if(lua_type(_l, -1) == LUA_TTABLE)
@@ -189,7 +189,7 @@ public:
     template<typename Table>
     void checkout_tables_by_key(const char* key, std::vector<Table>& out_val) const
     {
-	GB_ASSERT(key != nullptr);
+	FS_ASSERT(key != nullptr);
 	lua_getfield(_l, -1, key);
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
@@ -207,7 +207,7 @@ public:
     template<typename Table>
     std::vector<Table> get_tables_by_idx(const int idx) const
     {
-	GB_ASSERT( idx>= 1);
+	FS_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
 	std::vector<Table> ret;
 	if(lua_type(_l, -1) == LUA_TTABLE)
@@ -225,7 +225,7 @@ public:
     template<typename Table>
     void checkout_tables_by_idx(const int idx, std::vector<Table>& out_val) const
     {
-	GB_ASSERT( idx>= 1);
+	FS_ASSERT( idx>= 1);
 	lua_rawgeti(_l, -1, idx);
 	if(lua_type(_l, -1) == LUA_TTABLE)
 	    {
@@ -248,8 +248,8 @@ private:
     lua_State* _l;
     luastate& _ls;
     
-    GB_PROPERTY_R(private, Data, gb::utils::string);
-    GB_PROPERTY_R(private, UnbalancedStack, int);
+    FS_PROPERTY_R(private, Data, fs::common::string);
+    FS_PROPERTY_R(private, UnbalancedStack, int);
 
 private:
     void _balanceStack();
@@ -264,4 +264,4 @@ private:
 
 };
 
-GB_UTILS_NS_END
+FS_COMMON_NS_END

@@ -9,7 +9,7 @@ extern "C"
 #include "string.h"
 #include <thread>
 
-using namespace gb::utils;
+using namespace fs::common;
 
 luastate::luastate():
     _Lock(false)
@@ -108,7 +108,7 @@ lua_State* luastate::getstate()
 // {
 // }
 
-#if GB_UTILS_MULTI_THREADS
+#if FS_COMMON_MULTI_THREADS
 std::uint8_t luastate_mt::_threadCount = std::thread::hardware_concurrency();
 #else
 std::uint8_t luastate_mt::_threadCount = 1;
@@ -122,7 +122,7 @@ luastate_mt::luastate_mt():
 
 luastate_mt::~luastate_mt()
 {
-    GB_SAFE_DELETE_ARRAY(_ls);
+    FS_SAFE_DELETE_ARRAY(_ls);
 }
 
 
@@ -151,8 +151,8 @@ void luastate_mt::dostring(const char* szLua)
 
 // luastate_mgr::~luastate_mgr()
 // {
-//     GB_SAFE_DELETE_ARRAY(_config_l);
-//     GB_SAFE_DELETE_ARRAY(_logic_l);
+//     FS_SAFE_DELETE_ARRAY(_config_l);
+//     FS_SAFE_DELETE_ARRAY(_logic_l);
 // }
 // void luastate_mgr::initialize(const unsigned char threadCount)
 // {

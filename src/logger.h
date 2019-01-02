@@ -13,43 +13,43 @@
 // colorattribute = foreground + background * 16
 // to get red text on yellow use 4 + 14*16 = 228
 // light red on yellow would be 12 + 14*16 = 236
-#define GB_LOGGER_DEFAULT_LOG_MS_COLOR_CODE 15
-#define GB_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE 12
-#define GB_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE 14
-#define GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE 9
-#define GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE 160
+#define FS_LOGGER_DEFAULT_LOG_MS_COLOR_CODE 15
+#define FS_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE 12
+#define FS_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE 14
+#define FS_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE 9
+#define FS_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE 160
 
 //#elif __GNUC__
 #else
 
 // ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS
-#define GB_LOGGER_COLOR_BEGIN "\033["
-#define GB_LOGGER_COLOR_END "m"
-#define GB_LOGGER_COLOR_BACKTONORMAL "\033[0m"
+#define FS_LOGGER_COLOR_BEGIN "\033["
+#define FS_LOGGER_COLOR_END "m"
+#define FS_LOGGER_COLOR_BACKTONORMAL "\033[0m"
 
-#define GB_LOGGER_DEFAULT_LOG_COLOR_CODE "1;37;40"
-#define GB_LOGGER_DEFAULT_ERROR_COLOR_CODE "1;31;40"
-#define GB_LOGGER_DEFAULT_WARNING_COLOR_CODE "1;33;40"
-#define GB_LOGGER_DEFAULT_PROGRESS_COLOR_CODE "1;34;40"
-#define GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE "1;32;42"
+#define FS_LOGGER_DEFAULT_LOG_COLOR_CODE "1;37;40"
+#define FS_LOGGER_DEFAULT_ERROR_COLOR_CODE "1;31;40"
+#define FS_LOGGER_DEFAULT_WARNING_COLOR_CODE "1;33;40"
+#define FS_LOGGER_DEFAULT_PROGRESS_COLOR_CODE "1;34;40"
+#define FS_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE "1;32;42"
 #endif
 
 
-#define GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH 20
-#define GB_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH 64
+#define FS_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH 20
+#define FS_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH 64
 
 //len 10
-#define GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS ">>>[]100% "
+#define FS_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS ">>>[]100% "
 
 // multi thread support
-#ifdef GB_UTILS_MULTI_THREADS
+#ifdef FS_COMMON_MULTI_THREADS
 #include <mutex>
 #endif
 
 
-GB_UTILS_NS_BEGIN
+FS_COMMON_NS_BEGIN
 
-GB_UTILS_CLASS  logger
+FS_COMMON_CLASS  logger
 {
 #ifdef _MSC_VER
     typedef WORD color_code_t;
@@ -57,7 +57,7 @@ GB_UTILS_CLASS  logger
 #else
     typedef std::string color_code_t;
 #endif
-    GB_SINGLETON_NO_CTORDEF(logger);
+    FS_SINGLETON_NO_CTORDEF(logger);
     ~logger();
 public:
     void log(const char* msg)const;
@@ -106,17 +106,17 @@ private:
     CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
 #endif
     
-#ifdef GB_UTILS_MULTI_THREADS
+#ifdef FS_COMMON_MULTI_THREADS
     std::mutex _mtx;
 #endif
 	    
-// #ifdef gbLUAAPI
-//     gb_LC_EXPORT_FUNC(log);
-//     gb_LC_EXPORT_FUNC(error);
-//     gb_LC_EXPORT_FUNC(warning);
-//     gb_LC_Register_PrvCns(log);
+// #ifdef fsLUAAPI
+//     fs_LC_EXPORT_FUNC(log);
+//     fs_LC_EXPORT_FUNC(error);
+//     fs_LC_EXPORT_FUNC(warning);
+//     fs_LC_Register_PrvCns(log);
 // #endif
 
 };
 	
-GB_UTILS_NS_END
+FS_COMMON_NS_END

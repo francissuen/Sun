@@ -1,7 +1,7 @@
 #include "file.h"
 #include "string.h"
-using gb::utils::file;
-using gb::utils::string;
+using fs::common::file;
+using fs::common::string;
 
 file::file(const char* filePath, bool bRead):
     _size(0),

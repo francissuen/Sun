@@ -1,11 +1,11 @@
 #pragma once
 #include "luacpp.h"
 
-class gbLCTypeConversion
+class fsLCTypeConversion
 {
 public:
-	gbLCTypeConversion();
-	~gbLCTypeConversion();
+	fsLCTypeConversion();
+	~fsLCTypeConversion();
 
 
 	//lua table conversion

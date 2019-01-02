@@ -4,27 +4,27 @@
 #include "common.h"
 #include "config.h"
 #include "string.h"
-#define GB_TIMEBUFFER_MAX_LEN 64
+#define FS_TIMEBUFFER_MAX_LEN 64
 
-#define GB_GET_LOCALTIME(buffer)		\
-    char buffer[GB_TIMEBUFFER_MAX_LEN] = {0};	\
+#define FS_GET_LOCALTIME(buffer)		\
+    char buffer[FS_TIMEBUFFER_MAX_LEN] = {0};	\
     time::Instance().get_localtime(buffer);
 
-GB_UTILS_NS_BEGIN
+FS_COMMON_NS_BEGIN
 
-	GB_UTILS_CLASS time
+	FS_COMMON_CLASS time
 	{
-	    GB_SINGLETON(time);
+	    FS_SINGLETON(time);
 	public:
-	    void get_localtime(char * const buffer, const unsigned char length = GB_TIMEBUFFER_MAX_LEN)const;
+	    void get_localtime(char * const buffer, const unsigned char length = FS_TIMEBUFFER_MAX_LEN)const;
 	    std::uint64_t timestamp()const;
 
 	    /*
 	     *@brief, format seconds to [?d:][?h:][?m:]?s string
 	     */
-	    gb::utils::string format(const time_t seconds);
+	    fs::common::string format(const time_t seconds);
 	};
 
-GB_UTILS_NS_END
+FS_COMMON_NS_END
 
 

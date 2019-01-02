@@ -6,7 +6,7 @@ extern "C"
 }
 #include "common.h"
 
-GB_UTILS_NS_BEGIN;
+FS_COMMON_NS_BEGIN;
 
 class luastate
 {
@@ -23,7 +23,7 @@ private:
 private:
     static int _debug_traceback(lua_State* l);
 
-    GB_PROPERTY(private, Lock, bool);
+    FS_PROPERTY(private, Lock, bool);
 };
 
 class luastate_mt
@@ -41,7 +41,7 @@ private:
 
 // class luastate_mgr
 // {
-//     GB_SINGLETON_NO_CTORDEF(luastate_mgr);
+//     FS_SINGLETON_NO_CTORDEF(luastate_mgr);
 //     ~luastate_mgr();
 // public:
 // 	/**
@@ -56,4 +56,4 @@ private:
 //     luastate* _logic_l;
 // };
 
-GB_UTILS_NS_END;
+FS_COMMON_NS_END;

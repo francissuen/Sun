@@ -1,27 +1,27 @@
 #include "luacpp_type_conversion.h"
 
-//std::vector<cpp_static_func> gbLCStaticFuncs;
+//std::vector<cpp_static_func> fsLCStaticFuncs;
 
-//template bool gbLCTypeConversion::TableToArray<float>(lua_State* L, const int idx, float* outVal, const unsigned int size);
-//template bool gbLCTypeConversion::TableToArray<int>(lua_State* L, const unsigned int idx, int* outVal, const unsigned int size);
-//template bool gbLCTypeConversion::TableToArray<unsigned int>(lua_State* L, const unsigned int idx, unsigned int* outVal, const unsigned int size);
+//template bool fsLCTypeConversion::TableToArray<float>(lua_State* L, const int idx, float* outVal, const unsigned int size);
+//template bool fsLCTypeConversion::TableToArray<int>(lua_State* L, const unsigned int idx, int* outVal, const unsigned int size);
+//template bool fsLCTypeConversion::TableToArray<unsigned int>(lua_State* L, const unsigned int idx, unsigned int* outVal, const unsigned int size);
 
-template int gbLCTypeConversion::ArrayToTable<float>(lua_State* L, const float* arr, const unsigned int size);
-//template int gbLCTypeConversion::ArrayToTable<int>(lua_State* L, const int* arr, const unsigned int size);
-//template int gbLCTypeConversion::ArrayToTable<unsigned int>(lua_State* L, const unsigned int* arr, const unsigned int size);
+template int fsLCTypeConversion::ArrayToTable<float>(lua_State* L, const float* arr, const unsigned int size);
+//template int fsLCTypeConversion::ArrayToTable<int>(lua_State* L, const int* arr, const unsigned int size);
+//template int fsLCTypeConversion::ArrayToTable<unsigned int>(lua_State* L, const unsigned int* arr, const unsigned int size);
 
-gbLCTypeConversion::gbLCTypeConversion()
+fsLCTypeConversion::fsLCTypeConversion()
 {
 }
 
 
-gbLCTypeConversion::~gbLCTypeConversion()
+fsLCTypeConversion::~fsLCTypeConversion()
 {
 }
 
 
 //template<typename T>
-//bool gbLCTypeConversion::TableToArray(lua_State* L, const unsigned int idx, T* outVal, const unsigned int count)
+//bool fsLCTypeConversion::TableToArray(lua_State* L, const unsigned int idx, T* outVal, const unsigned int count)
 //{
 //	if (!lua_istable(L, idx))
 //		return false;
@@ -36,11 +36,11 @@ gbLCTypeConversion::~gbLCTypeConversion()
 //	return true;
 //}
 
-bool gbLCTypeConversion::TableToArrayInt(lua_State* L, const int idx, lua_Integer* outVal, const unsigned int count)
+bool fsLCTypeConversion::TableToArrayInt(lua_State* L, const int idx, lua_Integer* outVal, const unsigned int count)
 {
 	if (!lua_istable(L, idx))
 	{
-		printf("gbLCTypeConversion::TableToArrayInt:(!lua_istable(L, idx))");
+		printf("fsLCTypeConversion::TableToArrayInt:(!lua_istable(L, idx))");
 		return false;
 	}
 	//if(size > lua_objlen(L, idx);
@@ -51,7 +51,7 @@ bool gbLCTypeConversion::TableToArrayInt(lua_State* L, const int idx, lua_Intege
 			outVal[i] = lua_tointeger(L, -1);
 		else
 		{
-			printf("gbLCTypeConversion::TableToArrayInt:not a number@%d, assigned to 0", i);
+			printf("fsLCTypeConversion::TableToArrayInt:not a number@%d, assigned to 0", i);
 			outVal[i] = 0;
 		}
 		lua_pop(L, 1);
@@ -59,11 +59,11 @@ bool gbLCTypeConversion::TableToArrayInt(lua_State* L, const int idx, lua_Intege
 	return true;
 }
 
-bool gbLCTypeConversion::TableToArrayFloat(lua_State* L, const int idx, float* outVal, const unsigned int count)
+bool fsLCTypeConversion::TableToArrayFloat(lua_State* L, const int idx, float* outVal, const unsigned int count)
 {
 	if (!lua_istable(L, idx))
 	{
-		printf("gbLCTypeConversion::TableToArray:(!lua_istable(L, idx))");
+		printf("fsLCTypeConversion::TableToArray:(!lua_istable(L, idx))");
 		return false;
 	}
 
@@ -76,7 +76,7 @@ bool gbLCTypeConversion::TableToArrayFloat(lua_State* L, const int idx, float* o
 			outVal[i] = (float)lua_tonumber(L, -1);
 		else
 		{
-			printf("gbLCTypeConversion::TableToArray:not a number@%d, assigned to 0.0f", i);
+			printf("fsLCTypeConversion::TableToArray:not a number@%d, assigned to 0.0f", i);
 			outVal[i] = 0.0f;
 		}
 		lua_pop(L, 1);
@@ -85,7 +85,7 @@ bool gbLCTypeConversion::TableToArrayFloat(lua_State* L, const int idx, float* o
 }
 
 
-bool gbLCTypeConversion::TableToVec3(lua_State* L, const int idx, float (&outVal)[3])
+bool fsLCTypeConversion::TableToVec3(lua_State* L, const int idx, float (&outVal)[3])
 {
 	if (!lua_istable(L, idx))
 		return false;
@@ -104,7 +104,7 @@ bool gbLCTypeConversion::TableToVec3(lua_State* L, const int idx, float (&outVal
 	return true;
 }
 
-int gbLCTypeConversion::Vec3ToTable(lua_State* L, const float  (&inVal)[3])
+int fsLCTypeConversion::Vec3ToTable(lua_State* L, const float  (&inVal)[3])
 {
 	lua_newtable(L);
 	lua_pushnumber(L, inVal[0]);
@@ -120,7 +120,7 @@ int gbLCTypeConversion::Vec3ToTable(lua_State* L, const float  (&inVal)[3])
 }
 
 template<typename T>
-int gbLCTypeConversion::ArrayToTable(lua_State* L, const T* arr, const unsigned int count)
+int fsLCTypeConversion::ArrayToTable(lua_State* L, const T* arr, const unsigned int count)
 {
 	lua_newtable(L);
 	
@@ -132,7 +132,7 @@ int gbLCTypeConversion::ArrayToTable(lua_State* L, const T* arr, const unsigned 
 	return 1;
 }
 //
-//int gbLCTypeConversion::ArrayToTable(lua_State* L, const lua_Number* arr, const unsigned int count)
+//int fsLCTypeConversion::ArrayToTable(lua_State* L, const lua_Number* arr, const unsigned int count)
 //{
 //	lua_newtable(L);
 //
@@ -143,7 +143,7 @@ int gbLCTypeConversion::ArrayToTable(lua_State* L, const T* arr, const unsigned 
 //	}
 //	return 1;
 //}
-int gbLCTypeConversion::ArrayIntToTable(lua_State* L, const lua_Integer* arr, const unsigned int count)
+int fsLCTypeConversion::ArrayIntToTable(lua_State* L, const lua_Integer* arr, const unsigned int count)
 {
 	lua_newtable(L);
 

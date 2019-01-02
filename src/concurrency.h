@@ -8,13 +8,13 @@
 #include <algorithm>
 #include "common.h"
 
-#define GB_UTILS_CONCURRENCY_TASK_PRIORITY_LOW 0x50
-#define GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID 0x90
-#define GB_UTILS_CONCURRENCY_TASK_PRIORITY_HIGH 0xd0
+#define FS_COMMON_CONCURRENCY_TASK_PRIORITY_LOW 0x50
+#define FS_COMMON_CONCURRENCY_TASK_PRIORITY_MID 0x90
+#define FS_COMMON_CONCURRENCY_TASK_PRIORITY_HIGH 0xd0
 #include "config.h"
 #include "ns.h"
 
-GB_UTILS_NS_BEGIN
+FS_COMMON_NS_BEGIN
 
 template<typename bindfunc_t>
 class _task_base
@@ -187,16 +187,16 @@ protected:
 //     }
 // };
 
-#define _GB_UTILS_CONCURRENCY_TASK_DEFINE(name, task_base_bind_placeholders, bind_func_args, ...) \
+#define _FS_COMMON_CONCURRENCY_TASK_DEFINE(name, task_base_bind_placeholders, bind_func_args, ...) \
     template<typename ... otherArgs>					\
     class name: public _task_base<std::function<void(__VA_ARGS__)>>	\
     {									\
     public:								\
-	name(const std::function<void(__VA_ARGS__ GB__VA_ARGS__COMMA(__VA_ARGS__) otherArgs ...)>& func, \
-	     otherArgs ... args, const std::uint8_t p = GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID):					\
+	name(const std::function<void(__VA_ARGS__ FS__VA_ARGS__COMMA(__VA_ARGS__) otherArgs ...)>& func, \
+	     otherArgs ... args, const std::uint8_t p = FS_COMMON_CONCURRENCY_TASK_PRIORITY_MID):					\
 	    _task_base(std::bind(func,					\
-				 GB_EXPAND task_base_bind_placeholders	\
-				 GB__VA_ARGS__COMMA task_base_bind_placeholders \
+				 FS_EXPAND task_base_bind_placeholders	\
+				 FS__VA_ARGS__COMMA task_base_bind_placeholders \
 				 args ...), p)				\
 	{}								\
 	void run(__VA_ARGS__)const					\
@@ -205,7 +205,7 @@ protected:
 	}								\
     };    
 
-#define _GB_UNTILS_CONCURRENCY_DEFINE(name, task_t, task_thread_bind_args, task_run_args, ...) \
+#define _FS_UNTILS_CONCURRENCY_DEFINE(name, task_t, task_thread_bind_args, task_run_args, ...) \
     template <typename ... otherArgs>					\
     class name: public _concurrency_base<task_t<otherArgs ...>>		\
     {									\
@@ -217,12 +217,12 @@ protected:
 	    for(std::uint8_t i = 0; i < this->_threadCount; i++)	\
 	    {								\
 		this->_vThreads.push_back(std::thread(std::bind (_task_thread, \
-								 GB_EXPAND \
+								 FS_EXPAND \
 								 task_thread_bind_args ))); \
 	    }								\
 	}								\
     private:								\
-	static void _task_thread(name* c GB_COMMA__VA_ARGS__(__VA_ARGS__)) \
+	static void _task_thread(name* c FS_COMMA__VA_ARGS__(__VA_ARGS__)) \
 	{								\
 	    std::unique_lock<std::mutex> lck(c->_mtx);			\
 	    std::condition_variable& cv = c->_cv;			\
@@ -260,46 +260,46 @@ protected:
     };
 
 // task_ti(threadIdx, ...)
-_GB_UTILS_CONCURRENCY_TASK_DEFINE(_task_ti,
+_FS_COMMON_CONCURRENCY_TASK_DEFINE(_task_ti,
 				  (std::placeholders::_1),
 				  (threadIdx),
 				  const std::uint8_t threadIdx)
 
-_GB_UNTILS_CONCURRENCY_DEFINE(concurrency_ti,
+_FS_UNTILS_CONCURRENCY_DEFINE(concurrency_ti,
 			      _task_ti,
 			      (this, i),
 			      (threadIdx),
 			      const std::uint8_t threadIdx)
 
 // task_tc(taskCount, ...)
-_GB_UTILS_CONCURRENCY_TASK_DEFINE(_task_tc,
+_FS_COMMON_CONCURRENCY_TASK_DEFINE(_task_tc,
 				  (std::placeholders::_1),
 				  (taskCount),
 				  const size_t taskCount)
 
-_GB_UNTILS_CONCURRENCY_DEFINE(concurrency_tc,
+_FS_UNTILS_CONCURRENCY_DEFINE(concurrency_tc,
 			      _task_tc,
 			      (this),
 			      (taskCount))
 
 // task_ti_tc(threadIdx, taskCount)
-_GB_UTILS_CONCURRENCY_TASK_DEFINE(_task_ti_tc,
+_FS_COMMON_CONCURRENCY_TASK_DEFINE(_task_ti_tc,
 				  (std::placeholders::_1, std::placeholders::_2),
 				  (threadIdx, threadCount),
 				  const std::uint8_t threadIdx, const size_t threadCount)
 
-_GB_UNTILS_CONCURRENCY_DEFINE(concurrency_ti_tc,
+_FS_UNTILS_CONCURRENCY_DEFINE(concurrency_ti_tc,
 			      _task_ti_tc,
 			      (this, i),
 			      (threadIdx, taskCount),
 			      const std::uint8_t threadIdx)
 
 // task(...)
-_GB_UTILS_CONCURRENCY_TASK_DEFINE(_task, (), ())
+_FS_COMMON_CONCURRENCY_TASK_DEFINE(_task, (), ())
 
-_GB_UNTILS_CONCURRENCY_DEFINE(concurrency,
+_FS_UNTILS_CONCURRENCY_DEFINE(concurrency,
 			      _task,
 			      (this),
 			      ())
 
-GB_UTILS_NS_END
+FS_COMMON_NS_END

@@ -2,36 +2,36 @@
 #include <cassert>
 #include <limits>
 
-using gb::utils::logger;
-using gb::utils::time;
+using fs::common::logger;
+using fs::common::time;
 
 logger::logger() :
 #ifdef _MSC_VER
     _normal_color_code(0),
-    _log_color_code(GB_LOGGER_DEFAULT_LOG_MS_COLOR_CODE),
-    _error_color_code(GB_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE),
-    _warning_color_code(GB_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE),
+    _log_color_code(FS_LOGGER_DEFAULT_LOG_MS_COLOR_CODE),
+    _error_color_code(FS_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE),
+    _warning_color_code(FS_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE),
     _progress_color_code{
-    GB_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE,
-	GB_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
+    FS_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE,
+	FS_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
 //#elif __GNUC__
 #else
-    _normal_color_code(GB_LOGGER_COLOR_BACKTONORMAL),
-    _log_color_code(GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_LOG_COLOR_CODE GB_LOGGER_COLOR_END),
-    _error_color_code(GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_ERROR_COLOR_CODE GB_LOGGER_COLOR_END),
-    _warning_color_code(GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_WARNING_COLOR_CODE GB_LOGGER_COLOR_END),
+    _normal_color_code(FS_LOGGER_COLOR_BACKTONORMAL),
+    _log_color_code(FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_LOG_COLOR_CODE FS_LOGGER_COLOR_END),
+    _error_color_code(FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_ERROR_COLOR_CODE FS_LOGGER_COLOR_END),
+    _warning_color_code(FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_WARNING_COLOR_CODE FS_LOGGER_COLOR_END),
     _progress_color_code{
-	GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_PROGRESS_COLOR_CODE GB_LOGGER_COLOR_END,
-	    GB_LOGGER_COLOR_BEGIN GB_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE GB_LOGGER_COLOR_END },
+	FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_PROGRESS_COLOR_CODE FS_LOGGER_COLOR_END,
+	    FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE FS_LOGGER_COLOR_END },
 #endif
     _log_default_streambuf(std::cout.rdbuf()),
     _error_default_streambuf(std::cerr.rdbuf()),
-    _progress_bar_width(GB_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH),
-    _progress_total_width(GB_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
+    _progress_bar_width(FS_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH),
+    _progress_total_width(FS_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
     _bProgressing(false),
     _bEnableColor(true)
 	    {
-		_progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
+		_progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(FS_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 #ifdef _MSC_VER
 		_hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
 		::memset(&_preConsoleAttrib, 0, sizeof(PCONSOLE_SCREEN_BUFFER_INFO));
@@ -52,38 +52,38 @@ logger::~logger()
     }
 }
 
-#ifdef GB_UTILS_MULTI_THREADS
-#define _GB_UTILS_LOGGER_LOCK			\
+#ifdef FS_COMMON_MULTI_THREADS
+#define _FS_COMMON_LOGGER_LOCK			\
     std::lock_guard<std::mutex> lck(_mtx);
 #else
-#define _GB_UTILS_LOGGER_LOCK
+#define _FS_COMMON_LOGGER_LOCK
 #endif
 
 void logger::enable_color(bool bState)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
     _bEnableColor = bState;
 }
 
 void logger::set_log_streambuf(std::streambuf* streambuf)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
     std::cout.rdbuf(streambuf != nullptr ? streambuf : _log_default_streambuf);
 }
 
 void logger::set_error_streambuf(std::streambuf* streambuf)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
     std::cerr.rdbuf(streambuf != nullptr ? streambuf : _error_default_streambuf);
 }
 
 #ifdef _MSC_VER
 
-#define _gb_fancy_print(ostream, title, win_color_code)		\
-    _GB_UTILS_LOGGER_LOCK;					\
+#define _fs_fancy_print(ostream, title, win_color_code)		\
+    _FS_COMMON_LOGGER_LOCK;					\
     assert(!_bProgressing);					\
     assert(szMsg != nullptr);					\
-    GB_GET_LOCALTIME(timeBuf);					\
+    FS_GET_LOCALTIME(timeBuf);					\
     if(_bEnableColor)						\
 	::SetConsoleTextAttribute(_hConsole, win_color_code);	\
     ostream << timeBuf << '\n'					\
@@ -92,11 +92,11 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
 //#elif __GNUC__
 #else
 
-#define _gb_fancy_print(ostream, title, color_code)	\
-    _GB_UTILS_LOGGER_LOCK;				\
+#define _fs_fancy_print(ostream, title, color_code)	\
+    _FS_COMMON_LOGGER_LOCK;				\
     assert(!_bProgressing);				\
     assert(szMsg != nullptr);				\
-    GB_GET_LOCALTIME(timeBuf);				\
+    FS_GET_LOCALTIME(timeBuf);				\
     if(_bEnableColor)					\
 	ostream << color_code;				\
     ostream << timeBuf << '\n'				\
@@ -107,53 +107,53 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
 
 void logger::log(const char* szMsg)const
 {
-    _gb_fancy_print(std::cout, "LOG: ", _log_color_code);
+    _fs_fancy_print(std::cout, "LOG: ", _log_color_code);
 }
 
 void logger::set_log_color_code(const color_code_t szCode)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
 #ifdef _MSC_VER
     _log_color_code = szCode;
 //#elif __GNUC__
 #else
-    _log_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
+    _log_color_code = FS_LOGGER_COLOR_BEGIN + szCode + FS_LOGGER_COLOR_END;
 #endif
 }
 
 void logger::error(const char * szMsg)const
 {
-    _gb_fancy_print(std::cerr, "ERROR: ", _error_color_code);
+    _fs_fancy_print(std::cerr, "ERROR: ", _error_color_code);
 }
 void logger::set_error_color_code(const color_code_t szCode)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
 #ifdef _MSC_VER
     _error_color_code = szCode;
 //#elif __GNUC__
 #else	
-    _error_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
+    _error_color_code = FS_LOGGER_COLOR_BEGIN + szCode + FS_LOGGER_COLOR_END;
 #endif
 }
 void logger::warning(const char* szMsg)const
 {
-    _gb_fancy_print(std::cout, "WARNING: ", _warning_color_code);
+    _fs_fancy_print(std::cout, "WARNING: ", _warning_color_code);
 }
 
 void logger::set_warning_color_code(const color_code_t szCode)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
 #ifdef _MSC_VER
     _warning_color_code = szCode;
 //#elif __GNUC__
 #else	
-    _warning_color_code = GB_LOGGER_COLOR_BEGIN + szCode + GB_LOGGER_COLOR_END;
+    _warning_color_code = FS_LOGGER_COLOR_BEGIN + szCode + FS_LOGGER_COLOR_END;
 #endif
 }
 
 void logger::progress(const float value, const char* title)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
     assert(value >= 0.0f && value <= 1.0f);
     _bProgressing = true;
 
@@ -275,28 +275,28 @@ void logger::progress(const float value, const char* title)
 
 void logger::progress_done()
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
     std::cout << std::endl;
     _bProgressing = false;
 }
 void logger::set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth)
 {
-    _GB_UTILS_LOGGER_LOCK;
+    _FS_COMMON_LOGGER_LOCK;
     _progress_bar_width = barWidth;
     _progress_total_width = totalWidth;
-    _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)(strlen(GB_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS)));
+    _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)(strlen(FS_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS)));
 }
 
-// #ifdef gbLUAAPI
-// void logger::gb_LC_Reg(lua_State* L)
+// #ifdef fsLUAAPI
+// void logger::fs_LC_Reg(lua_State* L)
 // {
-//     gb_LC_Func_Def;
-//     gb_LC_Func_push("log", &log::gb_LC_EF_log);
-//     gb_LC_Func_push("error", &log::gb_LC_EF_error);
-//     gb_LC_Func_push("warning", &log::gb_LC_EF_warning);
+//     fs_LC_Func_Def;
+//     fs_LC_Func_push("log", &log::fs_LC_EF_log);
+//     fs_LC_Func_push("error", &log::fs_LC_EF_error);
+//     fs_LC_Func_push("warning", &log::fs_LC_EF_warning);
 
-//     gbLuaCPP_PrvCns<logger>::Register(L, "logger", funcs);
+//     fsLuaCPP_PrvCns<logger>::Register(L, "logger", funcs);
 
-//     gb_LC_Singleton_Instance_Reg(log);
+//     fs_LC_Singleton_Instance_Reg(log);
 // }
 // #endif

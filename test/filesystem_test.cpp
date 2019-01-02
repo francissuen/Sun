@@ -1,8 +1,8 @@
 #include "../src/filesystem.h"
 #include "../src/logger.h"
 
-using gb::utils::logger;
-using gb::utils::filesystem;
+using fs::common::logger;
+using fs::common::filesystem;
 
 int filesystem_test()
 {
