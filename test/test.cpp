@@ -5,7 +5,7 @@
 #include "filesystem_test.cpp"
 #include "concurrency_test.cpp"
 #include "file_test.cpp"
-#include "luatable_test.cpp"
+// #include "luatable_test.cpp"
 
 #define test(test_func, ...)					\
     if(test_func(__VA_ARGS__) == 0)				\
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 	test(filesystem_test);
 	test(concurrency_test);
 	test(file_test);
-	test(luatable_test);
+	// test(luatable_test);
     }
     catch(string& err)
     {

@@ -1,9 +1,9 @@
 #include "../src/args.h"
 
-//./gbtest -d -n hello -c 100 world fsgb
+//./fstest -d -n hello -c 100 world fsfs
 int args_test(int argc, char** argv)
 {
-    using gb::utils::args;
+    using fs::common::args;
     args arg;
     arg.register_namedArg('d', args::enmType::BOOL);
     arg.register_namedArg('n', args::enmType::STRING);
@@ -30,7 +30,7 @@ int args_test(int argc, char** argv)
 
 	arg.unnamed_arg(uaSize);
     }
-    catch(const gb::utils::string& err)
+    catch(const fs::common::string& err)
     {
 	std::cout << "err:" << err << std::endl;
     }

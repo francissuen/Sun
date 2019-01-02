@@ -1,8 +1,8 @@
 #include "luacpp.h"
 #include <string>
-//lua_State* gbLuaState;
+//lua_State* fsLuaState;
 
-lua_State* gbLuaCPP_init()
+lua_State* fsLuaCPP_init()
 {
 	lua_State* L = luaL_newstate();
 	if (L == nullptr)
@@ -10,14 +10,14 @@ lua_State* gbLuaCPP_init()
 		printf("nullptr");
 		return nullptr;
 	}
-	//gbLuaState = L;
+	//fsLuaState = L;
 	luaL_openlibs(L);
 	return L;
 }
 
-bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile)
+bool fsLuaCPP_dofile(lua_State* L, const char* szLuaFile)
 {
-	lua_pushcfunction(L, gbLuaTraceback);
+	lua_pushcfunction(L, fsLuaTraceback);
 	if (luaL_loadfile(L, szLuaFile) != 0)
 	{
 		printf("luaL_loadfile error:%s\n", lua_tostring(L, -1));
@@ -29,9 +29,9 @@ bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile)
 	}
 }
 
-bool gbLuaCPP_dostring(lua_State* L, const char* szLua)
+bool fsLuaCPP_dostring(lua_State* L, const char* szLua)
 {
-	lua_pushcfunction(L, gbLuaTraceback);
+	lua_pushcfunction(L, fsLuaTraceback);
 	if (luaL_loadstring(L, szLua) != 0)
 	{
 		printf("luaL_loadfile error:%s\n", lua_tostring(L, -1));
@@ -43,7 +43,7 @@ bool gbLuaCPP_dostring(lua_State* L, const char* szLua)
 	}
 }
 
-void gbLuaCPP_appendPackagePath(lua_State* L, const char* path)
+void fsLuaCPP_appendPackagePath(lua_State* L, const char* path)
 {
     lua_getglobal(L, "package");
     lua_getfield(L, -1, "path");
@@ -56,7 +56,7 @@ void gbLuaCPP_appendPackagePath(lua_State* L, const char* path)
     lua_setfield(L, -2, "path");
     lua_pop(L, 1);
 }
-int gbLuaTraceback(lua_State* L)
+int fsLuaTraceback(lua_State* L)
 {
 	lua_getfield(L, LUA_GLOBALSINDEX, "debug");
 	lua_getfield(L, -1, "traceback");

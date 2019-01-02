@@ -1,24 +1,25 @@
-//gbUtils config file
+//fsCommon config file
 
 //version
-#define GB_UTILS_VERSION_MAJOR @GB_UTILS_VERSION_MAJOR@
-#define GB_UTILS_VERSION_MINOR @GB_UTILS_VERSION_MINOR@
+#define FS_COMMON_VERSION_MAJOR @FS_COMMON_VERSION_MAJOR@
+#define FS_COMMON_VERSION_MINOR @FS_COMMON_VERSION_MINOR@
 
+#define FS_COMMON_BUILD_VERSION "@FS_COMMON_BUILD_VERSION@"
 
-#cmakedefine GB_UTILS_LUA_API
+#cmakedefine FS_COMMON_LUA_API
 
-#cmakedefine GB_UTILS_STATIC_LIB
+#cmakedefine FS_COMMON_STATIC_LIB
 
-#ifdef GB_UTILS_STATIC_LIB
-#define GB_UTILS_CLASS class
-#define GB_UTILS_STRUCT struct
-#define GB_UTILS_EXPORT
-#elif GB_UTILS_SHARED_LIB
-#define GB_UTILS_CLASS class __declspec(dllexport)
-#define GB_UTILS_STRUCT struct __declspec(dllexport)
-#define GB_UTILS_EXPORT __declspec(dllexport)
+#ifdef FS_COMMON_STATIC_LIB
+#define FS_COMMON_CLASS class
+#define FS_COMMON_STRUCT struct
+#define FS_COMMON_EXPORT
+#elif FS_COMMON_SHARED_LIB
+#define FS_COMMON_CLASS class __declspec(dllexport)
+#define FS_COMMON_STRUCT struct __declspec(dllexport)
+#define FS_COMMON_EXPORT __declspec(dllexport)
 #else
-#define GB_UTILS_CLASS class __declspec(dllimport)
-#define GB_UTILS_STRUCT struct __declspec(dllimport)
-#define GB_UTILS_EXPORT __declspec(dllimport)
+#define FS_COMMON_CLASS class __declspec(dllimport)
+#define FS_COMMON_STRUCT struct __declspec(dllimport)
+#define FS_COMMON_EXPORT __declspec(dllimport)
 #endif

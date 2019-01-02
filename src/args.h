@@ -5,7 +5,7 @@
 #include <vector>
 #include "string.h"
 
-GB_UTILS_NS_BEGIN
+FS_COMMON_NS_BEGIN
 
 /*
  *supported arguments formats
@@ -14,7 +14,7 @@ GB_UTILS_NS_BEGIN
  *[arg] called unnamed arg(always after named args, except argv[0])
  *note! unnamed_arg(0) always return current executable path
  */
-GB_UTILS_CLASS args
+FS_COMMON_CLASS args
 {
 public:
     enum enmType
@@ -63,4 +63,4 @@ private:
     std::vector<char*> _vUnnamedArgs;
 };
 
-GB_UTILS_NS_END
+FS_COMMON_NS_END

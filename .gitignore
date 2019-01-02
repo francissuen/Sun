@@ -9,3 +9,5 @@ config.h
 
 *.dir/
 test/Win32/
+
+fsCMake/

@@ -20,7 +20,7 @@ possible features
  */
 
 
-GB_UTILS_NS_BEGIN
+FS_COMMON_NS_BEGIN
 
 class t0
 {
@@ -78,9 +78,9 @@ class t1
 };
 
 
-GB_UTILS_CLASS cpp_table
+FS_COMMON_CLASS cpp_table
 {
     void serialize(file);
 };
 
-GB_UTILS_NS_END
+FS_COMMON_NS_END

@@ -7,18 +7,18 @@
 
 #include "string.h"
 #include "logger.h"
-GB_UTILS_NS_BEGIN
+FS_COMMON_NS_BEGIN
 
-#define GB_UTILS_CALLBACK_REG(cbObj, memFunc, ...)			\
+#define FS_COMMON_CALLBACK_REG(cbObj, memFunc, ...)			\
     cbObj.RegisterCB(this, std::bind(&memFunc, this, __VA_ARGS__));
 
-#define GB_UTILS_CALLBACK_REG_1P(cbObj, memFunc)			\
-    GB_UTILS_CALLBACK_REG(cbObj, memFunc, std::placeholders::_1)
+#define FS_COMMON_CALLBACK_REG_1P(cbObj, memFunc)			\
+    FS_COMMON_CALLBACK_REG(cbObj, memFunc, std::placeholders::_1)
 
-#define GB_UTILS_CALLBACK_REG_2P(cbObj, memFunc)			\
-    GB_UTILS_CALLBACK_REG(cbObj, memFunc, std::placeholders::_1, std::placeholders::_2)
+#define FS_COMMON_CALLBACK_REG_2P(cbObj, memFunc)			\
+    FS_COMMON_CALLBACK_REG(cbObj, memFunc, std::placeholders::_1, std::placeholders::_2)
 
-#define GB_UTILS_CALLBACK_UNREG(cbObj)		\
+#define FS_COMMON_CALLBACK_UNREG(cbObj)		\
     cbObj.UnregisterCB(this);
 
 template <typename ... FuncParams>
@@ -62,16 +62,16 @@ private:
     std::unordered_map<const void*, std::function<void(FuncParams ...)>> _mpCBs;
 };
 
-#define GB_UTILS_MULTI_CALLBACK_REG(cbObj, triggerKey, memFunc, ...)	\
+#define FS_COMMON_MULTI_CALLBACK_REG(cbObj, triggerKey, memFunc, ...)	\
     cbObj.RegisterCB(triggerKey, this, std::bind(&memFunc, this, __VA_ARGS__));
 
-#define GB_UTILS_MULTI_CALLBACK_REG_1P(cbObj, triggerKey, memFunc)	\
-    GB_UTILS_MULTI_CALLBACK_REG(cbObj, triggerKey, memFunc, std::placeholders::_1);
+#define FS_COMMON_MULTI_CALLBACK_REG_1P(cbObj, triggerKey, memFunc)	\
+    FS_COMMON_MULTI_CALLBACK_REG(cbObj, triggerKey, memFunc, std::placeholders::_1);
 
-#define GB_UTILS_MULTI_CALLBACK_REG_2P(cbObj, triggerKey, memFunc)	\
-    GB_UTILS_MULTI_CALLBACK_REG(cbObj, triggerKey, memFunc, std::placeholders::_1, std::Placeholders::_2);
+#define FS_COMMON_MULTI_CALLBACK_REG_2P(cbObj, triggerKey, memFunc)	\
+    FS_COMMON_MULTI_CALLBACK_REG(cbObj, triggerKey, memFunc, std::placeholders::_1, std::Placeholders::_2);
 
-#define GB_UTILS_MULTI_CALLBACK_UNREG(cbObj, triggerKey)	\
+#define FS_COMMON_MULTI_CALLBACK_UNREG(cbObj, triggerKey)	\
     cbObj.UnregisterCB(triggerKey, this);
 
 template <typename Key_t, typename ... FuncParams>
@@ -108,5 +108,5 @@ private:
     std::unordered_map<Key_t, callback<FuncParams ...>> _mpCBs;
 };
 
-GB_UTILS_NS_END
+FS_COMMON_NS_END
 

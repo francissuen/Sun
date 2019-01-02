@@ -3,7 +3,7 @@
 #include "../src/filesystem.h"
 #include <map>
 #include <algorithm>
-using namespace gb::utils;
+using namespace fs::common;
 
 
 struct luatable_0
@@ -43,7 +43,7 @@ public:
 	{
 		std::for_each(tbl0s.begin(), tbl0s.end(), [](std::pair<const string, luatable_0*>& t)
 		{
-			GB_SAFE_DELETE(t.second);
+			FS_SAFE_DELETE(t.second);
 		});
 	}
 	void from_lua(const luatable_mapper& mapper)

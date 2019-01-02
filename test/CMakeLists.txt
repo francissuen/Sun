@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(gbtest)
-include(../gbCMake/gbCommon.cmake)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../gbCMake/)
+project(fstest)
+include(../fsCMake/fsCommon.cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../fsCMake/)
 
-add_executable(gbtest
+add_executable(fstest
   test.cpp
   )
 
@@ -19,14 +19,14 @@ find_package(lua REQUIRED)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../ ${CMAKE_CURRENT_SOURCE_DIR}/../build)
 
-target_link_libraries(gbtest
-  gbUtils
-  optimized ${lua_LIBRARIES}
-  debug ${lua_LIBRARIES_d}
+target_link_libraries(fstest
+  fsCommon
+  # optimized ${lua_LIBRARIES}
+  # debug ${lua_LIBRARIES_d}
   ${pthread_lib}
   ${dl_lib}
   )
 
-set_target_properties(gbtest
+set_target_properties(fstest
   PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}")

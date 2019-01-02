@@ -1,7 +1,7 @@
 #include "luatable.h"
 #include "logger.h"
 
-using namespace gb::utils;
+using namespace fs::common;
 
 luatable_mapper::luatable_mapper(luastate& ls):
     _l(ls.getstate()),
@@ -103,7 +103,7 @@ bool luatable_mapper::has_key(const char* key)const
     return ret;
 }
 
-#define _GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(ret_type, name, type, lua_to_func, default_value) \
+#define _FS_COMMON_LUATABLE_MAPPER_GETTER_DEF(ret_type, name, type, lua_to_func, default_value) \
     ret_type luatable_mapper::get_##name##_by_key(const char* key) const \
     {									\
 	assert(key != nullptr);						\
@@ -146,7 +146,7 @@ bool luatable_mapper::has_key(const char* key)const
 									\
     std::vector<ret_type> luatable_mapper::get_##name##s_by_key(const char* key) const \
     {									\
-	GB_ASSERT(key != nullptr);					\
+	FS_ASSERT(key != nullptr);					\
 	std::vector<ret_type> ret;					\
 	lua_getfield(_l, -1, key);					\
 	const int lt = lua_type(_l, -1);				\
@@ -167,7 +167,7 @@ bool luatable_mapper::has_key(const char* key)const
 									\
     std::vector<ret_type> luatable_mapper::get_##name##s_by_idx(const int idx) const \
     {									\
-	GB_ASSERT(idx >= 1);						\
+	FS_ASSERT(idx >= 1);						\
 	std::vector<ret_type> ret;					\
 	lua_rawgeti(_l, -1, idx);					\
 	const int tl = lua_type(_l, -1);				\
@@ -188,7 +188,7 @@ bool luatable_mapper::has_key(const char* key)const
 									\
     ret_type luatable_mapper::get_##name##_by_idx(const int idx) const	\
     {									\
-	GB_ASSERT(idx >= 1);						\
+	FS_ASSERT(idx >= 1);						\
 	lua_rawgeti(_l, -1, idx);					\
 	if(lua_type(_l, -1) == type)					\
 	{								\
@@ -205,10 +205,10 @@ bool luatable_mapper::has_key(const char* key)const
     }									
 
 
-_GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);
-_GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(lua_Integer, integer, LUA_TNUMBER, lua_tointeger, 0);
-_GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(string, string, LUA_TSTRING, lua_tostring, string());
-_GB_UTILS_LUATABLE_MAPPER_GETTER_DEF(bool, boolean, LUA_TBOOLEAN, _lua_toboolean_to_bool, false);
+_FS_COMMON_LUATABLE_MAPPER_GETTER_DEF(lua_Number, number, LUA_TNUMBER, lua_tonumber, 0);
+_FS_COMMON_LUATABLE_MAPPER_GETTER_DEF(lua_Integer, integer, LUA_TNUMBER, lua_tointeger, 0);
+_FS_COMMON_LUATABLE_MAPPER_GETTER_DEF(string, string, LUA_TSTRING, lua_tostring, string());
+_FS_COMMON_LUATABLE_MAPPER_GETTER_DEF(bool, boolean, LUA_TBOOLEAN, _lua_toboolean_to_bool, false);
 
 void luatable_mapper::for_each(const std::function<void(const int idx)>& func) const
 {
@@ -220,7 +220,7 @@ void luatable_mapper::for_each(const std::function<void(const int idx)>& func) c
 }
 void luatable_mapper::for_each_in(const std::function<void(const int)>& func, const char* key) const
 {
-    GB_ASSERT( key != nullptr);
+    FS_ASSERT( key != nullptr);
     lua_getfield(_l, -1, key);
     if(lua_type(_l, -1) == LUA_TTABLE)
 	for_each(func);
@@ -230,7 +230,7 @@ void luatable_mapper::for_each_in(const std::function<void(const int)>& func, co
 }
 void luatable_mapper::for_each_in(const std::function<void(const int)>& func, const int idx) const
 {
-    GB_ASSERT( idx >= 1 );
+    FS_ASSERT( idx >= 1 );
     lua_rawgeti(_l, -1, (int)idx);
     if(lua_type(_l, -1) == LUA_TTABLE)
 	for_each(func);

@@ -5,7 +5,7 @@
 #include "../src/string.h"
 #include "../src/time.h"
 
-using namespace gb::utils;
+using namespace fs::common;
 
 int concurrency_test(const unsigned int count = 1000)
 {
@@ -31,7 +31,7 @@ int concurrency_test(const unsigned int count = 1000)
     {
 	c_ti.pushtask(concurrency_ti<>::task(task_func
 #ifdef _MSC_VER
-				, GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+				, FS_COMMON_CONCURRENCY_TASK_PRIORITY_MID
 #endif
 			  ));
     }
@@ -70,7 +70,7 @@ int concurrency_test(const unsigned int count = 1000)
     for(unsigned int i = 0; i < count; i++)
 	c_ti_tc.pushtask(concurrency_ti_tc<int>::task(task_func_2, i
 #ifdef _MSC_VER
-					 , GB_UTILS_CONCURRENCY_TASK_PRIORITY_MID
+					 , FS_COMMON_CONCURRENCY_TASK_PRIORITY_MID
 #endif
 						  ));
 

@@ -1,12 +1,12 @@
 #pragma once
-#include "gbUtilsConfig.h"
+#include "fsCommonConfig.h"
 #include <cstdint>
-#define gbLUAAPI 1
+#define fsLUAAPI 1
 
 
 //lua 5.1 reference manual:http://www.lua.org/manual/5.1/manual.html
 
-#ifdef gbLUAAPI
+#ifdef fsLUAAPI
 
 extern "C"
 {
@@ -20,40 +20,40 @@ extern "C"
 #include <vector>
 #include <cstring>
 
-#define gb_LC_MAX_METATABLENAME_LEN 64
+#define fs_LC_MAX_METATABLENAME_LEN 64
 
-#define gbLC_METATABLE_SUFFIX "_mt"
+#define fsLC_METATABLE_SUFFIX "_mt"
 
-#define MTNAME_(type) #type gbLC_METATABLE_SUFFIX
+#define MTNAME_(type) #type fsLC_METATABLE_SUFFIX
 #define MTNAME(type) MTNAME_(type)
 
-#define gbUSERDATA "gb_userdata"
+#define fsUSERDATA "fs_userdata"
 #endif
 
-#ifdef gbLUAAPI
-#define gb_LC_Register(ClassName)			\
+#ifdef fsLUAAPI
+#define fs_LC_Register(ClassName)			\
     private:						\
-    typedef gbLuaCPP<ClassName>::gb_LC_Func gb_LC_Func;	\
+    typedef fsLuaCPP<ClassName>::fs_LC_Func fs_LC_Func;	\
 public:							\
-static void gb_LC_Reg(lua_State* L/*, const char* szParentTable = nullptr*/);				
-//inline int gb_LC_EF_Destructor(lua_State* L){delete this;}
+static void fs_LC_Reg(lua_State* L/*, const char* szParentTable = nullptr*/);				
+//inline int fs_LC_EF_Destructor(lua_State* L){delete this;}
 #else
-#define gb_LC_Register(ClassName)
+#define fs_LC_Register(ClassName)
 #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_Register_PrvCns(ClassName) \
+// #ifdef fsLUAAPI
+// #define fs_LC_Register_PrvCns(ClassName) \
 //   private: \
-//   typedef gbLuaCPP_PrvCns<ClassName>::gb_LC_Func gb_LC_Func; \
+//   typedef fsLuaCPP_PrvCns<ClassName>::fs_LC_Func fs_LC_Func; \
 // public: \
-//  static void gb_LC_Reg(lua_State* L);	
+//  static void fs_LC_Reg(lua_State* L);	
 // #else
-// #define gb_LC_Register_PrvCns(ClassName)
+// #define fs_LC_Register_PrvCns(ClassName)
 // #endif
 
-// #ifdef gbLUAAPI
+// #ifdef fsLUAAPI
 // //used after register
-// #define gb_LC_Singleton_Instance_Reg(ClassName)				\
+// #define fs_LC_Singleton_Instance_Reg(ClassName)				\
 //     lua_newtable(L);							\
 //     void* p = lua_newuserdata(L, sizeof(void*));			\
 //     *(std::uintptr_t*)p = (std::uintptr_t)&(ClassName::Instance);	\
@@ -62,14 +62,14 @@ static void gb_LC_Reg(lua_State* L/*, const char* szParentTable = nullptr*/);
 //     lua_setfield(L, -2, "Instance");					\
 //     lua_setglobal(L, ClassName);	
 // #else
-// #define gb_LC_Singleton_Instance_Reg(ClassName)
+// #define fs_LC_Singleton_Instance_Reg(ClassName)
 // #endif
 
-#ifdef gbLUAAPI
+#ifdef fsLUAAPI
 //actual pointer wrapped by a data which point to the pointer
-inline int gb_LC_push_userdata(lua_State* L, std::uintptr_t ud, const char* mtName)
+inline int fs_LC_push_userdata(lua_State* L, std::uintptr_t ud, const char* mtName)
 {
-    if (luaL_newmetatable(L, "gb_userdata") != 0) 
+    if (luaL_newmetatable(L, "fs_userdata") != 0) 
     { 
 	/*weaktable ?*/ 
     } 
@@ -94,60 +94,60 @@ inline int gb_LC_push_userdata(lua_State* L, std::uintptr_t ud, const char* mtNa
 }
 #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_INLINE_FUNC_1R_LUD_0P(ret, name, definition)	\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_INLINE_FUNC_1R_LUD_0P(ret, name, definition)	\
 //     public:								\
 //     inline ret* name() definition					\
 //     private:								\
-//     inline int gb_LC_EF_##name(lua_State* L)				\
+//     inline int fs_LC_EF_##name(lua_State* L)				\
 //     {									\
 //         unsigned int ud = (unsigned int)(name());			\
-//         return gb_LC_push_userdata(L, ud, MTNAME(ret));			\
+//         return fs_LC_push_userdata(L, ud, MTNAME(ret));			\
 //     }
 // #else
-// #define gb_LC_EXPORT_INLINE_FUNC_1R_LUD_0P(ret, name, definition)	\
+// #define fs_LC_EXPORT_INLINE_FUNC_1R_LUD_0P(ret, name, definition)	\
 //     public:								\
 //     inline ret* name() definition 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_INLINE_FUNC_1R_0P(ret, ret_pusher, name, definition) \
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_INLINE_FUNC_1R_0P(ret, ret_pusher, name, definition) \
 //     public:								\
 //     inline ret name() definition					\
 //     private:								\
-//     inline int gb_LC_EF_##name(lua_State* L)				\
+//     inline int fs_LC_EF_##name(lua_State* L)				\
 //     {									\
 // 	ret_pusher(L, name());						\
 // 	return 1;							\
 //     }
 // #else
-// #define gb_LC_EXPORT_INLINE_FUNC_1R_0P(ret, ret_pusher, name, definition) \
+// #define fs_LC_EXPORT_INLINE_FUNC_1R_0P(ret, ret_pusher, name, definition) \
 //     public:								\
 //     inline ret name() definition 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_FUNC_1R_0P(ret, ret_pusher, name)	\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_FUNC_1R_0P(ret, ret_pusher, name)	\
 //     public:						\
 //     ret name();						\
 // private:						\
-// inline int gb_LC_EF_##name(lua_State* L)		\
+// inline int fs_LC_EF_##name(lua_State* L)		\
 // {							\
 //     ret_pusher(L, name());				\
 //     return 1;						\
 // }
 // #else
-// #define gb_LC_EXPORT_FUNC_1R_0P(ret, ret_pusher, name)	\
+// #define fs_LC_EXPORT_FUNC_1R_0P(ret, ret_pusher, name)	\
 //     public:						\
 //     ret name(); 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_INLINE_FUNC_0R_1P_TABLE(name, tp, p_name, p_getter, definition) \
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_INLINE_FUNC_0R_1P_TABLE(name, tp, p_name, p_getter, definition) \
 //     public:								\
 //     inline void name(tp& p_name) definition				\
 //     private:								\
-//     inline int gb_LC_EF_##name(lua_State* L)				\
+//     inline int fs_LC_EF_##name(lua_State* L)				\
 //     {									\
 // 	tp arg;								\
 // 	p_getter(L, 2, arg);						\
@@ -155,17 +155,17 @@ inline int gb_LC_push_userdata(lua_State* L, std::uintptr_t ud, const char* mtNa
 // 	return 0;							\
 //     }
 // #else
-// #define gb_LC_EXPORT_INLINE_FUNC_0R_1P_TABLE(name, tp, p_name, p_getter, definition) \
+// #define fs_LC_EXPORT_INLINE_FUNC_0R_1P_TABLE(name, tp, p_name, p_getter, definition) \
 //     public:								\
 //     inline void name(tp p_name) definition 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_FUNC_0R_2P(name, tp1, p1_getter, tp2, p2_getter)	\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_FUNC_0R_2P(name, tp1, p1_getter, tp2, p2_getter)	\
 //     public:								\
 //     void name(tp1, tp2);						\
 // private:								\
-// inline int gb_LC_EF_##name(lua_State* L)				\
+// inline int fs_LC_EF_##name(lua_State* L)				\
 // {									\
 //     tp1 p1 = p1_getter(L, 2);						\
 //     tp2 p2 = p2_getter(L, 3);						\
@@ -173,289 +173,289 @@ inline int gb_LC_push_userdata(lua_State* L, std::uintptr_t ud, const char* mtNa
 //     return 0;								\
 // }
 // #else
-// #define gb_LC_EXPORT_FUNC_0R_2P(name, tp1, p1_getter, tp2, p2_getter)	\
+// #define fs_LC_EXPORT_FUNC_0R_2P(name, tp1, p1_getter, tp2, p2_getter)	\
 //     public:								\
 //     void name(tp1, tp2); 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_FUNC_0R_0P(name)		\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_FUNC_0R_0P(name)		\
 //     public:					\
 //     void name();				\
 // private:					\
-// inline int gb_LC_EF_##name(lua_State* L)	\
+// inline int fs_LC_EF_##name(lua_State* L)	\
 // {						\
 //     name();					\
 //     return 0;					\
 // }
 // #else
-// #define gb_LC_EXPORT_FUNC_0R_0P(name)		\
+// #define fs_LC_EXPORT_FUNC_0R_0P(name)		\
 //     public:					\
 //     void name(); 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_INLINE_FUNC_0R_0P(name, definition)	\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_INLINE_FUNC_0R_0P(name, definition)	\
 //     public:							\
 //     inline void name() definition				\
 //     private:							\
-//     inline int gb_LC_EF_##name(lua_State* L)			\
+//     inline int fs_LC_EF_##name(lua_State* L)			\
 //     {								\
 // 	name();							\
 // 	return 0;						\
 //     }
 // #else
-// #define gb_LC_EXPORT_INLINE_FUNC_0R_0P(name, definition)	\
+// #define fs_LC_EXPORT_INLINE_FUNC_0R_0P(name, definition)	\
 //     public:							\
 //     inline void name() definition 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_INLINE_FUNC_0R_1P(name, tp, p, definition, p_getter) \
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_INLINE_FUNC_0R_1P(name, tp, p, definition, p_getter) \
 //     public:								\
 //     void name(tp p) definition						\
 //     private:								\
-//     inline int gb_LC_EF_##name(lua_State* L)				\
+//     inline int fs_LC_EF_##name(lua_State* L)				\
 //     {									\
 // 	tp arg = (tp)p_getter(L, 2);					\
 // 	name(arg);							\
 // 	return 0;							\
 //     }
 // #else
-// #define gb_LC_EXPORT_INLINE_FUNC_0R_1P(name, tp, p, definition, p_getter) \
+// #define fs_LC_EXPORT_INLINE_FUNC_0R_1P(name, tp, p, definition, p_getter) \
 //     public:								\
 //     void name(); 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_FUNC_0R_1P(name, tp, p_getter)	\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_FUNC_0R_1P(name, tp, p_getter)	\
 //     public:						\
 //     void name(tp);					\
 // private:						\
-// inline int gb_LC_EF_##name(lua_State* L)		\
+// inline int fs_LC_EF_##name(lua_State* L)		\
 // {							\
 //     tp arg = p_getter(L, 2);				\
 //     name(arg);						\
 //     return 0;						\
 // }
 // #else
-// #define gb_LC_EXPORT_FUNC_0R_0P(name)		\
+// #define fs_LC_EXPORT_FUNC_0R_0P(name)		\
 //     public:					\
 //     void name(); 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_FUNC_1R_1P(ret, ret_pusher, name, arg_type, arg_geter) \
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_FUNC_1R_1P(ret, ret_pusher, name, arg_type, arg_geter) \
 //     public:								\
 //     ret name(arg_type);							\
 // private:								\
-// inline int gb_LC_EF_##name(lua_State* L)				\
+// inline int fs_LC_EF_##name(lua_State* L)				\
 // {									\
 //     arg_type arg = arg_geter(L, 2);					\
 //     ret_pusher(L, name(arg));\						\
 // 				 return 1;				\
 // }
 // #else
-// #define gb_LC_EXPORT_FUNC_1R_1P(ret, ret_pusher, name, arg_type, arg_geter) \
+// #define fs_LC_EXPORT_FUNC_1R_1P(ret, ret_pusher, name, arg_type, arg_geter) \
 //     public:								\
 //     ret name(arg_type);
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_FUNC_1R_LUD_1P(ret, name, arg_type, arg_geter)	\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_FUNC_1R_LUD_1P(ret, name, arg_type, arg_geter)	\
 //     public:								\
 //     ret* name(arg_type);						\
 // private:								\
-// inline int gb_LC_EF_##name(lua_State* L)				\
+// inline int fs_LC_EF_##name(lua_State* L)				\
 // {									\
 //     arg_type arg = arg_geter(L, 2);					\
 //     unsigned int ud = (unsigned int)(name(arg));			\
-//     return gb_LC_push_userdata(L, ud, MTNAME(ret));			\
+//     return fs_LC_push_userdata(L, ud, MTNAME(ret));			\
 // }
 // #else
-// #define gb_LC_EXPORT_FUNC_1R_LUD_1P(ret, name, arg_type, arg_geter)	\
+// #define fs_LC_EXPORT_FUNC_1R_LUD_1P(ret, name, arg_type, arg_geter)	\
 //     public:								\
 //     ret* name(arg_type); 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_INLINE_FUNC_1R_LUD_1P(ret, name, definition, param, arg_type, arg_geter) \
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_INLINE_FUNC_1R_LUD_1P(ret, name, definition, param, arg_type, arg_geter) \
 //     public:								\
 //     inline ret* name(arg_type param) definition				\
 //     private:								\
-//     inline int gb_LC_EF_##name(lua_State* L)				\
+//     inline int fs_LC_EF_##name(lua_State* L)				\
 //     {									\
 // 	arg_type arg = arg_geter(L, 2);					\
 // 	unsigned int ud = (unsigned int)(name(arg));			\
-// 	return gb_LC_push_userdata(L, ud, MTNAME(ret));			\
+// 	return fs_LC_push_userdata(L, ud, MTNAME(ret));			\
 //     }
 // #else
-// #define gb_LC_EXPORT_INLINE_FUNC_1R_LUD_1P(ret, name, definition, arg_type, arg_geter) \
+// #define fs_LC_EXPORT_INLINE_FUNC_1R_LUD_1P(ret, name, definition, arg_type, arg_geter) \
 //     public:								\
 //     inline ret* name(arg_type param) definition 
 // #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_MKFUNCNAME(name) gb_LC_EF_##name
+// #ifdef fsLUAAPI
+// #define fs_LC_MKFUNCNAME(name) fs_LC_EF_##name
 // #else
-// #define gb_LC_MKFUNCNAME(name) name
+// #define fs_LC_MKFUNCNAME(name) name
 // #endif
 
 
-#ifdef gbLUAAPI
-#define gb_LC_EXPORT_FUNC(name)			\
+#ifdef fsLUAAPI
+#define fs_LC_EXPORT_FUNC(name)			\
     private:					\
-    inline int gb_LC_EF_##name(lua_State* L)
+    inline int fs_LC_EF_##name(lua_State* L)
 #else
-#define gb_LC_EXPORT_FUNC(name)
+#define fs_LC_EXPORT_FUNC(name)
 #endif
 
-// #ifdef gbLUAAPI
-// #define gb_LC_EXPORT_WRAP_FUNC(name, definition)	\
+// #ifdef fsLUAAPI
+// #define fs_LC_EXPORT_WRAP_FUNC(name, definition)	\
 //     private:						\
-//     inline int gb_LC_EF_##name(lua_State* L) definition
+//     inline int fs_LC_EF_##name(lua_State* L) definition
 // #else
-// #define gb_LC_EXPORT_WRAP_FUNC(name, definition) 
+// #define fs_LC_EXPORT_WRAP_FUNC(name, definition) 
 // #endif
 
-#ifdef gbLUAAPI
+#ifdef fsLUAAPI
 //read only
-#define gb_LC_EXPORT_VAR_R(type, name, push_method)	\
+#define fs_LC_EXPORT_VAR_R(type, name, push_method)	\
     public:						\
     type name;						\
 private:						\
-inline int gb_LC_EV_R_##name(lua_State* L)		\
+inline int fs_LC_EV_R_##name(lua_State* L)		\
 {							\
     push_method(L, name);				\
     return 1;						\
 }
 #else
-#define gb_LC_EXPORT_VAR_R(type, name, push_method)	\
+#define fs_LC_EXPORT_VAR_R(type, name, push_method)	\
     public:						\
     type name;
 #endif
 
-#ifdef gbLUAAPI
+#ifdef fsLUAAPI
 //read&write
-#define gb_LC_EXPORT_VAR_RW(type, name, push_method, pop_method)	\
+#define fs_LC_EXPORT_VAR_RW(type, name, push_method, pop_method)	\
     public:								\
     type name;								\
 private:								\
-inline int gb_LC_EV_R_##name(lua_State* L)				\
+inline int fs_LC_EV_R_##name(lua_State* L)				\
 {									\
     push_method(L, name);						\
     return 1;								\
 }									\
-inline int gb_LC_EV_W_##name(lua_State* L)				\
+inline int fs_LC_EV_W_##name(lua_State* L)				\
 {									\
     name = pop_method(L, 1);						\
     return 1;								\
 }
 #else
-#define gb_LC_EXPORT_VAR_RW(type, name, push_method, pop_method)	\
+#define fs_LC_EXPORT_VAR_RW(type, name, push_method, pop_method)	\
     public:								\
     type name;	
 #endif
 
-#ifdef gbLUAAPI
+#ifdef fsLUAAPI
 
-//#ifdef gbUtilsSTATIC
-//extern lua_State* gbLuaState;
+//#ifdef fsCommonSTATIC
+//extern lua_State* fsLuaState;
 //#else
-//#ifdef gbUtilsEXPORT
-//extern _declspec(dllexport)lua_State* gbLuaState;
+//#ifdef fsCommonEXPORT
+//extern _declspec(dllexport)lua_State* fsLuaState;
 //#else
-//extern _declspec(dllimport)lua_State* gbLuaState;
+//extern _declspec(dllimport)lua_State* fsLuaState;
 //#endif
 //#endif
 
-#ifdef gbUtilsSTATIC
-int gbLuaTraceback(lua_State* L);
+#ifdef fsCommonSTATIC
+int fsLuaTraceback(lua_State* L);
 #else
-#ifdef gbUtilsEXPORT
-_declspec(dllexport) int gbLuaTraceback(lua_State* L);
+#ifdef fsCommonEXPORT
+_declspec(dllexport) int fsLuaTraceback(lua_State* L);
 #else
-_declspec(dllimport) int gbLuaTraceback(lua_State* L);
+_declspec(dllimport) int fsLuaTraceback(lua_State* L);
 #endif
 #endif
 
-// #ifdef gbUtilsSTATIC
-// lua_State* gbLuaCPP_init();
+// #ifdef fsCommonSTATIC
+// lua_State* fsLuaCPP_init();
 // #else
-// #ifdef gbUtilsEXPORT
-// _declspec(dllexport) lua_State* gbLuaCPP_init();
+// #ifdef fsCommonEXPORT
+// _declspec(dllexport) lua_State* fsLuaCPP_init();
 // #else
-// _declspec(dllimport) lua_State* gbLuaCPP_init();
+// _declspec(dllimport) lua_State* fsLuaCPP_init();
 // #endif
 // #endif
 
-#ifdef gbUtilsSTATIC
-bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile);
+#ifdef fsCommonSTATIC
+bool fsLuaCPP_dofile(lua_State* L, const char* szLuaFile);
 #else
-#ifdef gbUtilsEXPORT
-_declspec(dllexport) bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile);
+#ifdef fsCommonEXPORT
+_declspec(dllexport) bool fsLuaCPP_dofile(lua_State* L, const char* szLuaFile);
 #else
-_declspec(dllimport) bool gbLuaCPP_dofile(lua_State* L, const char* szLuaFile);
+_declspec(dllimport) bool fsLuaCPP_dofile(lua_State* L, const char* szLuaFile);
 #endif
 #endif
 
-#ifdef gbUtilsSTATIC
-bool gbLuaCPP_dostring(lua_State* L, const char* szLua);
+#ifdef fsCommonSTATIC
+bool fsLuaCPP_dostring(lua_State* L, const char* szLua);
 #else
-#ifdef gbUtilsEXPORT
-_declspec(dllexport) bool gbLuaCPP_dostring(lua_State* L, const char* szLua);
+#ifdef fsCommonEXPORT
+_declspec(dllexport) bool fsLuaCPP_dostring(lua_State* L, const char* szLua);
 #else
-_declspec(dllimport) bool gbLuaCPP_dostring(lua_State* L, const char* szLua);
+_declspec(dllimport) bool fsLuaCPP_dostring(lua_State* L, const char* szLua);
 #endif
 #endif
 
-#ifdef gbUtilsSTATIC
-void gbLuaCPP_appendPackagePath(lua_State* L, const char* path);
+#ifdef fsCommonSTATIC
+void fsLuaCPP_appendPackagePath(lua_State* L, const char* path);
 #else
-#ifdef gbUtilsEXPORT
-_declspec(dllexport) void gbLuaCPP_appendPackagePath(lua_State* L, const char* path);
+#ifdef fsCommonEXPORT
+_declspec(dllexport) void fsLuaCPP_appendPackagePath(lua_State* L, const char* path);
 #else
-_declspec(dllimport) void gbLuaCPP_appendPackagePath(lua_State* L, const char* path);
+_declspec(dllimport) void fsLuaCPP_appendPackagePath(lua_State* L, const char* path);
 #endif
 #endif
 
 
-//#ifdef gbRCDLLEXPORT
-//_declspec(dllexport) int gbLuaTraceback(lua_State* L);
+//#ifdef fsRCDLLEXPORT
+//_declspec(dllexport) int fsLuaTraceback(lua_State* L);
 //#else
-//_declspec(dllimport) int gbLuaTraceback(lua_State* L);
+//_declspec(dllimport) int fsLuaTraceback(lua_State* L);
 //#endif
 
-// #define gb_LC(className)			\
-//     className::gb_LC_Reg(L);
+// #define fs_LC(className)			\
+//     className::fs_LC_Reg(L);
 
-#define gb_LC_Func_Def				\
-    std::vector<gb_LC_Func> funcs;
+#define fs_LC_Func_Def				\
+    std::vector<fs_LC_Func> funcs;
 
-#define gb_LC_Func_push(name, pointer)		\
-    funcs.push_back(gb_LC_Func(name, pointer))
+#define fs_LC_Func_push(name, pointer)		\
+    funcs.push_back(fs_LC_Func(name, pointer))
 
-#define gb_LC_CAST_LUD_TO(type, ud) (type)(*(int*)ud)
+#define fs_LC_CAST_LUD_TO(type, ud) (type)(*(int*)ud)
 
-struct gbLCLuaFunc
+struct fsLCLuaFunc
 {
-    inline gbLCLuaFunc() :tblIdx(0), funcIdx(0)/*, argc(1), retc(0)*/ {}
+    inline fsLCLuaFunc() :tblIdx(0), funcIdx(0)/*, argc(1), retc(0)*/ {}
     int tblIdx;
     int funcIdx;
     //unsigned int argc;
     //unsigned int retc;
 };
 
-// class gbLCString
+// class fsLCString
 // {
 // public:
-//     inline  gbLCString() :_data(nullptr) {}
-//     inline  gbLCString(const char* val) : _size(strlen(val) + 1), _data(new char[_size])
+//     inline  fsLCString() :_data(nullptr) {}
+//     inline  fsLCString(const char* val) : _size(strlen(val) + 1), _data(new char[_size])
 // 	{
 // 	    memcpy(_data, val, _size - 1);
 // 	    _data[_size - 1] = '\0';
 // 	}
-//     inline ~gbLCString()
+//     inline ~fsLCString()
 // 	{
 // 	    if (_data != nullptr)
 // 	    {
@@ -468,7 +468,7 @@ struct gbLCLuaFunc
 // 	{
 // 	    return _data;
 // 	}
-//     inline gbLCString& operator=(const char* val)
+//     inline fsLCString& operator=(const char* val)
 // 	{
 // 	    if (_data != nullptr)
 // 	    {
@@ -481,7 +481,7 @@ struct gbLCLuaFunc
 // 	    _data[_size - 1] = '\0';
 // 	    return *this;
 // 	}
-//     inline  gbLCString& operator=(const gbLCString& other)
+//     inline  fsLCString& operator=(const fsLCString& other)
 // 	{
 // 	    if (_data != nullptr)
 // 	    {
@@ -502,7 +502,7 @@ struct gbLCLuaFunc
 //     char* _data;
 // };
 
-//inline int gb_LC_CallLuaFunc(lua_State* L, const gbLCLuaFunc& func)
+//inline int fs_LC_CallLuaFunc(lua_State* L, const fsLCLuaFunc& func)
 //{
 //	lua_rawgeti(L, LUA_REGISTRYINDEX, func.funcIdx);
 //	lua_rawgeti(L, LUA_REGISTRYINDEX, func.tblIdx);
@@ -510,7 +510,7 @@ struct gbLCLuaFunc
 //	return func.retc;
 //}
 
-inline int gb_LC_RegisterLuaFunc(lua_State* L, int& tblIdx, int& funcIdx)
+inline int fs_LC_RegisterLuaFunc(lua_State* L, int& tblIdx, int& funcIdx)
 {
     //target
     if (!lua_istable(L, 2))
@@ -554,24 +554,24 @@ inline int gb_LC_RegisterLuaFunc(lua_State* L, int& tblIdx, int& funcIdx)
 }
 
 typedef int(*cpp_static_func)(lua_State* L);
-struct gb_LC_StaticFunc
+struct fs_LC_StaticFunc
 {
-    inline gb_LC_StaticFunc(const char* name, cpp_static_func func) :Name(name), Func(func) {}
+    inline fs_LC_StaticFunc(const char* name, cpp_static_func func) :Name(name), Func(func) {}
     const char* Name;
     cpp_static_func Func;
 
 };
 
-inline bool gb_LC_RegisterStaticFunc(lua_State* L, const std::vector<gb_LC_StaticFunc>& funcs, const char* ClassMetatableName)
+inline bool fs_LC_RegisterStaticFunc(lua_State* L, const std::vector<fs_LC_StaticFunc>& funcs, const char* ClassMetatableName)
 {
     lua_getfield(L, LUA_REGISTRYINDEX, ClassMetatableName);
     if (!lua_istable(L, -1))
     {
-	printf("gb_LC_RegisterStateFunc !lua_istable(L, -1)");
+	printf("fs_LC_RegisterStateFunc !lua_istable(L, -1)");
 	return false;
     }
 
-    for (std::vector<gb_LC_StaticFunc>::const_iterator i = funcs.cbegin(); i != funcs.cend(); i++)
+    for (std::vector<fs_LC_StaticFunc>::const_iterator i = funcs.cbegin(); i != funcs.cend(); i++)
     {
 	lua_pushcclosure(L, (*i).Func, 0);
 	lua_setfield(L, -2, (*i).Name);
@@ -580,16 +580,16 @@ inline bool gb_LC_RegisterStaticFunc(lua_State* L, const std::vector<gb_LC_Stati
 }
 
 template<typename T>
-class gbLuaCPP
+class fsLuaCPP
 {
     typedef int (T::*cpp_func)(lua_State* L);
 
     static std::vector<cpp_func> Funcs;
 
 public:
-    struct gb_LC_Func
+    struct fs_LC_Func
     {
-	inline gb_LC_Func(const char* name, cpp_func func) :Name(name), Func(func) {}
+	inline fs_LC_Func(const char* name, cpp_func func) :Name(name), Func(func) {}
 	const char* Name;
 	cpp_func Func;
 
@@ -597,7 +597,7 @@ public:
 
 
 public:
-    static void Register(lua_State* L, const char* name, const std::vector<gb_LC_Func>& funcs)
+    static void Register(lua_State* L, const char* name, const std::vector<fs_LC_Func>& funcs)
 	{
 	    //create metatable
 	    sprintf(ClassMetatableName, "%s_mt", name);
@@ -627,7 +627,7 @@ public:
 	    //member variable
 
 	    //constructor    
-	    // lua_pushcfunction(L, &gbLuaCPP::Constructor);
+	    // lua_pushcfunction(L, &fsLuaCPP::Constructor);
 	    // lua_setglobal(L, name);
 	}
 
@@ -659,13 +659,13 @@ public:
 	    lua_getfield(L, LUA_REGISTRYINDEX, ClassMetatableName);
 	    if (!lua_istable(L, -1))
 	    {
-		printf("gbLuaCPP_PrvCns derived mt not found.");
+		printf("fsLuaCPP_PrvCns derived mt not found.");
 		return;
 	    }
 	    lua_getfield(L, LUA_REGISTRYINDEX, baseNameMT);
 	    if (!lua_istable(L, -1))
 	    {
-		printf("gbLuaCPP_PrvCns base mt not found.");
+		printf("fsLuaCPP_PrvCns base mt not found.");
 		return;
 	    }
 	    lua_setmetatable(L, -2);
@@ -688,7 +688,7 @@ public:
 		return ((*ud)->*(Funcs[index]))(L);
 	}
 
-    static char ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
+    static char ClassMetatableName[fs_LC_MAX_METATABLENAME_LEN];
 
     // static int Constructor(lua_State* L)
     // {
@@ -707,25 +707,25 @@ public:
     // }
 };
 template<typename T>
-std::vector<typename gbLuaCPP<T>::cpp_func> gbLuaCPP<T>::Funcs;
+std::vector<typename fsLuaCPP<T>::cpp_func> fsLuaCPP<T>::Funcs;
 
 template<typename T>
-char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
+char fsLuaCPP<T>::ClassMetatableName[fs_LC_MAX_METATABLENAME_LEN];
 
 
 
 // //private constructor
 // template<typename T>
-// class gbLuaCPP_PrvCns
+// class fsLuaCPP_PrvCns
 // {
 // 	typedef int (T::*cpp_func)(lua_State* L);
 
 // 	static std::vector<cpp_func> Funcs;
 
 // public:
-// 	struct gb_LC_Func
+// 	struct fs_LC_Func
 // 	{
-// 		inline gb_LC_Func(const char* name, cpp_func func) :Name(name), Func(func) {}
+// 		inline fs_LC_Func(const char* name, cpp_func func) :Name(name), Func(func) {}
 // 		const char* Name;
 // 		cpp_func Func;
 
@@ -733,7 +733,7 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
 
 
 // public:
-// 	static void Register(lua_State* L, const char* name, const std::vector<gb_LC_Func>& funcs)
+// 	static void Register(lua_State* L, const char* name, const std::vector<fs_LC_Func>& funcs)
 // 	{
 // 		//create metatable
 
@@ -799,13 +799,13 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
 // 		lua_getfield(L, LUA_REGISTRYINDEX, classNameMT);
 // 		if (!lua_istable(L, -1))
 // 		{
-// 			printf("gbLuaCPP_PrvCns derived mt not found.");
+// 			printf("fsLuaCPP_PrvCns derived mt not found.");
 // 			return;
 // 		}
 // 		lua_getfield(L, LUA_REGISTRYINDEX, baseNameMT);
 // 		if (!lua_istable(L, -1))
 // 		{
-// 			printf("gbLuaCPP_PrvCns base mt not found.");
+// 			printf("fsLuaCPP_PrvCns base mt not found.");
 // 			return;
 // 		}
 // 		lua_setmetatable(L, -2);
@@ -813,22 +813,22 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
 // 	//static char ClassName[64];
 // };
 // template<typename T>
-// std::vector<typename gbLuaCPP_PrvCns<T>::cpp_func> gbLuaCPP_PrvCns<T>::Funcs;
+// std::vector<typename fsLuaCPP_PrvCns<T>::cpp_func> fsLuaCPP_PrvCns<T>::Funcs;
 
 //template<typename T>
-//char gbLuaCPP_Singleton<T>::ClassName[64];
+//char fsLuaCPP_Singleton<T>::ClassName[64];
 
 /**
    c struct <<===>> lua table
 */
-#define gb_LC_lt2st_begin					\
+#define fs_LC_lt2st_begin					\
     public:							\
     inline bool lt2st(lua_State* L, const unsigned int tblIdx)	\
     {								\
 	if(lua_type(L, tblIdx) == LUA_TTABLE)			\
 	{
 
-#define gb_LC_lt2st_end				\
+#define fs_LC_lt2st_end				\
     return true;				\
     }						\
 	else					\
@@ -837,7 +837,7 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
 	}					\
 	}
 
-#define gb_LC_lt2st_string(val_name)		\
+#define fs_LC_lt2st_string(val_name)		\
     lua_getfield(L, tblIdx, #val_name);		\
     if(lua_type(L, -1) == LUA_TSTRING)		\
     {						\
@@ -847,7 +847,7 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
     else					\
 	return false;				
 
-#define gb_LC_lt2st_integer(val_name)		\
+#define fs_LC_lt2st_integer(val_name)		\
     lua_getfield(L, tblIdx, #val_name);		\
     if(lua_type(L, -1) == LUA_TNUMBER)		\
     {						\
@@ -857,7 +857,7 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
     else					\
 	return false;				
 
-#define gb_LC_st2lt_begin			\
+#define fs_LC_st2lt_begin			\
     public:					\
     inline bool st2lt(lua_State*L) const	\
     {						\
@@ -865,7 +865,7 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
 	if(lua_type(L, -1) == LUA_TTABLE)	\
 	{ 
 
-#define gb_LC_st2lt_end				\
+#define fs_LC_st2lt_end				\
     return true;				\
     }						\
 	else					\
@@ -874,11 +874,11 @@ char gbLuaCPP<T>::ClassMetatableName[gb_LC_MAX_METATABLENAME_LEN];
 	}					\
 	}
 
-#define gb_LC_st2lt_string(val_name)		\
+#define fs_LC_st2lt_string(val_name)		\
     lua_pushstring(L, val_name.c_str());	\
     lua_setfield(L, -2, #val_name);
 
-#define gb_LC_st2lt_interger(val_name)		\
+#define fs_LC_st2lt_interger(val_name)		\
     lua_pushinteger(L, val_name);		\
     lua_setfield(L, -2, #val_name);
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#define GB_UTILS_NS_BEGIN \
-    namespace gb { namespace utils {
+#define FS_COMMON_NS_BEGIN \
+    namespace fs { namespace common {
 
-#define GB_UTILS_NS_END \
+#define FS_COMMON_NS_END \
     }}
