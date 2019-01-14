@@ -2,36 +2,36 @@
 #include <cassert>
 #include <limits>
 
-using fs::common::logger;
-using fs::common::time;
+using fs::Sun::logger;
+using fs::Sun::time;
 
 logger::logger() :
 #ifdef _MSC_VER
     _normal_color_code(0),
-    _log_color_code(FS_LOGGER_DEFAULT_LOG_MS_COLOR_CODE),
-    _error_color_code(FS_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE),
-    _warning_color_code(FS_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE),
+    _log_color_code(FS_SUN_LOGGER_DEFAULT_LOG_MS_COLOR_CODE),
+    _error_color_code(FS_SUN_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE),
+    _warning_color_code(FS_SUN_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE),
     _progress_color_code{
-    FS_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE,
-	FS_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
+    FS_SUN_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE,
+	FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
 //#elif __GNUC__
 #else
-    _normal_color_code(FS_LOGGER_COLOR_BACKTONORMAL),
-    _log_color_code(FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_LOG_COLOR_CODE FS_LOGGER_COLOR_END),
-    _error_color_code(FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_ERROR_COLOR_CODE FS_LOGGER_COLOR_END),
-    _warning_color_code(FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_WARNING_COLOR_CODE FS_LOGGER_COLOR_END),
+    _normal_color_code(FS_SUN_LOGGER_COLOR_BACKTONORMAL),
+    _log_color_code(FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_LOG_COLOR_CODE FS_SUN_LOGGER_COLOR_END),
+    _error_color_code(FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_ERROR_COLOR_CODE FS_SUN_LOGGER_COLOR_END),
+    _warning_color_code(FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_WARNING_COLOR_CODE FS_SUN_LOGGER_COLOR_END),
     _progress_color_code{
-	FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_PROGRESS_COLOR_CODE FS_LOGGER_COLOR_END,
-	    FS_LOGGER_COLOR_BEGIN FS_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE FS_LOGGER_COLOR_END },
+	FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_PROGRESS_COLOR_CODE FS_SUN_LOGGER_COLOR_END,
+	    FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE FS_SUN_LOGGER_COLOR_END },
 #endif
     _log_default_streambuf(std::cout.rdbuf()),
     _error_default_streambuf(std::cerr.rdbuf()),
-    _progress_bar_width(FS_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH),
-    _progress_total_width(FS_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
+    _progress_bar_width(FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH),
+    _progress_total_width(FS_SUN_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
     _bProgressing(false),
     _bEnableColor(true)
 	    {
-		_progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(FS_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
+		_progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 #ifdef _MSC_VER
 		_hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
 		::memset(&_preConsoleAttrib, 0, sizeof(PCONSOLE_SCREEN_BUFFER_INFO));
@@ -52,38 +52,38 @@ logger::~logger()
     }
 }
 
-#ifdef FS_COMMON_MULTI_THREADS
-#define _FS_COMMON_LOGGER_LOCK			\
+#ifdef FS_SUN_MULTI_THREADS
+#define _FS_SUN_LOGGER_LOCK			\
     std::lock_guard<std::mutex> lck(_mtx);
 #else
-#define _FS_COMMON_LOGGER_LOCK
+#define _FS_SUN_LOGGER_LOCK
 #endif
 
 void logger::enable_color(bool bState)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
     _bEnableColor = bState;
 }
 
 void logger::set_log_streambuf(std::streambuf* streambuf)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
     std::cout.rdbuf(streambuf != nullptr ? streambuf : _log_default_streambuf);
 }
 
 void logger::set_error_streambuf(std::streambuf* streambuf)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
     std::cerr.rdbuf(streambuf != nullptr ? streambuf : _error_default_streambuf);
 }
 
 #ifdef _MSC_VER
 
 #define _fs_fancy_print(ostream, title, win_color_code)		\
-    _FS_COMMON_LOGGER_LOCK;					\
+    _FS_SUN_LOGGER_LOCK;					\
     assert(!_bProgressing);					\
     assert(szMsg != nullptr);					\
-    FS_GET_LOCALTIME(timeBuf);					\
+    FS_SUN_GET_LOCALTIME(timeBuf);					\
     if(_bEnableColor)						\
 	::SetConsoleTextAttribute(_hConsole, win_color_code);	\
     ostream << timeBuf << '\n'					\
@@ -93,10 +93,10 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
 #else
 
 #define _fs_fancy_print(ostream, title, color_code)	\
-    _FS_COMMON_LOGGER_LOCK;				\
+    _FS_SUN_LOGGER_LOCK;				\
     assert(!_bProgressing);				\
     assert(szMsg != nullptr);				\
-    FS_GET_LOCALTIME(timeBuf);				\
+    FS_SUN_GET_LOCALTIME(timeBuf);				\
     if(_bEnableColor)					\
 	ostream << color_code;				\
     ostream << timeBuf << '\n'				\
@@ -112,12 +112,12 @@ void logger::log(const char* szMsg)const
 
 void logger::set_log_color_code(const color_code_t szCode)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
 #ifdef _MSC_VER
     _log_color_code = szCode;
 //#elif __GNUC__
 #else
-    _log_color_code = FS_LOGGER_COLOR_BEGIN + szCode + FS_LOGGER_COLOR_END;
+    _log_color_code = FS_SUN_LOGGER_COLOR_BEGIN + szCode + FS_SUN_LOGGER_COLOR_END;
 #endif
 }
 
@@ -127,12 +127,12 @@ void logger::error(const char * szMsg)const
 }
 void logger::set_error_color_code(const color_code_t szCode)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
 #ifdef _MSC_VER
     _error_color_code = szCode;
 //#elif __GNUC__
 #else	
-    _error_color_code = FS_LOGGER_COLOR_BEGIN + szCode + FS_LOGGER_COLOR_END;
+    _error_color_code = FS_SUN_LOGGER_COLOR_BEGIN + szCode + FS_SUN_LOGGER_COLOR_END;
 #endif
 }
 void logger::warning(const char* szMsg)const
@@ -142,18 +142,18 @@ void logger::warning(const char* szMsg)const
 
 void logger::set_warning_color_code(const color_code_t szCode)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
 #ifdef _MSC_VER
     _warning_color_code = szCode;
 //#elif __GNUC__
 #else	
-    _warning_color_code = FS_LOGGER_COLOR_BEGIN + szCode + FS_LOGGER_COLOR_END;
+    _warning_color_code = FS_SUN_LOGGER_COLOR_BEGIN + szCode + FS_SUN_LOGGER_COLOR_END;
 #endif
 }
 
 void logger::progress(const float value, const char* title)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
     assert(value >= 0.0f && value <= 1.0f);
     _bProgressing = true;
 
@@ -275,16 +275,16 @@ void logger::progress(const float value, const char* title)
 
 void logger::progress_done()
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
     std::cout << std::endl;
     _bProgressing = false;
 }
 void logger::set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth)
 {
-    _FS_COMMON_LOGGER_LOCK;
+    _FS_SUN_LOGGER_LOCK;
     _progress_bar_width = barWidth;
     _progress_total_width = totalWidth;
-    _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)(strlen(FS_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS)));
+    _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)(strlen(FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS)));
 }
 
 // #ifdef fsLUAAPI

@@ -1,8 +1,8 @@
 #include "../src/filesystem.h"
 #include "../src/logger.h"
 
-using fs::common::logger;
-using fs::common::filesystem;
+using fs::Sun::logger;
+using fs::Sun::filesystem;
 
 int filesystem_test()
 {

@@ -1,6 +1,6 @@
 #include "../src/logger.h"
 
-using fs::common::logger;
+using fs::Sun::logger;
 int logger_test()
 {
 
@@ -31,13 +31,13 @@ int logger_test()
     logger::Instance().warning("hello");
 
 #ifdef _MSC_VER
-	logger::Instance().set_log_color_code(FS_LOGGER_DEFAULT_LOG_MS_COLOR_CODE);
-	logger::Instance().set_error_color_code(FS_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE);
-	logger::Instance().set_warning_color_code(FS_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE);
+	logger::Instance().set_log_color_code(FS_SUN_LOGGER_DEFAULT_LOG_MS_COLOR_CODE);
+	logger::Instance().set_error_color_code(FS_SUN_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE);
+	logger::Instance().set_warning_color_code(FS_SUN_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE);
 #elif __GNUC__
-	logger::Instance().set_log_color_code(FS_LOGGER_DEFAULT_LOG_COLOR_CODE);
-	logger::Instance().set_error_color_code(FS_LOGGER_DEFAULT_ERROR_COLOR_CODE);
-	logger::Instance().set_warning_color_code(FS_LOGGER_DEFAULT_WARNING_COLOR_CODE);
+	logger::Instance().set_log_color_code(FS_SUN_LOGGER_DEFAULT_LOG_COLOR_CODE);
+	logger::Instance().set_error_color_code(FS_SUN_LOGGER_DEFAULT_ERROR_COLOR_CODE);
+	logger::Instance().set_warning_color_code(FS_SUN_LOGGER_DEFAULT_WARNING_COLOR_CODE);
 #endif
     return 0;
 }

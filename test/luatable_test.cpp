@@ -3,7 +3,7 @@
 #include "../src/filesystem.h"
 #include <map>
 #include <algorithm>
-using namespace fs::common;
+using namespace fs::Sun;
 
 
 struct luatable_0

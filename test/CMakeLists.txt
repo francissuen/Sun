@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(fstest)
-include(../fsCMake/fsCommon.cmake)
+project(test)
+include(../fsCMake/CMakeLists.txt)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../fsCMake/)
 
-add_executable(fstest
+add_executable(Test
   test.cpp
   )
 
@@ -15,18 +15,17 @@ if(UNIX)
   set(dl_lib -ldl)
 endif()
 
-find_package(lua REQUIRED)
-
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../ ${CMAKE_CURRENT_SOURCE_DIR}/../build)
-
-target_link_libraries(fstest
-  fsCommon
+target_link_libraries(Test
+  fsSun
   # optimized ${lua_LIBRARIES}
   # debug ${lua_LIBRARIES_d}
   ${pthread_lib}
   ${dl_lib}
   )
 
-set_target_properties(fstest
+set_target_properties(Test
   PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}")
+  RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin"
+  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
+
+add_dependencies(Test fsSun)

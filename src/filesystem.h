@@ -11,21 +11,21 @@
 
 //#include "../RenderCore/LuaCPP/fsLuaCPP.h"
 
-FS_COMMON_NS_BEGIN
+FS_SUN_NS_BEGIN
 
-FS_COMMON_CLASS filesystem
+FS_SUN_CLASS filesystem
 {
-    FS_SINGLETON_NO_CTORDEF(filesystem);
+    FS_SUN_SINGLETON_NO_CTORDEF(filesystem);
 public:
     ///if suffix is nullptr then all files here will be output 
-    std::vector<fs::common::string>  get_files_here(const char* path, const std::vector<const char*>* suffix = nullptr)const;
-    inline const fs::common::string& get_workingdir()const{ return _workingDir; }
+    std::vector<fs::Sun::string>  get_files_here(const char* path, const std::vector<const char*>* suffix = nullptr)const;
+    inline const fs::Sun::string& get_workingdir()const{ return _workingDir; }
 
     /*
      *@param, if szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
      *else it's a relative path.
      */
-    fs::common::string get_absolute_path(const char* szPath)const;
+    fs::Sun::string get_absolute_path(const char* szPath)const;
 //	    _LC_EXPORT_WRAP_FUNC(GetWorkPath, 
     // {
     // 	fsString val;
@@ -37,7 +37,7 @@ public:
     // fs_LC_Register_PrvCns(filesystem);
 //	};
 private:
-    fs::common::string _workingDir;
+    fs::Sun::string _workingDir;
 };
 	
-FS_COMMON_NS_END
+FS_SUN_NS_END

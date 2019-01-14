@@ -1,7 +1,7 @@
 #pragma once
 
-#define FS_COMMON_NS_BEGIN \
-    namespace fs { namespace common {
+#define FS_SUN_NS_BEGIN \
+    namespace fs { namespace Sun {
 
-#define FS_COMMON_NS_END \
+#define FS_SUN_NS_END \
     }}

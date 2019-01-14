@@ -1,25 +1,25 @@
 //fsCommon config file
 
 //version
-#define FS_COMMON_VERSION_MAJOR @FS_COMMON_VERSION_MAJOR@
-#define FS_COMMON_VERSION_MINOR @FS_COMMON_VERSION_MINOR@
+#define FS_SUN_VERSION_MAJOR @FS_SUN_VERSION_MAJOR@
+#define FS_SUN_VERSION_MINOR @FS_SUN_VERSION_MINOR@
 
-#define FS_COMMON_BUILD_VERSION "@FS_COMMON_BUILD_VERSION@"
+#define FS_SUN_BUILD_VERSION "@FS_SUN_BUILD_VERSION@"
 
-#cmakedefine FS_COMMON_LUA_API
+#cmakedefine FS_SUN_LUA_API
 
-#cmakedefine FS_COMMON_STATIC_LIB
+#cmakedefine FS_SUN_STATIC_LIB
 
-#ifdef FS_COMMON_STATIC_LIB
-#define FS_COMMON_CLASS class
-#define FS_COMMON_STRUCT struct
-#define FS_COMMON_EXPORT
-#elif FS_COMMON_SHARED_LIB
-#define FS_COMMON_CLASS class __declspec(dllexport)
-#define FS_COMMON_STRUCT struct __declspec(dllexport)
-#define FS_COMMON_EXPORT __declspec(dllexport)
+#ifdef FS_SUN_STATIC_LIB
+#define FS_SUN_CLASS class
+#define FS_SUN_STRUCT struct
+#define FS_SUN_EXPORT
+#elif FS_SUN_SHARED_LIB
+#define FS_SUN_CLASS class __declspec(dllexport)
+#define FS_SUN_STRUCT struct __declspec(dllexport)
+#define FS_SUN_EXPORT __declspec(dllexport)
 #else
-#define FS_COMMON_CLASS class __declspec(dllimport)
-#define FS_COMMON_STRUCT struct __declspec(dllimport)
-#define FS_COMMON_EXPORT __declspec(dllimport)
+#define FS_SUN_CLASS class __declspec(dllimport)
+#define FS_SUN_STRUCT struct __declspec(dllimport)
+#define FS_SUN_EXPORT __declspec(dllimport)
 #endif

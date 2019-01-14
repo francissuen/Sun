@@ -2,9 +2,9 @@
 #include "string.h"
 #include <fstream>
 
-FS_COMMON_NS_BEGIN
+FS_SUN_NS_BEGIN
 
-	FS_COMMON_CLASS file
+	FS_SUN_CLASS file
 	{
 	public:
 	    file(const char* filePath, bool bRead = true);
@@ -21,4 +21,4 @@ FS_COMMON_NS_BEGIN
 	    string _filePath;
 	};
 
-FS_COMMON_NS_END
+FS_SUN_NS_END

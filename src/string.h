@@ -12,14 +12,14 @@
 #include "ns.h"
 
 
-#define _FS_COMMON_STRING_MAX_BUFFER_SIZE 64
+#define _FS_SUN_STRING_MAX_BUFFER_SIZE 64
 
-FS_COMMON_NS_BEGIN
+FS_SUN_NS_BEGIN
 
 /*
  * a wrapper for std::string
  */
-FS_COMMON_CLASS string
+FS_SUN_CLASS string
 {
 public:
 
@@ -27,7 +27,7 @@ template <typename T> struct is_string : std::false_type {};
 
 // ctor
 inline string() {}
-inline string(const char* str) :_data(str) { FS_ASSERT(str != nullptr); }
+inline string(const char* str) :_data(str) { FS_SUN_ASSERT(str != nullptr); }
 
 /*
  *if std::string can conver to string implicit,
@@ -65,7 +65,7 @@ inline string & operator=(string && other)
 // assignment operator overloading for other types
 inline string & operator=(const char* szStr)
 {
-    FS_ASSERT(szStr != nullptr);
+    FS_SUN_ASSERT(szStr != nullptr);
     _data = szStr;
     return *this;
 }
@@ -110,7 +110,7 @@ typename std::enable_if<fs::is_std_string<typename fs::rm_cv_ref<std_string>>::v
 // const char*
 void operator +=(const char* szStr)
 {
-    FS_ASSERT(szStr != nullptr);
+    FS_SUN_ASSERT(szStr != nullptr);
     _data += szStr;
 }
     
@@ -152,10 +152,10 @@ friend typename std::enable_if<is_string<typename fs::rm_cv_ref<string_t>::type>
 }
 
 // misc type
-#define _FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(TYPE, FMT)		\
+#define _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(TYPE, FMT)                 \
     inline void operator+=(TYPE ot)					\
 {									\
-    char szVal[_FS_COMMON_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+    char szVal[_FS_SUN_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
     sprintf(szVal, FMT, ot);						\
     this->_data += szVal;						\
 }									\
@@ -163,7 +163,7 @@ template<typename string_t>						\
 friend typename std::enable_if<is_string<typename fs::rm_cv_ref<string_t>::type>::value, string> \
 ::type operator + (string_t && l, TYPE r)				\
 {									\
-    char szVal[_FS_COMMON_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+    char szVal[_FS_SUN_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
     sprintf(szVal, FMT, r);						\
     return string(std::forward<string_t>(l)._data + szVal);		\
 }									\
@@ -171,30 +171,30 @@ template<typename string_t>						\
 friend typename std::enable_if<is_string<typename fs::rm_cv_ref<string_t>::type>::value, string> \
 ::type operator + (TYPE l, string_t && r)				\
 {									\
-    char szVal[_FS_COMMON_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
+    char szVal[_FS_SUN_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
     sprintf(szVal, FMT, l);						\
     return string(szVal + std::forward<string_t>(r)._data);		\
 }		
 
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
 
 //integer
-#define _FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_INTEGER(SIZE)		\
-    _FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const std::int##SIZE##_t, "%" PRId##SIZE) \
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const std::uint##SIZE##_t, "%" PRIu##SIZE) 
+#define _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(SIZE)		\
+    _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const std::int##SIZE##_t, "%" PRId##SIZE) \
+    _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const std::uint##SIZE##_t, "%" PRIu##SIZE) 
 
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_INTEGER(8);
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_INTEGER(16);
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_INTEGER(32);
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_INTEGER(64);
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(8);
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(16);
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(32);
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(64);
 
-//_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const signed char, "%hhd");
-//_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const unsigned char, "%hhu");
-//_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
-//_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
-_FS_COMMON_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
+//_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const signed char, "%hhd");
+//_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned char, "%hhu");
+//_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
+//_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
 
 // misc
 inline size_t length()const { return _data.length(); }
@@ -216,25 +216,25 @@ std::string _data;
 
 template <> struct string::is_string<string> : std::true_type {};
 
-FS_COMMON_NS_END
+FS_SUN_NS_END
 
 namespace std
 {
     template <>
-    struct hash<fs::common::string>
+    struct hash<fs::Sun::string>
     {
-	std::size_t operator()(const fs::common::string& str) const noexcept
-	    {
-		return std::hash<std::string>()(str.GetStdString());
-	    }
+	std::size_t operator()(const fs::Sun::string& str) const noexcept
+        {
+            return std::hash<std::string>()(str.GetStdString());
+        }
     };
 
     template <>
-    struct hash<const fs::common::string>
+    struct hash<const fs::Sun::string>
     {
-	std::size_t operator()(const fs::common::string& str) const noexcept
-	    {
-		return std::hash<std::string>()(str.GetStdString());
-	    }
+	std::size_t operator()(const fs::Sun::string& str) const noexcept
+        {
+            return std::hash<std::string>()(str.GetStdString());
+        }
     };
 }

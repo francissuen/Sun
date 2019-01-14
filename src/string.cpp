@@ -1,5 +1,5 @@
 #include "string.h"
-using fs::common::string;
+using fs::Sun::string;
 
 bool string::operator==(const char* szStr)const
 {
@@ -44,7 +44,7 @@ std::map<const std::string, std::string> string::extract_blocks(const std::vecto
 
 std::vector<string> string::split(const char* delimeter)const
 {
-    FS_ASSERT(delimeter != nullptr);
+    FS_SUN_ASSERT(delimeter != nullptr);
     std::vector<string> ret;
     size_t curPos = 0;
     const size_t dlmtrLen = strlen(delimeter);
