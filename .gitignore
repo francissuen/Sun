@@ -10,4 +10,9 @@ config.h
 *.dir/
 test/Win32/
 
-fsCMake/
+bin/
+
+_*_
+fsCommon.tar*
+fs_pkg.sh
+fs_proj.xml
