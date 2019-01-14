@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(fsCommon)
 
-include(fsCMake/fsCommon.cmake)
+include(fsCMake/CMakeLists.txt)
 
 set(FS_COMMON_BUILD_VERSION ${FS_GIT_HEAD_VERSION})
 set(FS_COMMON_VERSION_MAJOR 0)
@@ -39,22 +39,27 @@ fs_add_class(file src srcs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(bin_suffix)
 if(FS_COMMON_STATIC_LIB)
   add_library(fsCommon
-    ${srcs}
-    )
+    ${srcs})
+  set(bin_suffix ${FS_BIN_STATIC_SUFFIX})
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFS_COMMON_SHARED_LIB=1")
   add_library(fsCommon SHARED
-    ${srcs}
-    )
+    ${srcs})
+  set(bin_suffix ${FS_BIN_SHARED_SUFFIX})
 endif()
+
+set(lib_name "fsCommon${FS_BIN_NAME_SUFFIX}")
 
 set_target_properties(fsCommon
   PROPERTIES
-  DEBUG_OUTPUT_NAME fsCommond
-  RELEASE_OUTPUT_NAME fsCommon
+  OUTPUT_NAME_DEBUG ${lib_name}d
+  OUTPUT_NAME_RELEASE ${lib_name}
   )
+
+get_target_property(get_name fsCommon OUTPUT_NAME_DEBUG)
 
 set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/fsCommon")
 
@@ -68,6 +73,18 @@ foreach(src IN LISTS srcs)
     message("header: " ${src})
   endif()
 endforeach()
-set(headers ${headers} src/config.h)
+set(headers ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 install(FILES ${headers} DESTINATION .)
+
+fs_gen_fs_proj()
+
+# set(pkg_libs
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsCommon.lib
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsCommond.lib)
+
+fs_gen_fs_pkg_sh(fsCommon
+  ${CMAKE_CURRENT_SOURCE_DIR}/src "*.h"
+  ${CMAKE_CURRENT_SOURCE_DIR}/bin "*.${bin_suffix}")
+
+message("CV: " ${CMAKE_CXX_COMPILER_VERSION})
