@@ -1,7 +1,7 @@
 #include "file.h"
 #include "string.h"
-using fs::common::file;
-using fs::common::string;
+using fs::Sun::file;
+using fs::Sun::string;
 
 file::file(const char* filePath, bool bRead):
     _size(0),

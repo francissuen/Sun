@@ -3,7 +3,7 @@
 //./fstest -d -n hello -c 100 world fsfs
 int args_test(int argc, char** argv)
 {
-    using fs::common::args;
+    using fs::Sun::args;
     args arg;
     arg.register_namedArg('d', args::enmType::BOOL);
     arg.register_namedArg('n', args::enmType::STRING);
@@ -30,7 +30,7 @@ int args_test(int argc, char** argv)
 
 	arg.unnamed_arg(uaSize);
     }
-    catch(const fs::common::string& err)
+    catch(const fs::Sun::string& err)
     {
 	std::cout << "err:" << err << std::endl;
     }

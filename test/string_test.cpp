@@ -2,7 +2,7 @@
 #include <cassert>
 #include "../src/string.h"
 
-using namespace fs::common;
+using namespace fs::Sun;
 
 void print_str(const string str)
 {

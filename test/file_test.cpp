@@ -1,7 +1,7 @@
 #include "../src/file.h"
 #include "../src/filesystem.h"
 
-using namespace fs::common;
+using namespace fs::Sun;
 #include <fstream>
 int file_test()
 {

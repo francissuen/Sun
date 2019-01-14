@@ -13,6 +13,6 @@ test/Win32/
 bin/
 
 _*_
-fsCommon.tar*
+fsSun.tar*
 fs_pkg.sh
 fs_proj.xml

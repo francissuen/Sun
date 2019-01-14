@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
-project(fsCommon)
+project(fsSun)
 
 include(fsCMake/CMakeLists.txt)
 
-set(FS_COMMON_BUILD_VERSION ${FS_GIT_HEAD_VERSION})
-set(FS_COMMON_VERSION_MAJOR 0)
-set(FS_COMMON_VERSION_MINOR 0)
+set(FS_SUN_BUILD_VERSION ${FS_GIT_HEAD_VERSION})
+set(FS_SUN_VERSION_MAJOR 0)
+set(FS_SUN_VERSION_MINOR 0)
 
-option(FS_COMMON_LUA_API "bind lua api?" OFF)
-option(FS_COMMON_STATIC_LIB "build static lib?" ON)
-option(FS_COMMON_MULTI_THREADS "support multi-threads" ON)
+option(FS_SUN_STATIC_LIB "build static lib?" ON)
+option(FS_SUN_MULTI_THREADS "support multi-threads" ON)
 
 configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/src/config.h)
 
@@ -24,47 +23,37 @@ fs_add_class(concurrency src srcs)
 fs_add_class(filesystem src srcs)
 fs_add_class(callback src srcs)
 
-if(FS_COMMON_LUA_API)
-  fs_add_class(luastate src srcs)
-  fs_add_class(luatable src srcs)
-endif()
-
-# find_package(lua REQUIRED)
-# include_directories(SYSTEM ${lua_INCLUDE_DIRS})
-
-# fs_add_class(luacpp_type_conversion src srcs)
-# fs_add_class(luacpp src srcs)
 fs_add_class(args src srcs)
 fs_add_class(file src srcs)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(bin_suffix)
-if(FS_COMMON_STATIC_LIB)
-  add_library(fsCommon
+if(FS_SUN_STATIC_LIB)
+  add_library(fsSun
     ${srcs})
   set(bin_suffix ${FS_BIN_STATIC_SUFFIX})
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFS_COMMON_SHARED_LIB=1")
-  add_library(fsCommon SHARED
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFS_SUN_SHARED_LIB=1")
+  add_library(fsSun SHARED
     ${srcs})
   set(bin_suffix ${FS_BIN_SHARED_SUFFIX})
 endif()
 
-set(lib_name "fsCommon${FS_BIN_NAME_SUFFIX}")
+set(lib_name "fsSun${FS_BIN_NAME_SUFFIX}")
 
-set_target_properties(fsCommon
+set_target_properties(fsSun
   PROPERTIES
   OUTPUT_NAME_DEBUG ${lib_name}d
   OUTPUT_NAME_RELEASE ${lib_name}
   )
 
-get_target_property(get_name fsCommon OUTPUT_NAME_DEBUG)
+get_target_property(get_name fsSun OUTPUT_NAME_DEBUG)
 
-set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/fsCommon")
+set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/fsSun")
 
 
-install(TARGETS fsCommon ARCHIVE DESTINATION .)
+install(TARGETS fsSun ARCHIVE DESTINATION .)
 
 set(headers)
 foreach(src IN LISTS srcs)
@@ -80,11 +69,12 @@ install(FILES ${headers} DESTINATION .)
 fs_gen_fs_proj()
 
 # set(pkg_libs
-#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsCommon.lib
-#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsCommond.lib)
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSun.lib
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSund.lib)
 
-fs_gen_fs_pkg_sh(fsCommon
+fs_gen_fs_pkg_sh(fsSun
   ${CMAKE_CURRENT_SOURCE_DIR}/src "*.h"
   ${CMAKE_CURRENT_SOURCE_DIR}/bin "*.${bin_suffix}")
 
-message("CV: " ${CMAKE_CXX_COMPILER_VERSION})
+add_subdirectory(test)
+

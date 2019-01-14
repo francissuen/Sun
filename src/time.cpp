@@ -2,8 +2,8 @@
 #include <cassert>
 #include <chrono>
 
-using fs::common::time;
-using fs::common::string;
+using fs::Sun::time;
+using fs::Sun::string;
 
 void time::get_localtime(char * const buffer, const unsigned char length)const
 {
