@@ -73,7 +73,7 @@ fs_gen_fs_proj()
 #   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSund.lib)
 
 set(bin_regex)
-if(FS_STATIC_LIB)
+if(FS_SUN_STATIC_LIB)
   set(bin_regex ".*\\.lib$")
 elseif(MSVC_VERSION)
   set(bin_regex "\\(.*\\.dll$\\)\\|\\(.*\\.lib$\\)")
