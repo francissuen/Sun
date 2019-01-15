@@ -6,8 +6,6 @@
 
 #define FS_SUN_BUILD_VERSION "@FS_SUN_BUILD_VERSION@"
 
-#cmakedefine FS_SUN_LUA_API
-
 #cmakedefine FS_SUN_STATIC_LIB
 
 #ifdef FS_SUN_STATIC_LIB
