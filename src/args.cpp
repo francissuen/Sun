@@ -112,9 +112,9 @@ bool args::has_named_arg(const char opt)const
     else
         return i->second->IsSupplied();
 }
-template bool args::named_arg<bool>(const char opt)const;
-template int args::named_arg<int>(const char opt)const;
-template char* args::named_arg<char*>(const char opt)const;
+template FS_SUN_EXPORT bool args::named_arg<bool>(const char opt)const;
+template FS_SUN_EXPORT int args::named_arg<int>(const char opt)const;
+template FS_SUN_EXPORT char* args::named_arg<char*>(const char opt)const;
 
 const char* args::unnamed_arg(const unsigned int idx)const
 {

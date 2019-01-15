@@ -210,7 +210,14 @@ string substr_at_l_lastof(const char val, const bool exclude = true) const;
 string substr_at_r_lastof(const char val, const bool exclude = true) const;
 string file_extension() const;
 private:
+#ifdef _MSC_VER
+#pragma warning(disable:4251)
+#pragma warning(push)
+#endif
 std::string _data;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 };
 

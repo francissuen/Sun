@@ -10,13 +10,13 @@ filesystem::filesystem()
 #ifdef _MSC_VER
     GetModuleFileName(NULL, path, _FS_SUN_FILESYSTEM_MAX_PATH);
     _workingDir = path;
-    _workingDir = _workingDir.substr_at_l_lastof('\\', false);
+    _workingDir = _workingDir.substr_at_l_lastof('\\', true);
 #elif __GNUC__
     ssize_t ret = ::readlink("/proc/self/exe", path, _FS_SUN_FILESYSTEM_MAX_PATH);
     if(ret == -1)
 	throw string("readlink error");
     _workingDir = path;
-    _workingDir = _workingDir.substr_at_l_lastof('/', false);
+    _workingDir = _workingDir.substr_at_l_lastof('/', true);
 #endif
 }
 std::vector<fs::Sun::string> filesystem::get_files_here(const char* path, const std::vector<const char*>* suffix)const
@@ -69,7 +69,7 @@ fs::Sun::string filesystem::get_absolute_path(const char* szPath)const
 #endif
 	return fs::Sun::string(szPath);
     else//relative path
-	return _workingDir + szPath;
+	return _workingDir + "/" + szPath;
 }
 
 // void filesystem::fs_LC_Reg(lua_State* L)

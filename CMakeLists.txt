@@ -72,9 +72,17 @@ fs_gen_fs_proj()
 #   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSun.lib
 #   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSund.lib)
 
+set(bin_regex)
+if(FS_STATIC_LIB)
+  set(bin_regex ".*\\.lib$")
+elseif(MSVC_VERSION)
+  set(bin_regex "\\(.*\\.dll$\\)\\|\\(.*\\.lib$\\)")
+else()
+  set(bin_regex ".*\\.so")
+endif()
+
 fs_gen_fs_pkg_sh(fsSun
-  ${CMAKE_CURRENT_SOURCE_DIR}/src "*.h"
-  ${CMAKE_CURRENT_SOURCE_DIR}/bin "*.${bin_suffix}")
+  ${CMAKE_CURRENT_SOURCE_DIR}/src ".*\\.h"
+  ${CMAKE_CURRENT_SOURCE_DIR}/bin "${bin_regex}")
 
 add_subdirectory(test)
-
