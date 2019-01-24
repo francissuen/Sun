@@ -66,7 +66,7 @@ set(headers ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 install(FILES ${headers} DESTINATION .)
 
-fs_gen_fs_proj()
+fs_gen_fs_proj(srcs)
 
 # set(pkg_libs
 #   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSun.lib
@@ -74,11 +74,11 @@ fs_gen_fs_proj()
 
 set(bin_regex)
 if(FS_SUN_STATIC_LIB)
-  set(bin_regex ".*\\.lib$")
+  set(bin_regex ".*\\.${bin_suffix}$")
 elseif(MSVC_VERSION)
   set(bin_regex "\\(.*\\.dll$\\)\\|\\(.*\\.lib$\\)")
 else()
-  set(bin_regex ".*\\.so")
+  message(FATAL_ERROR "unsupported for now.")
 endif()
 
 fs_gen_fs_pkg_sh(fsSun
