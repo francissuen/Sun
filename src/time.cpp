@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019, F.S.. All rights reserved.
+ */
+
 #include "time.h"
 #include <cassert>
 #include <chrono>

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019, F.S.. All rights reserved.
+ */
+
 #include "file.h"
 #include "string.h"
 using fs::Sun::file;
