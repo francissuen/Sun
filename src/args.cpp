@@ -120,7 +120,7 @@ template FS_SUN_EXPORT bool args::named_arg<bool>(const char opt)const;
 template FS_SUN_EXPORT int args::named_arg<int>(const char opt)const;
 template FS_SUN_EXPORT char* args::named_arg<char*>(const char opt)const;
 
-const char* args::unnamed_arg(const unsigned int idx)const
+const char* args::unnamed_arg(const std::size_t idx)const
 {
     if (idx >= _vUnnamedArgs.size())
         throw string("idx >= _vUnnamedargs idx:") + idx;
