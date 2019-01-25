@@ -237,6 +237,14 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
     }
 #endif
 
+///////////////////////////////
+// call a function verbosely //
+///////////////////////////////
+#define FS_SUN_CALL_V(function) \
+    fs::Sun::logger::Instance().log("calling @function: " #function);   \
+    function ;
+
+
 ////////////////////////////////
 // type tarits
 ////////////////////////////////
