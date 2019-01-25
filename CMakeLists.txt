@@ -9,6 +9,11 @@ set(FS_SUN_VERSION_MINOR 0)
 
 option(FS_SUN_STATIC_LIB "build static lib?" ON)
 option(FS_SUN_MULTI_THREADS "support multi-threads" ON)
+option(FS_SUN_VERBOSE "build lib verbosely" OFF)
+
+if(FS_SUN_VERBOSE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFS_SUN_VERBOSE")
+endif()
 
 configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/src/config.h)
 
