@@ -55,7 +55,7 @@ void               parse(const int argc, char** argv);
 template<typename T>
 T named_arg(const char opt)const;
 bool has_named_arg(const char opt)const;
-const char* unnamed_arg(const unsigned int idx)const;
+const char* unnamed_arg(const std::size_t idx)const;
 inline size_t unnamed_arg_size()const
 {
     return _vUnnamedArgs.size();

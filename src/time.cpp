@@ -18,7 +18,7 @@ void time::get_localtime(char * const buffer, const unsigned char length)const
     tm* pTime = localtime(&rawTime);
     assert(pTime != nullptr);
     
-    sprintf(buffer, "%d:%d:%d(%d,%d,%d)",
+    sprintf(buffer, "%d:%d:%d[%d/%d/%d]",
 	    pTime->tm_hour,
 	    pTime->tm_min,
 	    pTime->tm_sec,
