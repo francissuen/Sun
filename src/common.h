@@ -67,7 +67,7 @@ inline void operator = (x const&){}
 
 #define FS_SUN_EXPAND(...) __VA_ARGS__
 #define FS_SUN_MERGE(a,    b) a##b
-#define FS_SUN_CALL(func,  param) func param
+#define _FS_SUN_MACRO_CALL_(func,  param) func param
 
 // using variadic macro for the type contains comma, such as std::map<int, int>
 #define FS_SUN_PROPERTY_R(acc_spec, name, ...)                          \
@@ -129,7 +129,7 @@ private:
 #define _FS_SUN_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
 #ifdef _MSC_VER
 //MS preprocessor issue. see https://stackoverflow.com/questions/48088834/how-to-implement-exclude-first-argument-macro-in-msvc
-#define FS_SUN_EXCLUDE_FIRST_ARG(...)     FS_SUN_CALL(_FS_SUN_EXCLUDE_FIRST_ARG_, (__VA_ARGS__))
+#define FS_SUN_EXCLUDE_FIRST_ARG(...)     _FS_SUN_MACRO_CALL_(_FS_SUN_EXCLUDE_FIRST_ARG_, (__VA_ARGS__))
 #else
 #define FS_SUN_EXCLUDE_FIRST_ARG(...)     _FS_SUN_EXCLUDE_FIRST_ARG_(__VA_ARGS__)
 #endif
@@ -141,7 +141,7 @@ private:
                               _31, n, ...) n
 
 #ifdef _MSC_VER
-#define FS_SUN_GET32TH_ARGS(...) FS_SUN_CALL(_FS_SUN_GET32TH_ARGS_, (__VA_ARGS__))
+#define FS_SUN_GET32TH_ARGS(...) _FS_SUN_MACRO_CALL_(_FS_SUN_GET32TH_ARGS_, (__VA_ARGS__))
 #else
 #define FS_SUN_GET32TH_ARGS(...) _FS_SUN_GET32TH_ARGS_(__VA_ARGS__)
 #endif
