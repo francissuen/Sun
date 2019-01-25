@@ -39,5 +39,7 @@ int logger_test()
 	logger::Instance().set_error_color_code(FS_SUN_LOGGER_DEFAULT_ERROR_COLOR_CODE);
 	logger::Instance().set_warning_color_code(FS_SUN_LOGGER_DEFAULT_WARNING_COLOR_CODE);
 #endif
+
+        FS_SUN_CALL_V(logger::Instance().log("hello world"))
     return 0;
 }
