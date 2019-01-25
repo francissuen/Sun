@@ -241,12 +241,20 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 // call a function verbosely //
 ///////////////////////////////
 #ifdef FS_SUN_VERBOSE
-#define FS_SUN_CALL_V(function)                                         \
-    fs::Sun::logger::Instance().log("calling @function: " #function);   \
-    function ;
+#define FS_SUN_CALL_V(function, ...)                                    \
+    {                                                                   \
+    fs::Sun::string msg("calling @function: " #function);               \
+    if(FS_SUN_ARGC(__VA_ARGS__) > 0)                                    \
+    {                                                                   \
+        msg += "@param";                                                \
+        msg = msg.concat_with_delimiter(" : " FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)); \
+    }                                                                   \
+    fs::Sun::logger::Instance().log(msg);                               \
+    }                                                                   \
+        function(__VA_ARGS__);
 #else
-#define FS_SUN_CALL_V(function)                 \
-    function ;
+#define FS_SUN_CALL_V(function, ...)            \
+    function(__VA_ARGS__);
 #endif
 
 

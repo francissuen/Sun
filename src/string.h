@@ -213,6 +213,48 @@ void replace(const char* old_str, const char* new_str);
 string substr_at_l_lastof(const char val, const bool exclude = true) const;
 string substr_at_r_lastof(const char val, const bool exclude = true) const;
 string file_extension() const;
+
+template <typename T = void>
+string concat() const
+{
+    return *this;
+}
+
+template <typename T>
+string concat(T t) const
+{
+    return *this + t;
+}
+
+template <typename First_t, typename Second_t, typename ... Others_t>
+string concat(First_t first, Second_t second, Others_t ... others) const
+{
+    return concat(first).concat(second, others...);
+}
+
+template <typename T = void>
+string concat_with_delimiter(const char* delimiter) const
+{
+    return *this;
+}
+
+template <typename T>
+string concat_with_delimiter(const char * delimiter, T t) const
+{
+    return *this + delimiter + t;
+}
+
+template <typename First_t, typename Second_t, typename ... Others_t>
+string concat_with_delimiter(const char* delimiter,
+                             First_t first,
+                             Second_t second,
+                             Others_t ... others)
+{
+    return concat_with_delimiter(delimiter, first).concat_with_delimiter(delimiter,
+                                                                         second,
+                                                                         others...);
+}
+
 private:
 #ifdef _MSC_VER
 #pragma warning(disable:4251)

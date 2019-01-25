@@ -18,8 +18,6 @@ file::file(const char* filePath, bool bRead):
 	openmode = openmode | std::ios_base::out;
 
     _file = std::fstream(filePath, openmode);
-    if(!_file.is_open())
-	throw string("file open failed@") + filePath;
 
     if(bRead)
     {
@@ -40,18 +38,16 @@ void file::close()
 {
     _file.close();
 }
-void file::read(void* const buffer, const size_t bufferSize)
+bool file::read(void* const buffer, const size_t bufferSize)
 {
     assert(buffer != nullptr);
     _file.read((char* const)buffer, bufferSize);
-    if(!_file)
-    	throw string("file read error@") + _filePath;
+    return ! _file.fail();
 }
 
-void file::write(const void* data, const size_t size)
+bool file::write(const void* data, const size_t size)
 {
     assert(data != nullptr);
     _file.write((const char*)data, size);
-    if(!_file)
-	throw string("file write error@") + _filePath;
+    return ! _file.fail();
 }

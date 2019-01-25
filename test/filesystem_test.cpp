@@ -9,6 +9,8 @@ int filesystem_test()
     logger::Instance().log("wd: " + filesystem::Instance().get_workingdir());
 
     logger::Instance().log("test.sh abs: " + filesystem::Instance().get_absolute_path("test.sh"));
+#ifndef _MSC_VER
     logger::Instance().log("/home/test.sh abs: " + filesystem::Instance().get_absolute_path("/home/test.sh"));
+#endif
     return 0;
 }
