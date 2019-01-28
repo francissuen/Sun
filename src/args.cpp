@@ -4,8 +4,7 @@
 
 #include "args.h"
 #include <cstdlib>
-using fs::Sun::args;
-using fs::Sun::string;
+using namespace fs::Sun;
 
 args::~args()
 {

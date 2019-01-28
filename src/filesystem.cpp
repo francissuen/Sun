@@ -4,58 +4,74 @@
 
 #include "filesystem.h"
 
-using fs::Sun::filesystem;
+using namespace fs::Sun;
 
 #define _FS_SUN_FILESYSTEM_MAX_PATH 128
 
-filesystem::filesystem()
+filesystem::filesystem():
+#ifdef _MSC_VER
+    _directorySeparator('\\')
+#else
+    _directorySeparator('/')
+#endif
 {
     char path[_FS_SUN_FILESYSTEM_MAX_PATH] = {'\0'};
 #ifdef _MSC_VER
     GetModuleFileName(NULL, path, _FS_SUN_FILESYSTEM_MAX_PATH);
-    _workingDir = path;
-    _workingDir = _workingDir.substr_at_l_lastof('\\', true);
 #elif __GNUC__
     ssize_t ret = ::readlink("/proc/self/exe", path, _FS_SUN_FILESYSTEM_MAX_PATH);
-    if(ret == -1)
-	throw string("readlink error");
-    _workingDir = path;
-    _workingDir = _workingDir.substr_at_l_lastof('/', true);
+    FS_SUN_ASSERT(ret != -1);
 #endif
+    _workingDir = path;
+    _workingDir = _workingDir.substr_at_lhs_of_last(_directorySeparator, true);
 }
-std::vector<fs::Sun::string> filesystem::get_files_here(const char* path, const std::vector<const char*>* suffix)const
+
+std::vector<string> filesystem::get_files_in_dir(const char* dir,
+                                                 const std::unordered_set<string> & suffixes,
+                                                 const bool recursively)const
 {
-    assert(path != nullptr && suffix != nullptr);
-    std::vector<fs::Sun::string> files;
+    FS_SUN_ASSERT(dir != nullptr);
+    std::vector<string> files;
 #ifdef _WIN32
     HANDLE hFind  = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATA ffd;
-  
+    const string strDir(dir);
+    string path = strDir + _directorySeparator + '*';
     hFind = FindFirstFile(path, &ffd);
     if(hFind == INVALID_HANDLE_VALUE)
     {
-	logger::Instance().warning((string)"filesystem::get_files_here:nothing here @" + path);
+	logger::Instance().warning((string)"filesystem::get_files_in_dir, hFind == INVALID_HANDLE_VALUE @dir: " + strDir);
 	return files;
     }
+    const std::size_t suffixesCount = suffixes.size();
     do
     {
-	string file(ffd.cFileName);
-	if(suffix != nullptr)
-	{
-	    string suf(file.substr_at_r_lastof('.'));
-	    for(std::vector<const char*>::const_iterator i = suffix->begin(); i != suffix->end(); i++)
-	    {
-		if(suf == (*i))
-		{
-		    string fileName(path);
-		    fileName.replace("*", file);
-		    files.push_back((const char*)fileName);
-		    continue;
-		}
-	    }
-	}
-	else
-	    files.push_back((const char*)file);
+        string file(ffd.cFileName);
+        if(! (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            if(suffixesCount != 0)
+            {
+                string suf(file.substr_at_rhs_of_last('.'));
+                if(suffixes.find(suf) != suffixes.end())
+                    files.push_back(strDir + _directorySeparator + file);
+                else
+                    continue;
+            }
+            else
+                files.push_back(strDir + _directorySeparator + file);
+        }
+        else
+        {
+            if(recursively && file != "." && file != "..")
+            {
+                const std::vector<string> subDirFiles = get_files_in_dir(strDir,
+                                                                         suffixes,
+                                                                         recursively);
+                files.insert(files.end(), subDirFiles.begin(), subDirFiles.end());
+            }
+            else
+                continue;
+        }
     }
     while(FindNextFile(hFind, &ffd) != 0);
 #endif
@@ -63,26 +79,15 @@ std::vector<fs::Sun::string> filesystem::get_files_here(const char* path, const 
     return files;
 }
 
-fs::Sun::string filesystem::get_absolute_path(const char* szPath)const
+string filesystem::get_absolute_path(const char* szPath)const
 {
     assert(szPath != nullptr);
 #ifdef _MSC_VER
     if(szPath[1] == ':')
 #elif __GNUC__
-    if(szPath[0] == '/')
+        if(szPath[0] == '/')
 #endif
-	return fs::Sun::string(szPath);
-    else//relative path
-	return _workingDir + "/" + szPath;
+            return string(szPath);
+        else//relative path
+            return _workingDir + _directorySeparator + szPath;
 }
-
-// void filesystem::fs_LC_Reg(lua_State* L)
-// {
-// 	std::vector<fs_LC_Func> funcs;
-// 	funcs.push_back(fs_LC_Func("GetWorkPath", &filesystem::fs_LC_EF_GetWorkPath));
-
-// 	fsLuaCPP_PrvCns<filesystem>::Register(L, "filesystem", funcs);
-
-// 	fs_LC_Singleton_Instance_Reg(filesystem);
-// }
- 
