@@ -4,8 +4,7 @@
 
 #include "file.h"
 #include "string.h"
-using fs::Sun::file;
-using fs::Sun::string;
+using namespace fs::Sun;
 
 file::file(const char* filePath, bool bRead):
     _size(0),

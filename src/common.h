@@ -264,7 +264,7 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 #include <type_traits>
 namespace fs
 {
-    namespace
+    namespace Sun
     {
         template <typename T>
         struct rm_cv_ref { using                                  type = T; };

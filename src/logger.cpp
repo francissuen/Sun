@@ -6,8 +6,7 @@
 #include <cassert>
 #include <limits>
 
-using fs::Sun::logger;
-using fs::Sun::time;
+using namespace fs::Sun;
 
 logger::logger() :
 #ifdef _MSC_VER

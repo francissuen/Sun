@@ -6,8 +6,7 @@
 #include <cassert>
 #include <chrono>
 
-using fs::Sun::time;
-using fs::Sun::string;
+using namespace fs::Sun;
 
 void time::get_localtime(char * const buffer, const unsigned char length)const
 {
