@@ -1,8 +1,11 @@
 #include "../src/args.h"
+#include "../src/logger.h"
 
 //./fstest -d -n hello -c 100 world fsfs
 int args_test(int argc, char** argv)
 {
+    FS_SUN_V_LOG(argc, argv[0]);
+    
     using fs::Sun::args;
     args arg;
     arg.register_namedArg('d', args::enmType::BOOL);
