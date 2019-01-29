@@ -10,9 +10,9 @@ int file_test()
     if(!wFile.is_open())
         return 1;
     const char* content = "hello world";
-
-    FS_SUN_CALL_V(wFile.write, content, strlen(content))
-    FS_SUN_CALL_V(wFile.close)
+    
+    FS_SUN_V_CALL(wFile.write, content, strlen(content))
+    FS_SUN_V_CALL(wFile.close)
 
     file rFile(filesystem::Instance().get_absolute_path(filePath));
     if(!rFile.is_open())

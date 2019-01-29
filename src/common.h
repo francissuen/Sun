@@ -68,7 +68,7 @@ inline void operator = (x const&){}
 #define FS_SUN_EXPAND(...) __VA_ARGS__
 #define FS_SUN_MERGE(a,    b) a##b
 #define _FS_SUN_MACRO_CALL_(func,  param) func param
-
+#define FS_SUN_STRING(a) #a
 // using variadic macro for the type contains comma, such as std::map<int, int>
 #define FS_SUN_PROPERTY_R(acc_spec, name, ...)                          \
     acc_spec:    __VA_ARGS__ _##name;                                   \
@@ -226,10 +226,11 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
     {									\
 	std::cerr << "**************** FS_SUN_ASSERT FAILED ****************" \
 		  << std::endl;						\
-	std::cerr << "CONDITION@ " << #condition << std::endl;		\
-	std::cerr << "LINE@ " << __LINE__ << std::endl			\
-		  << "FILE@ " << __FILE__ << std::endl;			\
-	std::cerr << "MSG@ " FS_SUN__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__ \
+	std::cerr << "@CONDITION: " << #condition << std::endl;		\
+	std::cerr << "@LINE: " << __LINE__ << std::endl			\
+		  << "@FILE: " << __FILE__ << std::endl;                \
+        std::cerr << "@FUNCTION: " << __FUNCTION__ << std::endl;        \
+	std::cerr << "@MSG: " FS_SUN__VA_ARGS__(<< ,__VA_ARGS__)  __VA_ARGS__ \
 		  << std::endl;						\
 	std::cerr << "**************** FS_SUN_ASSERT FAILED ****************" \
 		  << std::endl;						\
@@ -237,24 +238,35 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
     }
 #endif
 
-///////////////////////////////
-// call a function verbosely //
-///////////////////////////////
 #ifdef FS_SUN_VERBOSE
-#define FS_SUN_CALL_V(function, ...)                                    \
+#define _FS_SUN_FUNCTION_LOG_(functionName, ...)                        \
     {                                                                   \
-    fs::Sun::string msg("calling @function: " #function);               \
-    if(FS_SUN_ARGC(__VA_ARGS__) > 0)                                    \
-    {                                                                   \
-        msg += "@param";                                                \
-        msg = msg.concat_with_delimiter(" : " FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)); \
-    }                                                                   \
-    fs::Sun::logger::Instance().log(msg);                               \
-    }                                                                   \
-        function(__VA_ARGS__);
-#else
-#define FS_SUN_CALL_V(function, ...)            \
+        fs::Sun::string msg("calling @function: " functionName);        \
+        if(FS_SUN_ARGC(__VA_ARGS__) > 0)                                \
+        {                                                               \
+            msg += " @param";                                           \
+            msg = msg.concat_with_delimiter(" : " FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)); \
+        }                                                               \
+        fs::Sun::logger::Instance().log(msg);                           \
+    }
+
+#define FS_SUN_V_LOG(...)                                               \
+    _FS_SUN_MACRO_CALL_(_FS_SUN_FUNCTION_LOG_, (__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+
+///////////////////////////////
+// verbosely call a function //
+///////////////////////////////
+#define FS_SUN_V_CALL(function, ...)                                    \
+    _FS_SUN_MACRO_CALL_(_FS_SUN_FUNCTION_LOG_,                          \
+                        (FS_SUN_STRING(function) FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))) \
     function(__VA_ARGS__);
+
+#else
+
+#define FS_SUN_V_LOG(...)
+#define FS_SUN_V_CALL(function, ...)            \
+    function(__VA_ARGS__);
+    
 #endif
 
 

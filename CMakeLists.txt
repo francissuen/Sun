@@ -43,6 +43,7 @@ else()
   add_library(fsSun SHARED
     ${srcs})
   set(bin_suffix ${FS_BIN_SHARED_SUFFIX})
+  target_compile_definitions(fsSun PRIVATE FS_SUN_SHARED_LIB)
 endif()
 
 set(lib_name "fsSun${FS_BIN_NAME_SUFFIX}")

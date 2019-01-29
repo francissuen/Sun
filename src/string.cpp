@@ -19,30 +19,29 @@ bool string::operator < (const string& other) const
 {
     return _data < other._data;
 }
-std::map<const std::string, std::string> string::extract_blocks(const std::vector<std::string>& pairDelimiters)const
+std::map<const std::string, std::string> string::extract_blocks(
+    const std::vector<std::pair<std::string, std::string>>& pairedDelimiters)const
 {
     std::map<const std::string, std::string> ret;
-    if (pairDelimiters.size() % 2 != 0)
-    {
-	return ret;
-    }
 
-    for (std::vector<std::string>::const_iterator i = pairDelimiters.begin(); i != pairDelimiters.end(); i++)
+    for(const auto pd : pairedDelimiters)
     {
-	const size_t startPos = _data.find(*i, 0);
-	const size_t dlmtrLen = i->size();
-	i++;
+        const std::string & first = pd.first;
+	const size_t startPos = _data.find(first, 0);
+	const size_t dlmtrLen = first.size();
+
 	if (startPos != std::string::npos)
 	{
 	    const size_t blockStartPos = startPos + dlmtrLen;
 
-	    const size_t endPos = _data.find(*i, blockStartPos);
+	    const size_t endPos = _data.find(pd.second, blockStartPos);
 	    if (endPos != std::string::npos)
 	    {
-		ret.insert(std::pair<const std::string, std::string>(*i, _data.substr(blockStartPos, endPos - blockStartPos)));
+		ret.insert(std::make_pair(pd.first, _data.substr(blockStartPos, endPos - blockStartPos)));
 	    }
 	}
     }
+
     return ret;
 }
 

@@ -11,12 +11,12 @@
 
 FS_SUN_NS_BEGIN
 
-/*
- *supported arguments formats
- *[-opt [opt_arg]]... [arg]...
- *[opt_arg] called named arg, 
- *[arg] called unnamed arg(always after named args, except argv[0])
- *note! unnamed_arg(0) always return current executable path
+/**
+ * supported arguments formats
+ * [-opt [opt_arg]]... [arg]...
+ * [opt_arg] called named arg, 
+ * [arg] called unnamed arg(always after named args, except argv[0])
+ * \note unnamed_arg(0) always return current executable path
  */
 FS_SUN_CLASS args
 {

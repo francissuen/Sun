@@ -20,9 +20,10 @@
 
 FS_SUN_NS_BEGIN
 
-/*
- * a wrapper for std::string
+/**
+ * \brief A wrapper for std::string, but with more useful features.
  */
+
 FS_SUN_CLASS string
 {
 public:
@@ -34,8 +35,8 @@ inline string() {}
 inline string(const char* str) :_data(str) { FS_SUN_ASSERT(str != nullptr); }
 
 /*
- *if std::string can conver to string implicit,
- *then operator+ may have ambiguous issue with std::string::operator+
+ * if std::string can conver to string implicit,
+ * then operator+ may have ambiguous issue with std::string::operator+
  */
 explicit string(const std::string & str):
 _data(str)
@@ -44,7 +45,7 @@ explicit string(std::string && str):
 _data(std::move(str))
 {}
     
-// copy ctor
+
 string(const string & str):
 _data(str._data)
 {}
@@ -53,20 +54,19 @@ string(string && str):
 _data(std::move(str._data))
 {}
     
-// copy assignment operator
 inline string & operator=(const string & other)
 {
     _data = other._data;
     return *this;
 }
-// move assignment operator
+
 inline string & operator=(string && other)
 {
     _data = std::move(other._data);
     return *this;
 }
 
-// assignment operator overloading for other types
+
 inline string & operator=(const char* szStr)
 {
     FS_SUN_ASSERT(szStr != nullptr);
@@ -81,10 +81,9 @@ typename std::enable_if<is_std_string<typename rm_cv_ref<std_string>::type>::val
     return *this;
 }
 
-// conversion
+
 inline operator const char*()const { return _data.c_str(); }
 
-// comparision
 bool operator==(const char* szStr)const;
 bool operator==(const std::string& str)const;
 inline bool operator!=(const char* szStr)const
@@ -207,8 +206,16 @@ inline const char * data() const { return _data.data(); }
 inline std::string& GetStdString() { return _data; }
 bool operator < (const string& other) const;
 
-//extract block with back delimiters as map's key
-std::map<const std::string, std::string> extract_blocks(const std::vector<std::string>& pairDelimiters)const;
+/**
+ * \brief Extract string blocks according to \p pairedDelimiters.
+ * 
+ * \param pairedDelimiters should always be some paried strings, like "begin_*block" and
+ * "end_*block".
+ * \return String blocks are always returned and mapped by key std::pair<>::first of
+ * pairedDelimiter.
+ */
+std::map<const std::string, std::string> extract_blocks(
+    const std::vector<std::pair<std::string, std::string>>& pairedDelimiters)const;
 std::vector<string> split(const char* delimiter)const;
 void replace(const char* old_str, const char* new_str);
 string substr_at_lhs_of_last(const char val, const bool exclude = true) const;
