@@ -23,8 +23,8 @@ public:
     void get_localtime(char * const buffer, const unsigned char length = FS_SUN_TIMEBUFFER_MAX_LEN)const;
     std::uint64_t timestamp()const;
 
-    /*
-     *@brief, format seconds to [?d:][?h:][?m:]?s string
+    /**
+     * \brief Format seconds to [*d:][*h:][*m:]*s string
      */
     string format(const time_t seconds);
 };

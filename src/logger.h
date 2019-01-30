@@ -66,9 +66,8 @@ FS_SUN_CLASS  logger
 public:
     void log(const char* msg)const;
     void set_log_color_code(const color_code_t szCode);
-    /*
-     *@param streambuf, if streambuf == nullptr,
-     *then set back to default streambuf.
+    /**
+     * \param Streambuf, if streambuf == nullptr, then set back to default streambuf.
      */
     void set_log_streambuf(std::streambuf* streambuf);
     void error(const char* msg)const;
@@ -77,9 +76,9 @@ public:
     void warning(const char* msg)const;
     void set_warning_color_code(const color_code_t szCode);
 
-    /*
-     *@brief, progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
-     *thread unsafe, will disable all other logger function until progress_done()
+    /**
+     * \brief Progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
+     * \note Thread unsafe and will disable all other logger function until \see progress_done()
      */
     void progress(const float value, const char* title = nullptr);
     void progress_done();
@@ -95,7 +94,7 @@ private:
     color_code_t _progress_color_code[2];
 	    
     /*
-     *log and waring share same streambuf
+     * Log and waring share same streambuf
      */
     std::streambuf* _log_default_streambuf;
     std::streambuf* _error_default_streambuf;
