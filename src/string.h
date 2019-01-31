@@ -207,10 +207,8 @@ inline std::string& GetStdString() { return _data; }
 bool operator < (const string& other) const;
 
 /**
- * \brief Extract string blocks according to \p pairedDelimiters.
+ * \brief Extract string blocks which are all between of each \p pairedDelimiters.
  * 
- * \param pairedDelimiters should always be some paried strings, like "begin_*block" and
- * "end_*block".
  * \return String blocks are always returned and mapped by key std::pair<>::first of
  * pairedDelimiter.
  */
