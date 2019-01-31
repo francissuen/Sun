@@ -285,11 +285,11 @@ _FS_SUN_UNTILS_CONCURRENCY_DEFINE(concurrency_tc,
                                   (this),
                                   (taskCount))
 
-// task_ti_tc(threadIdx, taskCount)
+// task_ti_tc(threadIdx, taskCount, ...)
 _FS_SUN_CONCURRENCY_TASK_DEFINE(_task_ti_tc,
                                 (std::placeholders::_1, std::placeholders::_2),
-                                (threadIdx, threadCount),
-                                const std::uint8_t threadIdx, const size_t threadCount)
+                                (threadIdx, taskCount),
+                                const std::uint8_t threadIdx, const size_t taskCount)
 
 _FS_SUN_UNTILS_CONCURRENCY_DEFINE(concurrency_ti_tc,
                                   _task_ti_tc,
