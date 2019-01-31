@@ -67,7 +67,7 @@ public:
     void log(const char* msg)const;
     void set_log_color_code(const color_code_t szCode);
     /**
-     * \param Streambuf, if streambuf == nullptr, then set back to default streambuf.
+     * \param streambuf if streambuf == nullptr, then set back to default streambuf.
      */
     void set_log_streambuf(std::streambuf* streambuf);
     void error(const char* msg)const;

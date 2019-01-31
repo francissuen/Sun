@@ -99,6 +99,7 @@ public:
 
     /**
      * \brief Execute \p func when timeout expires while there.
+     * \param func The func will be executed when timeout expires.
      * \param timeout in milliseconds
      */
     void timeout_done(std::function<void(const size_t taskCount)> func, const std::uint32_t timeout = 1000)

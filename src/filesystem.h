@@ -34,7 +34,7 @@ public:
     inline const string& get_workingdir()const{ return _workingDir; }
 
     /**
-     * \param If szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
+     * \param szPath If szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
      * else it's a relative path.
      */
     string get_absolute_path(const char* szPath)const;
