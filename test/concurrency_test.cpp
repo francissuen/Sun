@@ -29,7 +29,7 @@ int concurrency_test(const unsigned int count = 1000)
     
     for(unsigned int i = 0; i < count; i++)
     {
-	c_ti.pushtask(concurrency_ti<>::task(task_func
+	c_ti.push_task(concurrency_ti<>::task(task_func
 #ifdef _MSC_VER
 				, FS_SUN_CONCURRENCY_TASK_PRIORITY_MID
 #endif
@@ -68,7 +68,7 @@ int concurrency_test(const unsigned int count = 1000)
 
     concurrency_ti_tc<int> c_ti_tc(threadCount);
     for(unsigned int i = 0; i < count; i++)
-	c_ti_tc.pushtask(concurrency_ti_tc<int>::task(task_func_2, i
+	c_ti_tc.push_task(concurrency_ti_tc<int>::task(task_func_2, i
 #ifdef _MSC_VER
 					 , FS_SUN_CONCURRENCY_TASK_PRIORITY_MID
 #endif
