@@ -68,7 +68,7 @@ class _concurrency_base
 protected:
     /**
      * \brief Create a concurrency with a number of threads which have count == \a threadCount.
-     * \note If \p threadCount == 0, then the count of hardware cores will be used.
+     * \note If \b threadCount == 0, then the count of hardware cores will be used.
      */
     _concurrency_base(const std::uint8_t threadCount):
         _done(false),
@@ -81,8 +81,8 @@ protected:
 public:
     /**
      * \brief There's no task left need be pushed, you may deallocate all threads allocated before
-     * now. Block current thread until all tasks when \p normally is true or running tasks when
-     * \p noramally is false have been done.
+     * now. Block current thread until all tasks when \b normally is true or running tasks when
+     * \b noramally is false have been done.
      */
     void done(bool normally = true)
     {
@@ -98,8 +98,9 @@ public:
     }
 
     /**
-     * \brief Execute \p func when timeout expires while there.
-     * \param func The func will be executed when timeout expires.
+     * \brief Execute \b func when timeout expires while there.
+     * \param func will be executed when timeout expires(\b taskCount means current count of the
+     * tasks haven't been done yet).
      * \param timeout in milliseconds
      */
     void timeout_done(std::function<void(const size_t taskCount)> func, const std::uint32_t timeout = 1000)
@@ -133,7 +134,16 @@ public:
         _join();
     }
 
-    void pushtask(const task_t& task)
+    /**
+     * \brief Get the count of tasks.
+     */ 
+    std::size_t get_taskCount() const
+    {
+        std::lock_guard<std::mutex> lck(_mtx);
+        return _tasks.size();
+    }
+    
+    void push_task(const task_t& task)
     {
         {
             std::lock_guard<std::mutex> lck(_mtx);
@@ -143,7 +153,7 @@ public:
         _cv.notify_one();
     }
 
-    void pushtask(task_t&& task)
+    void push_task(task_t&& task)
     {
         {
             std::lock_guard<std::mutex> lck(_mtx);
@@ -153,7 +163,7 @@ public:
         _cv.notify_one();
     }
 
-    std::uint8_t get_threadscount()const { return _threadCount; }
+    std::uint8_t get_threadsCount()const { return _threadCount; }
 
 protected:
     std::uint8_t _threadCount;
@@ -274,7 +284,9 @@ _FS_SUN_UNTILS_CONCURRENCY_DEFINE(concurrency_ti,
                                   (threadIdx),
                                   const std::uint8_t threadIdx)
 
-// task_tc(taskCount, ...)
+/**
+ * task_tc(taskCount, ...)
+ */ 
 _FS_SUN_CONCURRENCY_TASK_DEFINE(_task_tc,
                                 (std::placeholders::_1),
                                 (taskCount),

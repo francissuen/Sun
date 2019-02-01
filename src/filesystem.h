@@ -22,10 +22,10 @@ FS_SUN_CLASS filesystem
 public:
 
     /**
-     * \brief Get all the files in \p dir with suffix contained in \p suffixes
-     * recursively if \p recursively is true.
+     * \brief Get all the files in \b dir with suffix contained in \b suffixes
+     * recursively if \b recursively is true.
      * 
-     * \note If \p suffixes is empty, then all the files in \p dir will be returned.
+     * \note If \b suffixes is empty, then all the files in \b dir will be returned.
      */
     std::vector<string> get_files_in_dir(const char* dir,
                                                   const std::unordered_set<string> & suffixes,
