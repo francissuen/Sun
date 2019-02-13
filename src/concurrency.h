@@ -26,20 +26,20 @@ class _task_base
 {
 public:
     _task_base(const bindfunc_t func, const std::uint8_t p) :
-	_bindFunc(func),
-	_p(p)
+        _bindFunc(func),
+        _p(p)
     {
     }
 
     _task_base(const _task_base& other) :
-	_bindFunc(other._bindFunc),
-	_p(other._p)
+        _bindFunc(other._bindFunc),
+        _p(other._p)
     {
     }
 
     _task_base(_task_base&& other) :
-	_bindFunc(std::move(other._bindFunc)),
-	_p(other._p)
+        _bindFunc(std::move(other._bindFunc)),
+        _p(other._p)
     {
     }
 
@@ -77,6 +77,12 @@ protected:
         _threadCount = threadCount == 0 ? std::thread::hardware_concurrency() : threadCount;
         FS_SUN_ASSERT(_threadCount != 0);
         
+    }
+
+    ~_concurrency_base()
+    {
+        if(!_done)
+            done();
     }
 public:
     /**
@@ -139,7 +145,7 @@ public:
      */ 
     std::size_t get_taskCount() const
     {
-        std::lock_guard<std::mutex> lck(_mtx);
+        std::lock_guard<std::mutex> lck(const_cast<std::mutex &>(_mtx));
         return _tasks.size();
     }
     
@@ -191,37 +197,37 @@ protected:
 // {
 //  public:
 //     task_ti(const std::function<void(const std::uint8_t threadIdx, otherArgs ...)>& func,
-// 	    otherArgs ... args):
-// 	_task_base(std::bind(func, std::placeholders::_1, args ...))
-// 	{}
+//          otherArgs ... args):
+//      _task_base(std::bind(func, std::placeholders::_1, args ...))
+//      {}
 //     void run(const std::uint8_t threadIdx)const
 //     {
-// 	_bindFunc(threadIdx);
+//      _bindFunc(threadIdx);
 //     }
 // };
 
 #define _FS_SUN_CONCURRENCY_TASK_DEFINE(name, task_base_bind_placeholders, bind_func_args, ...) \
-    template<typename ... otherArgs>					\
-    class name: public _task_base<std::function<void(__VA_ARGS__)>>	\
-    {									\
-    public:								\
-	name(const std::function<void(__VA_ARGS__ FS_SUN__VA_ARGS__COMMA(__VA_ARGS__) otherArgs ...)>& func, \
-	     otherArgs ... args, const std::uint8_t p = FS_SUN_CONCURRENCY_TASK_PRIORITY_MID): \
-        _task_base(std::bind(func,					\
-                             FS_SUN_EXPAND task_base_bind_placeholders	\
+    template<typename ... otherArgs>                                    \
+    class name: public _task_base<std::function<void(__VA_ARGS__)>>     \
+    {                                                                   \
+    public:                                                             \
+        name(const std::function<void(__VA_ARGS__ FS_SUN__VA_ARGS__COMMA(__VA_ARGS__) otherArgs ...)>& func, \
+             otherArgs ... args, const std::uint8_t p = FS_SUN_CONCURRENCY_TASK_PRIORITY_MID): \
+        _task_base(std::bind(func,                                      \
+                             FS_SUN_EXPAND task_base_bind_placeholders  \
                              FS_SUN__VA_ARGS__COMMA task_base_bind_placeholders \
-                             args ...), p)				\
-	{}								\
-	void run(__VA_ARGS__)const					\
-	{								\
-	    _bindFunc bind_func_args;					\
-	}								\
+                             args ...), p)                              \
+        {}                                                              \
+        void run(__VA_ARGS__)const                                      \
+        {                                                               \
+            _bindFunc bind_func_args;                                   \
+        }                                                               \
     };    
 
 #define _FS_SUN_UNTILS_CONCURRENCY_DEFINE(name, task_t, task_thread_bind_args, task_run_args, ...) \
     template <typename ... otherArgs>                                   \
-    class name: public _concurrency_base<task_t<otherArgs ...>>		\
-    {									\
+    class name: public _concurrency_base<task_t<otherArgs ...>>         \
+    {                                                                   \
     public:                                                             \
         typedef task_t<otherArgs ...> task;                             \
         name(const std::uint8_t threadCount = 0):                       \

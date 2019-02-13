@@ -21,3 +21,5 @@
 #define FS_SUN_STRUCT struct __declspec(dllimport)
 #define FS_SUN_EXPORT __declspec(dllimport)
 #endif
+
+#cmakedefine FS_SUN_MULTI_THREADS
