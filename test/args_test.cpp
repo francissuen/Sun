@@ -4,8 +4,8 @@
 //./fstest -d -n hello -c 100 world fsfs
 int args_test(int argc, char** argv)
 {
-    FS_SUN_V_LOG(argc, argv[0]);
-    
+    FS_SUN_FUNC_LOG(argc, argv[0]);
+
     using fs::Sun::args;
     args arg;
     arg.register_namedArg('d', args::enmType::BOOL);
@@ -35,7 +35,7 @@ int args_test(int argc, char** argv)
     }
     catch(const fs::Sun::string& err)
     {
-	std::cout << "err:" << err << std::endl;
+	FS_SUN_FUNC_ERR("the format of argv is wrong", err);
     }
 
     return 0;

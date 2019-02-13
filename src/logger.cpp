@@ -16,7 +16,7 @@ logger::logger() :
     _warning_color_code(FS_SUN_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE),
     _progress_color_code{
     FS_SUN_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE,
-	FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
+    FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
 //#elif __GNUC__
 #else
     _normal_color_code(FS_SUN_LOGGER_COLOR_BACKTONORMAL),
@@ -24,8 +24,8 @@ logger::logger() :
     _error_color_code(FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_ERROR_COLOR_CODE FS_SUN_LOGGER_COLOR_END),
     _warning_color_code(FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_WARNING_COLOR_CODE FS_SUN_LOGGER_COLOR_END),
     _progress_color_code{
-	FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_PROGRESS_COLOR_CODE FS_SUN_LOGGER_COLOR_END,
-	    FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE FS_SUN_LOGGER_COLOR_END },
+        FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_PROGRESS_COLOR_CODE FS_SUN_LOGGER_COLOR_END,
+        FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE FS_SUN_LOGGER_COLOR_END },
 #endif
     _log_default_streambuf(std::cout.rdbuf()),
     _error_default_streambuf(std::cerr.rdbuf()),
@@ -33,31 +33,32 @@ logger::logger() :
     _progress_total_width(FS_SUN_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
     _bProgressing(false),
     _bEnableColor(true)
-	    {
-		_progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
+{
+    _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 #ifdef _MSC_VER
-		_hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
-		::memset(&_preConsoleAttrib, 0, sizeof(PCONSOLE_SCREEN_BUFFER_INFO));
-		::GetConsoleScreenBufferInfo(_hConsole, &_preConsoleAttrib);
+    _hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    ::memset(&_preConsoleAttrib, 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
+    ::GetConsoleScreenBufferInfo(_hConsole, &_preConsoleAttrib);
 #endif
-	    }
+    
+}
 
 logger::~logger()
 {
     if (_bEnableColor)
     {
 #ifdef _MSC_VER
-	::SetConsoleTextAttribute(_hConsole, _preConsoleAttrib.wAttributes);
+        ::SetConsoleTextAttribute(_hConsole, _preConsoleAttrib.wAttributes);
 //#elif __GNUC__
 #else
-	std::cout << _normal_color_code;
+        std::cout << _normal_color_code;
 #endif
     }
 }
 
 #ifdef FS_SUN_MULTI_THREADS
-#define _FS_SUN_LOGGER_LOCK			\
-    std::lock_guard<std::mutex> lck(_mtx);
+#define _FS_SUN_LOGGER_LOCK                                             \
+    std::lock_guard<std::mutex> lck(const_cast<std::mutex &>(_mtx));
 #else
 #define _FS_SUN_LOGGER_LOCK
 #endif
@@ -82,29 +83,29 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
 
 #ifdef _MSC_VER
 
-#define _fs_fancy_print(ostream, title, win_color_code)		\
-    _FS_SUN_LOGGER_LOCK;					\
-    assert(!_bProgressing);					\
-    assert(szMsg != nullptr);					\
-    FS_SUN_GET_LOCALTIME(timeBuf);					\
-    if(_bEnableColor)						\
-	::SetConsoleTextAttribute(_hConsole, win_color_code);	\
-    ostream << timeBuf << '\n'					\
+#define _fs_fancy_print(ostream, title, win_color_code)         \
+    _FS_SUN_LOGGER_LOCK;                                        \
+    assert(!_bProgressing);                                     \
+    assert(szMsg != nullptr);                                   \
+    FS_SUN_GET_LOCALTIME(timeBuf);                              \
+    if(_bEnableColor)                                           \
+        ::SetConsoleTextAttribute(_hConsole, win_color_code);   \
+    ostream << timeBuf << std::endl                            \
     << title << szMsg << std::endl;
 
 //#elif __GNUC__
 #else
 
-#define _fs_fancy_print(ostream, title, color_code)	\
-    _FS_SUN_LOGGER_LOCK;				\
-    assert(!_bProgressing);				\
-    assert(szMsg != nullptr);				\
-    FS_SUN_GET_LOCALTIME(timeBuf);				\
-    if(_bEnableColor)					\
-	ostream << color_code;				\
-    ostream << timeBuf << '\n'				\
-    << title << szMsg;					\
-    ostream << std::endl;	
+#define _fs_fancy_print(ostream, title, color_code)     \
+    _FS_SUN_LOGGER_LOCK;                                \
+    assert(!_bProgressing);                             \
+    assert(szMsg != nullptr);                           \
+    FS_SUN_GET_LOCALTIME(timeBuf);                      \
+    if(_bEnableColor)                                   \
+        ostream << color_code;                          \
+    ostream << timeBuf << '\n'                          \
+    << title << szMsg;                                  \
+    ostream << std::endl;       
 
 #endif
 
@@ -134,7 +135,7 @@ void logger::set_error_color_code(const color_code_t szCode)
 #ifdef _MSC_VER
     _error_color_code = szCode;
 //#elif __GNUC__
-#else	
+#else   
     _error_color_code = FS_SUN_LOGGER_COLOR_BEGIN + szCode + FS_SUN_LOGGER_COLOR_END;
 #endif
 }
@@ -149,7 +150,7 @@ void logger::set_warning_color_code(const color_code_t szCode)
 #ifdef _MSC_VER
     _warning_color_code = szCode;
 //#elif __GNUC__
-#else	
+#else   
     _warning_color_code = FS_SUN_LOGGER_COLOR_BEGIN + szCode + FS_SUN_LOGGER_COLOR_END;
 #endif
 }
@@ -169,54 +170,54 @@ void logger::progress(const float value, const char* title)
     std::uint8_t widthLeft;
     if (value < 1.0f)
     {
-	if (curTime - preTime > 1000)//take sample per second
-	{
-	    static float preValue = 0;
-	    if (preValue != 0)
-	    {
-		const float speed = value - preValue;
-		static std::uint8_t eta_idx = 0;
-		eta_idx++;
-		std::uint64_t& curEta = eta[eta_idx % etaCount];
-		if (speed > 0.0f)
-		    curEta = (std::uint64_t)((1.0f - value) / speed);
-		else
-		    curEta = 0;
-	    }
-	    preValue = value;
-	    preTime = curTime;
-	}
+        if (curTime - preTime > 1000)//take sample per second
+        {
+            static float preValue = 0;
+            if (preValue != 0)
+            {
+                const float speed = value - preValue;
+                static std::uint8_t eta_idx = 0;
+                eta_idx++;
+                std::uint64_t& curEta = eta[eta_idx % etaCount];
+                if (speed > 0.0f)
+                    curEta = (std::uint64_t)((1.0f - value) / speed);
+                else
+                    curEta = 0;
+            }
+            preValue = value;
+            preTime = curTime;
+        }
 
-	std::uint64_t average_eta = 0;
-	std::uint8_t valid_count = 0;
-	for (int i = 0; i < etaCount; i++)
-	{
-	    std::uint64_t e = eta[i];
-		
+        std::uint64_t average_eta = 0;
+        std::uint8_t valid_count = 0;
+        for (int i = 0; i < etaCount; i++)
+        {
+            std::uint64_t e = eta[i];
+                
 #ifdef _MSC_VER
 #undef max
 #endif
-	    assert((std::numeric_limits<std::uint64_t>::max() - average_eta) > e);
-	    average_eta += e;
+            assert((std::numeric_limits<std::uint64_t>::max() - average_eta) > e);
+            average_eta += e;
 
-	    valid_count++;
-	}
+            valid_count++;
+        }
 
-	if (valid_count != 0)
-	    average_eta = average_eta / valid_count;
-	else
-	    average_eta = 0;
-	strEta = "ETA: " + time::Instance().format(average_eta);
-	widthLeft = _progress_flexible_width - (std::uint8_t)(strEta.length()) - 3/*anim ...*/;
+        if (valid_count != 0)
+            average_eta = average_eta / valid_count;
+        else
+            average_eta = 0;
+        strEta = "ETA: " + time::Instance().format(average_eta);
+        widthLeft = _progress_flexible_width - (std::uint8_t)(strEta.length()) - 3/*anim ...*/;
     }
     else
-	widthLeft = _progress_flexible_width;
+        widthLeft = _progress_flexible_width;
 
     std::uint8_t lenTitle;
     if (title != nullptr)
-	lenTitle = (std::uint8_t)strlen(title);
+        lenTitle = (std::uint8_t)strlen(title);
     else
-	lenTitle = 0;
+        lenTitle = 0;
     assert(widthLeft > lenTitle);
     const std::uint8_t paddingWidth = widthLeft - lenTitle;
     //    if(paddingWidth)
@@ -226,51 +227,51 @@ void logger::progress(const float value, const char* title)
 #ifdef _MSC_VER
     ::SetConsoleTextAttribute(_hConsole, c0);
 //#elif __GNUC__
-#else	
+#else   
     std::cout << c0;
 #endif
     std::cout << ">>>";
     if (title != nullptr)
-	std::cout << title;
+        std::cout << title;
     std::cout << '[';
 #ifdef _MSC_VER
     ::SetConsoleTextAttribute(_hConsole, c1);
 //#elif __GNUC__
-#else	
+#else   
     std::cout << c1;
 #endif
 
     const std::uint8_t width = (std::uint8_t)(value * _progress_bar_width);
     for (int i = 0; i < width; i++)
-	std::cout << ' ';
+        std::cout << ' ';
 
 #ifdef _MSC_VER
     ::SetConsoleTextAttribute(_hConsole, c0);
 //#elif __GNUC__
-#else	
+#else   
     std::cout << c0;
 #endif
 
     const std::uint8_t width_left = _progress_bar_width - width;
     for (int i = 0; i < width_left; i++)
-	std::cout << ' ';
+        std::cout << ' ';
 
     std::cout << ']' << int(value * 100) << '%' << ' ';
 
     //anim
     static const char anim[6][4] = { {'.', ' ', ' ', '\0'},
-				     {' ', '.', ' ', '\0'},
-				     {' ', ' ', '.', '\0'},
-				     {'.', ' ', '.', '\0'},
-				     {' ', '.', '.', '\0'},
-				     {'.', '.', '.', '\0'} };
+                                     {' ', '.', ' ', '\0'},
+                                     {' ', ' ', '.', '\0'},
+                                     {'.', ' ', '.', '\0'},
+                                     {' ', '.', '.', '\0'},
+                                     {'.', '.', '.', '\0'} };
     static unsigned char count = 0;
     count++;
 
     if (value < 1.0f)
-	std::cout << strEta << anim[count % 6];
+        std::cout << strEta << anim[count % 6];
     for (int i = 0; i < paddingWidth; i++)
-	std::cout << ' ';
+        std::cout << ' ';
     std::cout << '\r';
 
     std::cout.flush();

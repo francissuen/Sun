@@ -60,7 +60,7 @@ int concurrency_test(const unsigned int count = 1000)
 	    float value = float(count - (taskCount - 1)) / count;
 	    
 	    {
-		std::lock_guard<std::mutex> lck(mtx);
+		// std::lock_guard<std::mutex> lck(mtx);
 		logger::Instance().progress(value, string("arg:") + arg);
 	    }
 	    
