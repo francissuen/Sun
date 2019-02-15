@@ -5,7 +5,7 @@
 int args_test(int argc, char** argv)
 {
     FS_SUN_FUNC_LOG(argc, argv[0]);
-    
+
     using fs::Sun::args;
     args arg;
     arg.register_namedArg('d', args::enmType::BOOL);

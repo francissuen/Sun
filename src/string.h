@@ -20,16 +20,16 @@
 
 FS_SUN_NS_BEGIN
 
+template <typename T> struct is_string : std::false_type {};
+class string;
+template <> struct is_string<string> : std::true_type {};
+
 /**
  * \brief A wrapper for std::string, but with more useful features.
  */
-
 FS_SUN_CLASS string
 {
 public:
-
-template <typename T> struct is_string : std::false_type {};
-
 // ctor
 inline string() {}
 inline string(const char* str) :_data(str) { FS_SUN_ASSERT(str != nullptr); }
@@ -105,7 +105,7 @@ typename std::enable_if<is_string<typename rm_cv_ref<string_t>::type>::value, vo
 }
 // std::string 
 template <typename std_string>
-typename std::enable_if<is_std_string<typename rm_cv_ref<std_string>>::value, void>
+typename std::enable_if<is_std_string<typename rm_cv_ref<std_string>::type>::value, void>
 ::type operator += (std_string && other)
 {
     _data += std::forward<std_string>(other);    
@@ -239,7 +239,7 @@ string concat(First_t first, Second_t second, Others_t ... others) const
 }
 
 template <typename T = void>
-string concat_with_delimiter(const char* delimiter) const
+string concat_with_delimiter(const char*) const
 {
     return *this;
 }
@@ -273,7 +273,7 @@ std::string _data;
 
 };
 
-template <> struct string::is_string<string> : std::true_type {};
+
 
 FS_SUN_NS_END
 

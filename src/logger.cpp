@@ -37,7 +37,7 @@ logger::logger() :
     _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 #ifdef _MSC_VER
     _hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
-    ::memset(&_preConsoleAttrib, 0, sizeof(PCONSOLE_SCREEN_BUFFER_INFO));
+    ::memset(&_preConsoleAttrib, 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
     ::GetConsoleScreenBufferInfo(_hConsole, &_preConsoleAttrib);
 #endif
     

@@ -10,6 +10,8 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+#include <functional>
+
 #include "common.h"
 
 #include "config.h"
