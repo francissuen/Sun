@@ -213,11 +213,11 @@ protected:
     class name: public _task_base<std::function<void(__VA_ARGS__)>>     \
     {                                                                   \
     public:                                                             \
-        name(const std::function<void(__VA_ARGS__ FS_SUN__VA_ARGS__COMMA(__VA_ARGS__) otherArgs ...)>& func, \
+        name(const std::function<void(__VA_ARGS__ FS_SUN_SMART_COMMA(__VA_ARGS__) otherArgs ...)>& func, \
              otherArgs ... args, const std::uint8_t p = FS_SUN_CONCURRENCY_TASK_PRIORITY_MID): \
         _task_base(std::bind(func,                                      \
                              FS_SUN_EXPAND task_base_bind_placeholders  \
-                             FS_SUN__VA_ARGS__COMMA task_base_bind_placeholders \
+                             FS_SUN_SMART_COMMA task_base_bind_placeholders \
                              args ...), p)                              \
         {}                                                              \
         void run(__VA_ARGS__)const                                      \

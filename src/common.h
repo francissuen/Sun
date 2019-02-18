@@ -123,10 +123,15 @@ inline __VA_ARGS__&& Get##name()&&              \
 private:
 
 #define FS_SUN_EXPAND(...) __VA_ARGS__
-#define FS_SUN_MERGE(a,    b) a##b
-#define FS_SUN_MERGE_AFTER_EXPAND(a, b) FS_SUN_MERGE(a, b)
-#define FS_SUN_MACRO_CALL(func,  param) func param
 #define FS_SUN_STRING(a) #a
+#define FS_SUN_MERGE(a,    b) a##b
+#define FS_SUN_MACRO_CALL(func,  param) func param
+
+#ifdef _MSC_VER
+#define FS_SUN_MERGE_AFTER_EXPAND(a, b) FS_SUN_MACRO_CALL(FS_SUN_MERGE, (a, b))
+#else
+#define FS_SUN_MERGE_AFTER_EXPAND(a, b) FS_SUN_MERGE(a, b)
+#endif
 
 #define _FS_SUN_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
 #ifdef _MSC_VER
@@ -149,7 +154,13 @@ private:
                               _11, _12, _13, _14, _15, _16, _17, _18, _19, _20, \
                               _21, _22, _23, _24, _25, _26, _27, _28, _29, _30, \
                               _31, n, ...) n
-#define FS_SUN_GET32TH_ARGS(...) _FS_SUN_GET32TH_ARGS_(__VA_ARGS__) /** expand args before call _FS_SUN_GET32TH_ARGS_ */
+    
+/** expand args before call _FS_SUN_GET32TH_ARGS_ */    
+#ifdef _MSC_VER
+#define FS_SUN_GET32TH_ARGS(...) FS_SUN_MACRO_CALL(_FS_SUN_GET32TH_ARGS_, (__VA_ARGS__))
+#else
+#define FS_SUN_GET32TH_ARGS(...) _FS_SUN_GET32TH_ARGS_(__VA_ARGS__)
+#endif
 
 #define FS_SUN_GET32TH_START_FROM_2ND(...) FS_SUN_GET32TH_ARGS(FS_SUN_EXCLUDE_FIRST_ARG(__VA_ARGS__))
 
@@ -225,8 +236,13 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
         fs::Sun::logger::Instance().log(msg);                           \
     }
 
+#ifdef _MSC_VER
 #define FS_SUN_FUNC_LOG(...)                                            \
     FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_, (__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+#else
+#define FS_SUN_FUNC_LOG(...)                                            \
+    _FS_SUN_FUNC_LOG_(__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
+#endif
 
 #define _FS_SUN_FUNC_ERR_(functionName, errMsg, ...)                    \
     {                                                                   \
