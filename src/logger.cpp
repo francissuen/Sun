@@ -10,15 +10,14 @@ using namespace fs::Sun;
 
 logger::logger() :
 #ifdef _MSC_VER
-    _normal_color_code(0),
     _log_color_code(FS_SUN_LOGGER_DEFAULT_LOG_MS_COLOR_CODE),
     _error_color_code(FS_SUN_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE),
     _warning_color_code(FS_SUN_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE),
     _progress_color_code{
     FS_SUN_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE,
     FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE },
-//#elif __GNUC__
 #else
+    _normal_color_code(0),
     _normal_color_code(FS_SUN_LOGGER_COLOR_BACKTONORMAL),
     _log_color_code(FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_LOG_COLOR_CODE FS_SUN_LOGGER_COLOR_END),
     _error_color_code(FS_SUN_LOGGER_COLOR_BEGIN FS_SUN_LOGGER_DEFAULT_ERROR_COLOR_CODE FS_SUN_LOGGER_COLOR_END),
@@ -49,7 +48,6 @@ logger::~logger()
     {
 #ifdef _MSC_VER
         ::SetConsoleTextAttribute(_hConsole, _preConsoleAttrib.wAttributes);
-//#elif __GNUC__
 #else
         std::cout << _normal_color_code;
 #endif
@@ -90,7 +88,7 @@ void logger::set_error_streambuf(std::streambuf* streambuf)
     FS_SUN_GET_LOCALTIME(timeBuf);                              \
     if(_bEnableColor)                                           \
         ::SetConsoleTextAttribute(_hConsole, win_color_code);   \
-    ostream << timeBuf << std::endl                            \
+    ostream << timeBuf << std::endl                             \
     << title << szMsg << std::endl;
 
 //#elif __GNUC__

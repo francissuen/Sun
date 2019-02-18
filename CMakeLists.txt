@@ -30,7 +30,7 @@ fs_add_class(callback src srcs)
 
 fs_add_class(args src srcs)
 fs_add_class(file src srcs)
-
+fs_add_class(Sun src srcs)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(bin_suffix)
