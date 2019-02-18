@@ -87,7 +87,9 @@ public:
 
     void enable_color(bool bState = true);
 private:
+#if ! defined(_MSC_VER)
     color_code_t _normal_color_code;
+#endif
     color_code_t _log_color_code;
     color_code_t _error_color_code;
     color_code_t _warning_color_code;

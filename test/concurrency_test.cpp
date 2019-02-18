@@ -18,61 +18,57 @@ int concurrency_test(const unsigned int count = 1000)
     unsigned int idx = 0;
 
     std::function<void(const std::uint8_t)> task_func = [&idx, &threadSafe_val](const std::uint8_t threadIdx)
-	{
-	    threadSafe_val[threadIdx]++;
-	    threadSafe_val[threadIdx]--;
-	    assert(threadSafe_val[threadIdx] == 0);
-	    idx ++;
+                                                        {
+                                                            threadSafe_val[threadIdx]++;
+                                                            threadSafe_val[threadIdx]--;
+                                                            FS_SUN_ASSERT(threadSafe_val[threadIdx] == 0);
+                                                            idx ++;
 
-	    std::this_thread::sleep_for(std::chrono::milliseconds(3));
-	};
+                                                            std::this_thread::sleep_for(std::chrono::milliseconds(3));
+                                                        };
     
     for(unsigned int i = 0; i < count; i++)
     {
 	c_ti.push_task(concurrency_ti<>::task(task_func
 #ifdef _MSC_VER
-				, FS_SUN_CONCURRENCY_TASK_PRIORITY_MID
+                                              , FS_SUN_CONCURRENCY_TASK_PRIORITY_MID
 #endif
-			  ));
+                           ));
     }
 
     const unsigned int timeout = 100;
     auto timeout_func = [&](const size_t taskCount)
-	{
-	    float value = float(count - taskCount) / count;
-	    logger::Instance().progress(value, "hello ");
+                        {
+                            float value = float(count - taskCount) / count;
+                            logger::Instance().progress(value, "hello ");
 
-	};
+                        };
 
     c_ti.timeout_done(timeout_func, timeout);
     logger::Instance().progress_done();
 
     logger::Instance().log("task_func_2");
 
-    std::mutex mtx;
-    std::function<void(const std::uint8_t, const size_t, int)> task_func_2 = [count, &threadSafe_val, &mtx](const std::uint8_t threadIdx, const size_t taskCount, int arg)
-	{
-	    threadSafe_val[threadIdx]++;
-	    threadSafe_val[threadIdx]--;
-	    assert(threadSafe_val[threadIdx] == 0);
 
-	    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-	    float value = float(count - (taskCount - 1)) / count;
+    std::function<void(const std::uint8_t, const size_t, int)> task_func_2 = [count, &threadSafe_val](const std::uint8_t threadIdx, const size_t taskCount, int arg)
+                                                                             {
+                                                                                 threadSafe_val[threadIdx]++;
+                                                                                 threadSafe_val[threadIdx]--;
+                                                                                 assert(threadSafe_val[threadIdx] == 0);
+
+                                                                                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                                                                                 float value = float(count - (taskCount - 1)) / count;
 	    
-	    {
-		// std::lock_guard<std::mutex> lck(mtx);
-		logger::Instance().progress(value, string("arg:") + arg);
-	    }
-	    
-	};
+                                                                                 logger::Instance().progress(value, string("arg:") + arg);
+                                                                             };
 
     concurrency_ti_tc<int> c_ti_tc(threadCount);
     for(unsigned int i = 0; i < count; i++)
 	c_ti_tc.push_task(concurrency_ti_tc<int>::task(task_func_2, i
 #ifdef _MSC_VER
-					 , FS_SUN_CONCURRENCY_TASK_PRIORITY_MID
+                                                       , FS_SUN_CONCURRENCY_TASK_PRIORITY_MID
 #endif
-						  ));
+                              ));
 
     c_ti_tc.done();
     logger::Instance().progress_done();

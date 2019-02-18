@@ -134,7 +134,7 @@ private:
 #endif
 
 #define _FS_SUN_EXCLUDE_FIRST_ARG_(first, ...) __VA_ARGS__
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && ! defined(__clang__)
 //MS preprocessor issue. see https://stackoverflow.com/questions/48088834/how-to-implement-exclude-first-argument-macro-in-msvc
 #define FS_SUN_EXCLUDE_FIRST_ARG(...)     FS_SUN_MACRO_CALL(_FS_SUN_EXCLUDE_FIRST_ARG_, (__VA_ARGS__))
 #else
@@ -156,7 +156,7 @@ private:
                               _31, n, ...) n
     
 /** expand args before call _FS_SUN_GET32TH_ARGS_ */    
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && ! defined(__clang__)
 #define FS_SUN_GET32TH_ARGS(...) FS_SUN_MACRO_CALL(_FS_SUN_GET32TH_ARGS_, (__VA_ARGS__))
 #else
 #define FS_SUN_GET32TH_ARGS(...) _FS_SUN_GET32TH_ARGS_(__VA_ARGS__)
