@@ -1,5 +1,3 @@
-//fsCommon config file
-
 //version
 #define FS_SUN_VERSION_MAJOR @FS_SUN_VERSION_MAJOR@
 #define FS_SUN_VERSION_MINOR @FS_SUN_VERSION_MINOR@
