@@ -16,7 +16,7 @@ if(UNIX)
 endif()
 
 target_link_libraries(Test
-  fsSun
+  Sun
   # optimized ${lua_LIBRARIES}
   # debug ${lua_LIBRARIES_d}
   ${pthread_lib}
@@ -28,4 +28,4 @@ set_target_properties(Test
   RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin"
   RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
 
-add_dependencies(Test fsSun)
+add_dependencies(Test Sun)

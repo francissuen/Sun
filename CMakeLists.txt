@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(fsSun)
+project(Sun)
 
 include(fsCMake/CMakeLists.txt)
 
@@ -35,31 +35,31 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(bin_suffix)
 if(FS_SUN_STATIC_LIB)
-  add_library(fsSun
+  add_library(Sun
     ${srcs})
   set(bin_suffix ${FS_BIN_STATIC_SUFFIX})
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFS_SUN_SHARED_LIB=1")
-  add_library(fsSun SHARED
+  add_library(Sun SHARED
     ${srcs})
   set(bin_suffix ${FS_BIN_SHARED_SUFFIX})
-  target_compile_definitions(fsSun PRIVATE FS_SUN_SHARED_LIB)
+  target_compile_definitions(Sun PRIVATE FS_SUN_SHARED_LIB)
 endif()
 
-set(lib_name "fsSun${FS_BIN_NAME_SUFFIX}")
+set(lib_name "Sun${FS_BIN_NAME_SUFFIX}")
 
-set_target_properties(fsSun
+set_target_properties(Sun
   PROPERTIES
   OUTPUT_NAME_DEBUG ${lib_name}d
   OUTPUT_NAME_RELEASE ${lib_name}
   )
 
-get_target_property(get_name fsSun OUTPUT_NAME_DEBUG)
+get_target_property(get_name Sun OUTPUT_NAME_DEBUG)
 
-set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/fsSun")
+set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/Sun")
 
 
-install(TARGETS fsSun ARCHIVE DESTINATION .)
+install(TARGETS Sun ARCHIVE DESTINATION .)
 
 set(headers)
 foreach(src IN LISTS srcs)
@@ -75,8 +75,8 @@ install(FILES ${headers} DESTINATION .)
 fs_gen_fs_proj(srcs)
 
 # set(pkg_libs
-#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSun.lib
-#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/fsSund.lib)
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/Sun.lib
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/Sund.lib)
 
 set(bin_regex)
 if(FS_SUN_STATIC_LIB)
@@ -87,7 +87,7 @@ else()
   message(FATAL_ERROR "unsupported for now.")
 endif()
 
-fs_gen_fs_pkg_sh(fsSun
+fs_gen_fs_pkg_sh(Sun
   ${CMAKE_CURRENT_SOURCE_DIR}/src ".*\\.h"
   ${CMAKE_CURRENT_SOURCE_DIR}/bin "${bin_regex}")
 
