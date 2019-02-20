@@ -236,12 +236,14 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
         fs::Sun::logger::Instance().log(msg);                           \
     }
 
+#define _FS_SUN_FUNC_LOG_WRAPPER_(...) _FS_SUN_FUNC_LOG_(__VA_ARGS__)
+
 #ifdef _MSC_VER
 #define FS_SUN_FUNC_LOG(...)                                            \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_, (__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_WRAPPER_, (__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
 #else
 #define FS_SUN_FUNC_LOG(...)                                            \
-    _FS_SUN_FUNC_LOG_(__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
+    _FS_SUN_FUNC_LOG_WRAPPER_(__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
 #endif
 
 #define _FS_SUN_FUNC_ERR_(functionName, errMsg, ...)                    \
@@ -258,8 +260,15 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
         fs::Sun::logger::Instance().error(msg);                         \
     }
 
+#define _FS_SUN_FUNC_ERR_WRAPPER_(...) _FS_SUN_FUNC_ERR_(__VA_ARGS__)
+
+#ifdef _MSC_VER
 #define FS_SUN_FUNC_ERR(errMsg, ...)                                    \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_ERR_, (__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_ERR_WRAPPER_, (__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+#else
+#define FS_SUN_FUNC_ERR(errMsg, ...)            \
+    _FS_SUN_FUNC_ERR_WRAPPER_(__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
+#endif
 
 
 #ifdef FS_SUN_VERBOSE
