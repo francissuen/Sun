@@ -7,17 +7,35 @@
 #cmakedefine FS_SUN_STATIC_LIB
 
 #ifdef FS_SUN_STATIC_LIB
+
 #define FS_SUN_CLASS class
 #define FS_SUN_STRUCT struct
 #define FS_SUN_EXPORT
-#elif FS_SUN_SHARED_LIB
+
+#elif defined(FS_SUN_SHARED_LIB)
+
+#ifdef _MSC_VER
 #define FS_SUN_CLASS class __declspec(dllexport)
 #define FS_SUN_STRUCT struct __declspec(dllexport)
 #define FS_SUN_EXPORT __declspec(dllexport)
 #else
+#define FS_SUN_CLASS class
+#define FS_SUN_STRUCT struct
+#define FS_SUN_EXPORT
+#endif
+
+#else
+
+#ifdef _MSC_VER
 #define FS_SUN_CLASS class __declspec(dllimport)
 #define FS_SUN_STRUCT struct __declspec(dllimport)
 #define FS_SUN_EXPORT __declspec(dllimport)
+#else
+#define FS_SUN_CLASS class
+#define FS_SUN_STRUCT struct
+#define FS_SUN_EXPORT
+#endif
+
 #endif
 
 #cmakedefine FS_SUN_MULTI_THREADS

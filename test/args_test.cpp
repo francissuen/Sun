@@ -31,7 +31,7 @@ int args_test(int argc, char** argv)
 	}
 
 
-	arg.unnamed_arg(uaSize);
+	arg.unnamed_arg(uaSize); /** will throw an excetpion here */
     }
     catch(const fs::Sun::string& err)
     {

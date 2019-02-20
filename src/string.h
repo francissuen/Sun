@@ -196,8 +196,10 @@ _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(64);
 //_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const int, "%d");
 //_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
 _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
-_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld");
-_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
+
+/** dupicate with std::[u]int(32)|(64) above */
+/** _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld"); */
+/** _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu"); */
 
 // misc
 inline size_t length()const { return _data.length(); }

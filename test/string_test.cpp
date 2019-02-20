@@ -1,30 +1,24 @@
 #include <iostream>
 #include <cassert>
 #include "../src/string.h"
-
+#include "../src/logger.h"
 using namespace fs::Sun;
-
-void print_str(const string str)
-{
-    std::cout <<(const char*) str << std::endl;
-}
-
 
 int string_test()
 {
  
-    print_str(string("hello") + "world");
-    print_str(string("hello") + 1);
-    print_str(string("hello") + -1);
-    print_str(string("hello") + 0.1f);
+    logger::Instance().log(string("hello: ") + "world");
+    logger::Instance().log(string("hello: ") + 1);
+    logger::Instance().log(string("hello: ") + -1);
+    logger::Instance().log(string("hello: ") + 0.1f);
 
     assert((string("hello") + "world") == "helloworld");
     assert((string("hello") + "world" + 'x') != "helloworld");
 
-    print_str("hello" + string("world"));
+    logger::Instance().log("hello: " + string("world"));
 
-	string str = "world";
-	print_str(string("hello") + str);
+    string str = "world";
+    logger::Instance().log(string("hello: ") + str);
 
     return 0;
 }

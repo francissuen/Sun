@@ -54,23 +54,23 @@ set_target_properties(Sun
   OUTPUT_NAME_RELEASE ${lib_name}
   )
 
-get_target_property(get_name Sun OUTPUT_NAME_DEBUG)
+# get_target_property(get_name Sun OUTPUT_NAME_DEBUG)
 
-set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/Sun")
+# set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/Sun")
 
 
-install(TARGETS Sun ARCHIVE DESTINATION .)
+# install(TARGETS Sun ARCHIVE DESTINATION .)
 
-set(headers)
-foreach(src IN LISTS srcs)
-  if(${src} MATCHES ".*\\.h") 
-    set(headers ${headers} ${src})
-    message("header: " ${src})
-  endif()
-endforeach()
-set(headers ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
+# set(headers)
+# foreach(src IN LISTS srcs)
+#   if(${src} MATCHES ".*\\.h") 
+#     set(headers ${headers} ${src})
+#     message("header: " ${src})
+#   endif()
+# endforeach()
+# set(headers ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
-install(FILES ${headers} DESTINATION .)
+# install(FILES ${headers} DESTINATION .)
 
 fs_gen_fs_proj(srcs)
 
@@ -84,7 +84,7 @@ if(FS_SUN_STATIC_LIB)
 elseif(MSVC_VERSION)
   set(bin_regex "\\(.*\\.dll$\\)\\|\\(.*\\.lib$\\)")
 else()
-  message(FATAL_ERROR "unsupported for now.")
+  set(bin_regex ".*\\.${bin_suffix}$")
 endif()
 
 fs_gen_fs_pkg_sh(Sun
