@@ -240,8 +240,8 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 
 #ifdef _MSC_VER
 #define FS_SUN_FUNC_LOG(...)                                            \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_WRAPPER_, (__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
-#else
+    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_, (__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+#else  /** using a wrapper to avoid binding all args to functionName of MACRO _FS_SUN_FUNC_LOG_*/
 #define FS_SUN_FUNC_LOG(...)                                            \
     _FS_SUN_FUNC_LOG_WRAPPER_(__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
 #endif
@@ -264,9 +264,9 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 
 #ifdef _MSC_VER
 #define FS_SUN_FUNC_ERR(errMsg, ...)                                    \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_ERR_WRAPPER_, (__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
-#else
-#define FS_SUN_FUNC_ERR(errMsg, ...)            \
+    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_ERR_, (__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+#else  /** see _FS_SUN_FUNC_LOG_WRAPPER_ */
+#define FS_SUN_FUNC_ERR(errMsg, ...)                                    \
     _FS_SUN_FUNC_ERR_WRAPPER_(__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
 #endif
 
