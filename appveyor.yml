@@ -1,0 +1,8 @@
+image:
+  - Visual Studio 2017
+
+build_script:
+  - mkdir build
+  - cd build
+  - cmake -DFS_SUN_STATIC_LIB=OFF ..
+  - cmake --build .
