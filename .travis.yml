@@ -1,0 +1,14 @@
+language: cpp
+sudo: required
+dist: xenial
+compiler:
+  - clang
+  - gcc
+os:
+  - linux
+  - osx
+
+script:
+  mkdir build && cd build && cmake -DFS_SUN_STATIC_LIB=OFF .. && cmake --build . 
+
+  

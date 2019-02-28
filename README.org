@@ -1,3 +1,0 @@
-* Macros
-  - GB_UTILS_MULTI_THREADS :: support multi-threads?
-
