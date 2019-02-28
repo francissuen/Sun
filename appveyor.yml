@@ -1,6 +1,10 @@
 image:
   - Visual Studio 2017
 
+install:
+  - git submodule init
+  - git submodule update
+  
 build_script:
   - mkdir build
   - cd build
