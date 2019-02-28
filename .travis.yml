@@ -8,10 +8,7 @@ os:
   - linux
   - osx
 
-before_install:
-  -echo "before_install fs"
-
 script:
-  echo "building..." && mkdir build && cd build && cmake -DFS_SUN_STATIC_LIB=OFF .. && cmake --build . 
+  mkdir build && cd build && cmake -DFS_SUN_STATIC_LIB=OFF .. && cmake --build . 
 
   
