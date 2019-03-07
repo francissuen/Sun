@@ -19,8 +19,7 @@ filesystem::filesystem():
 #ifdef _MSC_VER
     GetModuleFileName(NULL, path, _FS_SUN_FILESYSTEM_MAX_PATH);
 #elif __GNUC__
-    ssize_t ret = ::readlink("/proc/self/exe", path, _FS_SUN_FILESYSTEM_MAX_PATH);
-    FS_SUN_ASSERT(ret != -1);
+    FS_SUN_ASSERT(::readlink("/proc/self/exe", path, _FS_SUN_FILESYSTEM_MAX_PATH) != -1);
 #endif
     _workingDir = path;
     _workingDir = _workingDir.substr_at_lhs_of_last(_directorySeparator, true);
