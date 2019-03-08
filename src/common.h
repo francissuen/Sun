@@ -201,6 +201,13 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
                           a)     == 31, "FS_SUN_ARGC error 31");
 
 /**********************************/
+
+#ifdef _MSC_VER
+#define FS_SUN_FUNC_NAME __FUNCSIG__
+#elif defined (__GNUC__)
+#define FS_SUN_FUNC_NAME __PRETTY_FUNCTION__
+#endif
+
 #ifdef NDEBUG
 #define FS_SUN_ASSERT(condition, ...) 
 #else
@@ -215,7 +222,7 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
         std::cerr << "@CONDITION: " << #condition << std::endl;         \
         std::cerr << "@LINE: " << __LINE__ << std::endl                 \
                   << "@FILE: " << __FILE__ << std::endl;                \
-        std::cerr << "@FUNCTION: " << __FUNCTION__ << std::endl;        \
+        std::cerr << "@FUNCTION: " << FS_SUN_FUNC_NAME << std::endl;        \
         std::cerr << "@MSG: " FS_SUN_SMART_PARAM(<< ,__VA_ARGS__)  __VA_ARGS__ \
                   << std::endl;                                         \
         std::cerr << "**************** FS_SUN_ASSERT FAILED ****************" \
@@ -240,10 +247,10 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 
 #ifdef _MSC_VER
 #define FS_SUN_FUNC_LOG(...)                                            \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_, (__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_, (FS_SUN_FUNC_NAME FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
 #else  /** using a wrapper to avoid binding all args to functionName of MACRO _FS_SUN_FUNC_LOG_*/
 #define FS_SUN_FUNC_LOG(...)                                            \
-    _FS_SUN_FUNC_LOG_WRAPPER_(__FUNCTION__ FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
+    _FS_SUN_FUNC_LOG_WRAPPER_(FS_SUN_FUNC_NAME FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
 #endif
 
 #define _FS_SUN_FUNC_ERR_(functionName, errMsg, ...)                    \
@@ -264,10 +271,10 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 
 #ifdef _MSC_VER
 #define FS_SUN_FUNC_ERR(errMsg, ...)                                    \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_ERR_, (__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
+    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_ERR_, (FS_SUN_FUNC_NAME, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
 #else  /** see _FS_SUN_FUNC_LOG_WRAPPER_ */
 #define FS_SUN_FUNC_ERR(errMsg, ...)                                    \
-    _FS_SUN_FUNC_ERR_WRAPPER_(__FUNCTION__, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
+    _FS_SUN_FUNC_ERR_WRAPPER_(FS_SUN_FUNC_NAME, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
 #endif
 
 
