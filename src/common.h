@@ -213,6 +213,7 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 #else
 
 #define FS_SUN_ASSERT(condition, ...)                                   \
+    {                                                                   \
     static_assert(FS_SUN_ARGC(__VA_ARGS__) == 0 || FS_SUN_ARGC(__VA_ARGS__) == 1, \
                   "FS_SUN_ASSERT can take only zero or one MSG arg");   \
     if(!(condition))                                                    \
@@ -222,12 +223,13 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
         std::cerr << "@CONDITION: " << #condition << std::endl;         \
         std::cerr << "@LINE: " << __LINE__ << std::endl                 \
                   << "@FILE: " << __FILE__ << std::endl;                \
-        std::cerr << "@FUNCTION: " << FS_SUN_FUNC_NAME << std::endl;        \
+        std::cerr << "@FUNCTION: " << FS_SUN_FUNC_NAME << std::endl;    \
         std::cerr << "@MSG: " FS_SUN_SMART_PARAM(<< ,__VA_ARGS__)  __VA_ARGS__ \
                   << std::endl;                                         \
         std::cerr << "**************** FS_SUN_ASSERT FAILED ****************" \
                   << std::endl;                                         \
         assert(false);                                                  \
+    }                                                                   \
     }
 #endif
 
