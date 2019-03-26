@@ -2,3 +2,7 @@
 ** TODO-v1.1.0[0/2][0%]
 + [ ] rename FS_SUN_FUNC_(LOG)|(ERR), add __line__ __file__?
 + [ ] log redirect to file
++ [ ] uuid
++ [ ] memorypool
++ [ ] string to number, number to string
+  
