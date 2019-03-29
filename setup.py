@@ -1,48 +1,80 @@
 import urllib.request
 import sys
-import curses
+import numbers
+import datetime
+
+
+def fancy_bytes_format(bytes):
+    if not isinstance(bytes, numbers.Number):
+        return
+    KB = 1024
+    MB = 1024 * KB
+    G = 1024 * MB
+    unit, scale = "B", bytes
+    if bytes > G:
+        unit = "G"
+        scale = bytes / G
+    elif bytes > MB:
+        unit = "MB"
+        scale = bytes / MB
+    elif bytes > KB:
+        unit = "KB"
+        scale = bytes / KB
+    return scale, unit, fixedWidth
+
+
+def rm_url_trailing_trash_characters(raw_url):
+    trash_characters = "\n "
+    endOfUrlIdx = -1
+    for i in range(-1, -len(raw_url), -1):
+        if trash_characters.count(raw_url[i]) == 0:
+            endOfUrlIdx = i
+            break
+    return raw_url[0:endOfUrlIdx]
+
+
+class logger:
+    def __init__(self):
+        self.dateMsg = datetime.time.asctime()
+
+        def log(self, msg):
+            sys.stdout.write(self.dateMsg + "\n" + msg)
 
 
 def download_file(url):
-    # rm trailing '\n' or ' '
-    end_url_idx = 0
-    for i in range(len(url)-1, 0, -1):
-        if url[i] != "\n" or url[i] != " ":
-            end_url_idx = i
-            break
-    if end_url_idx == 0:
+    url = rm_url_trailing_trash_characters(url)
+    if len(url) == 0:
         return
-    url = url[0:end_url_idx]
+    file_name = url.split('/')[-1]
+    if len(file_name) == 0:
+        return
     # open url
     with urllib.request.urlopen(url) as response:
         # info of file
         content_len = int(response.getheader("Content-Length"))
-        file_name = url.split('/')[-1]
-        sys.stdout.write("file @name: {0}, @size: {1}MB\n".format(
-            file_name, (content_len/1024)/1024))
-        # data = bytearray(1024)
+        log = logger()
+        scale, unit = fancy_bytes(content_len)
+        log.log("file @name: {0}, @size: {1} {2}".format(
+            file_name, scale, unit))
         # download procedure
-        win = curses.initscr()
+        sizeOfWritten = 0
         with open(file_name, "wb") as f:
             for i in range(0, content_len, 1024):
                 # data[0:1024] = response.read(1024)
-                f.write(response.read(1024))
-                # sys.stdout.write("@size: {0}MB\n".format(((i+1024)/1024)/1024))
-                try:
-                    win.addch("1")
-                finally:
-                    curses.endwin()
-                win.refresh()
-                # sys.stdout.flush()
+                data = response.read(1024)
+                sizeOfWritten += len(data)
+                f.write(data)
+                sys.stdout.write("@size: {0}MB\r"
+                                 .format(((sizeOfWritten)/1024)/1024))
+                sys.stdout.flush()
+
             f.flush()
-        curses.endwin()
+            sys.stdout.write("written to file @name: {0}\n".format(file_name))
+            sys.stdout.flush()
 
 
 # http://mirrors.us.kernel.org/ubuntu-releases/18.04.2/ubuntu-18.04.2-live-server-amd64.iso
 url = """\
-http://www.baidu.com/img/baidu_85beaf5496f291521eb75ba38eacbd87.svg
+https://github.com/francissuen/fsCMake/releases/download/v1.0.3/fsCMake.tar.xz
 """
-try:
-    download_file(url)
-finally:
-    curses.endwin
+download_file(url)
