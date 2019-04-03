@@ -203,11 +203,10 @@ _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
 /** _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld"); */
 /** _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu"); */
 
-// misc
 inline size_t length()const { return _data.length(); }
 inline const std::string & GetStdString()const { return _data; }
 inline const char * data() const { return _data.data(); }
-inline std::string& GetStdString() { return _data; }
+inline std::string& get_std_string() { return _data; }
 bool operator < (const string& other) const;
 
 /**
