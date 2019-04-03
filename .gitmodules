@@ -1,6 +1,0 @@
-[submodule "gbCMake"]
-	path = gbCMake
-	url = https://github.com/glowingboy/gbCMake.git
-[submodule "fsCMake"]
-	path = fsCMake
-	url = https://github.com/francissuen/fsCMake.git
