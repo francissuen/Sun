@@ -1,12 +1,13 @@
+environment:
+  PYTHON: "C:\\Python37-x64"
+
 image:
   - Visual Studio 2017
 
 install:
-  - git submodule init
-  - git submodule update
-  
+  - "%PYTHON%\\python.exe setup.py"
+# cache:
+#   - C:/projects/sun/fsCMake
+
 build_script:
-  - mkdir build
-  - cd build
-  - cmake -DFS_SUN_STATIC_LIB=OFF ..
-  - cmake --build .
+  mkdir build && cd build && cmake -DFS_SUN_STATIC_LIB=OFF .. && cmake --build . 

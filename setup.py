@@ -1,12 +1,10 @@
 try:
     from mars import dependency
 except ImportError:
-    try:
-        from pip import main as pipmain
-    except ImportError:
-        from pip.__internal import main as pipmain
-    pipmain(["install",
-             "git+https://github.com/francissuen/mars.git@master"])
+    import subprocess
+    import sys
+    subprocess.run([sys.executable, "-m", "pip", "install",
+                    "git+https://github.com/francissuen/mars.git@master"])
     from mars import dependency
 
 
