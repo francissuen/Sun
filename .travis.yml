@@ -8,7 +8,12 @@ os:
   - linux
   - osx
 
+cache:
+  pip
+  directories:
+    - $HOME/Sun/fsCMake
 script:
+  python3 setup.py
   mkdir build && cd build && cmake -DFS_SUN_STATIC_LIB=OFF .. && cmake --build . 
 
   
