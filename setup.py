@@ -7,6 +7,8 @@ except ImportError:
                     "git+https://github.com/francissuen/mars.git@master"])
     from mars import dependency
 
+import os
+import shutil
 
 fsCMake = {
     "name": "fsCMake",
@@ -21,5 +23,10 @@ dependencies = [
         "name": fsCMake["name"],
         "addr": fsCMake["addr"]})]
 
+old_cwd = os.getcwd()
+
 for d in dependencies:
     d.fix()
+
+os.chdir(old_cwd)
+shutil.copy("fsCMake/build.sh", "./")
