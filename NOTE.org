@@ -2,5 +2,5 @@
 ** TODO-v0.1.0[0/2][0%]
 + [ ] rename FS_SUN_FUNC_(LOG)|(ERR), add __line__ __file__?
 + [ ] log redirect to file
-+ [ ] uuid
++ [ ] guid(global uid), luid(local uid, self-incresing integer)
 + [ ] memorypool
