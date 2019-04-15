@@ -9,6 +9,8 @@
 #include "filesystem_test.cpp"
 #include "concurrency_test.cpp"
 #include "file_test.cpp"
+#include "async_test.cpp"
+
 //#include "luatable_test.cpp"
 
 #define test(test_func, ...)					\
@@ -28,6 +30,7 @@ int main(int argc, char** argv)
         test(filesystem_test);
         test(concurrency_test);
         test(file_test);
+        test(async_test);
         // test(luatable_test);
     }
     catch (string& err)

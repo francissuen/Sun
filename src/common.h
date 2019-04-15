@@ -370,5 +370,35 @@ namespace fs
                 return (*l) < (*r);
             }
         };
+
+        /** index sequence */
+        template <std::size_t ...>
+        struct index_sequence
+        {};
+        template <std::size_t n, std::size_t ... s>
+        struct make_index_sequence : make_index_sequence<n-1, n-1, s...>
+        {};
+
+        template <std::size_t ... s>
+        struct make_index_sequence<0, s...>
+        {
+            using type = index_sequence<s...>;
+        };
+        template <typename ... T>
+        using index_sequence_for = make_index_sequence<sizeof...(T)>;
+
+        template <typename func_t, typename tuple_t, std::size_t ... idx>
+        typename rm_cv_ref<func_t>::type::result_type
+        _apply(func_t && f, tuple_t && t, index_sequence<idx...>)
+        {
+            return f(std::get<idx>(t)...);
+        }
+        template <typename func_t, typename tuple_t>
+        typename rm_cv_ref<func_t>::type::result_type apply(func_t && f, tuple_t && t)
+        {
+            return _apply(std::forward<func_t>(f), std::forward<tuple_t>(t),
+                          make_index_sequence<std::tuple_size<rm_cv_ref<tuple_t>::type>::value>::
+                          type{});
+        }
     }
 }
