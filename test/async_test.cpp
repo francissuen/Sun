@@ -5,13 +5,9 @@ using namespace fs::Sun;
 
 int async_test()
 {
-    std::function<void(const string &)> func = [](const string & str)
-                                       {
-                                           string s = str + "a";
-                                       };
-    async<const string &> a(func, 1);
-    a(string("hello"));
-
+    async<const string &> a([](const string & str) {}, 1);
+    const string str("hello");
+    a(str);
     a.done();
     return 0;
 }

@@ -20,9 +20,11 @@
 
 FS_SUN_NS_BEGIN
 
-template <typename T> struct is_string : std::false_type {};
+template <typename T> struct _is_string : std::false_type {};
 class string;
-template <> struct is_string<string> : std::true_type {};
+template <> struct _is_string<string> : std::true_type {};
+template <typename T>
+struct is_string: _is_string<typename std::decay<T>::type> {};
 
 /**
  * \brief A wrapper for std::string, but with more useful features.
@@ -34,38 +36,31 @@ public:
 inline string() {}
 inline string(const char* str) :_data(str) { FS_SUN_ASSERT(str != nullptr); }
 
-/*
- * if std::string can conver to string implicit,
- * then operator+ may have ambiguous issue with std::string::operator+
- */
-explicit string(const std::string & str):
-_data(str)
-{}
-explicit string(std::string && str):
-_data(std::move(str))
-{}
-    
-
-string(const string & str):
+inline string(const string & str):
 _data(str._data)
 {}
 
-string(string && str):
+inline string(string && str):
 _data(std::move(str._data))
 {}
-    
-inline string & operator=(const string & other)
+
+/*
+ * if std::string can be convered to string implicit,
+ * then operator+ may have ambiguous issue with std::string::operator+
+ */
+template <typename std_string,
+typename std::enable_if<is_std_string<std_string>::value, int>::type = 0>
+explicit string(std_string && str):
+_data(std::forward<std_string>(str))
+{}
+
+template <typename string_t>
+typename std::enable_if<is_string<string_t>::value, string &>::type
+operator=(string_t && other)
 {
-    _data = other._data;
+    _data = std::forward<string_t>(other)._data;
     return *this;
 }
-
-inline string & operator=(string && other)
-{
-    _data = std::move(other._data);
-    return *this;
-}
-
 
 inline string & operator=(const char* szStr)
 {
@@ -74,8 +69,8 @@ inline string & operator=(const char* szStr)
     return *this;
 }
 template<typename std_string>
-typename std::enable_if<is_std_string<typename rm_cv_ref<std_string>::type>::value, string &>
-::type operator=(std_string && str)
+typename std::enable_if<is_std_string<std_string>::value, string &>::type
+operator=(std_string && str)
 {
     _data = std::forward<std_string>(str);
     return *this;
@@ -98,15 +93,15 @@ inline bool operator!=(const std::string& str)const
 // operator +=
 // string
 template <typename string_t>
-typename std::enable_if<is_string<typename rm_cv_ref<string_t>::type>::value, void>
-::type operator += (string_t && other)
+typename std::enable_if<is_string<string_t>::value, void>::type
+operator += (string_t && other)
 {
-    _data += other._data;
+    _data += std::forward<string_t>(other)._data;
 }
 // std::string 
 template <typename std_string>
-typename std::enable_if<is_std_string<typename rm_cv_ref<std_string>::type>::value, void>
-::type operator += (std_string && other)
+typename std::enable_if<is_std_string<std_string>::value, void>::type
+operator += (std_string && other)
 {
     _data += std::forward<std_string>(other);    
 }
@@ -120,36 +115,38 @@ void operator +=(const char* szStr)
 // operator +
 // string
 template <typename string_t_l, typename string_t_r>
-friend typename std::enable_if<is_string<typename rm_cv_ref<string_t_l>::type>::value &&
-is_string<typename rm_cv_ref<string_t_r>::type>::value, string>
-::type operator + (string_t_l && l, string_t_r && r)
+friend typename std::enable_if<is_string<string_t_l>::value &&
+is_string<string_t_r>::value, string>::type
+operator + (string_t_l && l, string_t_r && r)
 {
     return string(std::forward<string_t_l>(l)._data + std::forward<string_t_r>(r)._data);
 }
 
 // std::string
 template<typename string_t, typename std_string>
-friend typename std::enable_if<is_std_string<typename rm_cv_ref<std_string>::type>::value, string>
-::type operator + (string_t && l, std_string && r)
+friend typename std::enable_if<is_string<string_t>::value &&
+is_std_string<std_string>::value, string>::type
+operator + (string_t && l, std_string && r)
 {
     return string(std::forward<string_t>(l)._data + std::forward<std_string>(r));
 }
 template <typename string_t, typename std_string>
-friend typename std::enable_if<is_std_string<typename rm_cv_ref<std_string>::type>::value, string>
-::type operator + (std_string && l, string_t && r)
+friend typename std::enable_if<is_string<string_t>::value &&
+is_std_string<std_string>::value, string>::type
+operator + (std_string && l, string_t && r)
 {
     return string(std::forward<std_string>(l) + std::forward<string_t>(r)._data);
 }
 // const char*
 template<typename string_t>
-friend typename std::enable_if<is_string<typename rm_cv_ref<string_t>::type>::value, string>
-::type operator + (string_t && l, const char* r)
+friend typename std::enable_if<is_string<string_t>::value, string>::type
+operator + (string_t && l, const char* r)
 {
     return string(std::forward<string_t>(l)._data + r);
 }
 template<typename string_t>
-friend typename std::enable_if<is_string<typename rm_cv_ref<string_t>::type>::value, string>
-::type operator + (const char* l, string_t && r)
+friend typename std::enable_if<is_string<string_t>::value, string>::type
+operator + (const char* l, string_t && r)
 {
     return string(l + std::forward<string_t>(r)._data);
 }
@@ -163,16 +160,16 @@ friend typename std::enable_if<is_string<typename rm_cv_ref<string_t>::type>::va
     this->_data += szVal;						\
 }									\
 template<typename string_t>						\
-friend typename std::enable_if<is_string<typename rm_cv_ref<string_t>::type>::value, string> \
-::type operator + (string_t && l, TYPE r)				\
+friend typename std::enable_if<is_string<string_t>::value, string>::type \
+operator + (string_t && l, TYPE r)                                      \
 {									\
     char szVal[_FS_SUN_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
     sprintf(szVal, FMT, r);						\
     return string(std::forward<string_t>(l)._data + szVal);		\
 }									\
 template<typename string_t>						\
-friend typename std::enable_if<is_string<typename rm_cv_ref<string_t>::type>::value, string> \
-::type operator + (TYPE l, string_t && r)				\
+friend typename std::enable_if<is_string<string_t>::value, string>::type \
+operator + (TYPE l, string_t && r)                                      \
 {									\
     char szVal[_FS_SUN_STRING_MAX_BUFFER_SIZE] = {'\0'};		\
     sprintf(szVal, FMT, l);						\
@@ -184,7 +181,7 @@ _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const char, "%c");
 //integer
 #define _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(SIZE)		\
     _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const std::int##SIZE##_t, "%" PRId##SIZE) \
-    _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const std::uint##SIZE##_t, "%" PRIu##SIZE) 
+_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const std::uint##SIZE##_t, "%" PRIu##SIZE) 
 
 _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(8);
 _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_INTEGER(16);

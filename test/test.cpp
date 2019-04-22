@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         test(string_test);
         test(logger_test);
         test(filesystem_test);
-        test(concurrency_test);
+        //test(concurrency_test);
         test(file_test);
         test(async_test);
         // test(luatable_test);

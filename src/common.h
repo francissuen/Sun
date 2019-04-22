@@ -306,29 +306,11 @@ namespace fs
     namespace Sun
     {
         template <typename T>
-        struct rm_cv_ref { using                                  type = T; };
-        // specialization
-#define _FS_SUN_RM_CV_REF_SPEC_(cv_ref_t)                               \
-        template <typename T> struct rm_cv_ref< cv_ref_t> { using type = T; };
+        struct _is_std_string: std::false_type {};
+        template <> struct _is_std_string <std::string> : std::true_type {};
 
-        // const | non-const, volatile | non-volatile, l-ref(&) | r-ref(&&) | non-ref. 2*2*3 = 12
-        _FS_SUN_RM_CV_REF_SPEC_(const volatile T &);
-        _FS_SUN_RM_CV_REF_SPEC_(const volatile T &&);
-        _FS_SUN_RM_CV_REF_SPEC_(const volatile T);
-        _FS_SUN_RM_CV_REF_SPEC_(const T &);
-        _FS_SUN_RM_CV_REF_SPEC_(const T &&);
-        _FS_SUN_RM_CV_REF_SPEC_(const          T);
-        _FS_SUN_RM_CV_REF_SPEC_(volatile T &);
-        _FS_SUN_RM_CV_REF_SPEC_(volatile T &&);
-        _FS_SUN_RM_CV_REF_SPEC_(volatile       T);
-        _FS_SUN_RM_CV_REF_SPEC_(T &);
-        _FS_SUN_RM_CV_REF_SPEC_(T &&);
-        //    _FS_SUN_RM_RV_REF_SPEC_();
-    
-        template <typename T>
-        struct is_std_string: std::false_type {};
-        template <> struct is_std_string <std::string> : std::true_type {};
-
+        template<typename T>
+        struct is_std_string: _is_std_string<typename std::decay<T>::type> {};
     }
 }
 
@@ -388,16 +370,18 @@ namespace fs
         using index_sequence_for = make_index_sequence<sizeof...(T)>;
 
         template <typename func_t, typename tuple_t, std::size_t ... idx>
-        typename rm_cv_ref<func_t>::type::result_type
+        typename std::remove_reference<func_t>::type::result_type
         _apply(func_t && f, tuple_t && t, index_sequence<idx...>)
         {
             return f(std::get<idx>(t)...);
         }
         template <typename func_t, typename tuple_t>
-        typename rm_cv_ref<func_t>::type::result_type apply(func_t && f, tuple_t && t)
+        typename std::remove_reference<func_t>::type::result_type
+        apply(func_t && f, tuple_t && t)
         {
             return _apply(std::forward<func_t>(f), std::forward<tuple_t>(t),
-                          make_index_sequence<std::tuple_size<rm_cv_ref<tuple_t>::type>::value>::
+                          make_index_sequence<
+                          std::tuple_size<std::remove_reference<tuple_t>::type>::value>::
                           type{});
         }
     }

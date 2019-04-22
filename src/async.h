@@ -47,11 +47,11 @@ public:
 
 public:
     /** TODO result */
-    void operator()(param_t && ... param)
+    void operator()(param_t ... param)
     {
         {
             std::lock_guard<std::mutex> lck(_paramsMtx);
-            _params.push(std::make_tuple(std::forward<param_t>(param) ...));
+            _params.push(std::tuple<param_t ...>(param ...));
         }
         _cv.notify_one();
     }
