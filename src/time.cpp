@@ -3,18 +3,23 @@
  */
 
 #include "time.h"
-#include <cassert>
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <ctime>
 #include <chrono>
 
 using namespace fs::Sun;
 
 void time::get_localtime(char * const buffer, const unsigned char length)const
 {
-    assert(buffer != nullptr);
+    FS_SUN_ASSERT(buffer != nullptr);
     time_t rawTime;
     std::time(&rawTime);
-
-    tm* pTime = localtime(&rawTime);
+    tm ret = {};
+#ifdef __STDC_LIB_EXT1__
+    tm* pTime = ::localtime_s(&rawTime, &ret);
+#else
+    tm* pTime = ::localtime_r(&rawTime, &ret);
+#endif
     assert(pTime != nullptr);
     
     sprintf(buffer, "%d:%d:%d[%d/%d/%d]",

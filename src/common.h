@@ -5,6 +5,8 @@
 #pragma once
 #include <cassert>
 #include <iostream>
+#include <type_traits>
+#include <tuple>
 
 ///////////////////////
 // Sun useful macros //
@@ -300,7 +302,7 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 ////////////////////////////////
 // type tarits
 ////////////////////////////////
-#include <type_traits>
+
 namespace fs
 {
     namespace Sun
@@ -380,9 +382,19 @@ namespace fs
         apply(func_t && f, tuple_t && t)
         {
             return _apply(std::forward<func_t>(f), std::forward<tuple_t>(t),
-                          make_index_sequence<
-                          std::tuple_size<std::remove_reference<tuple_t>::type>::value>::
-                          type{});
+                          typename make_index_sequence<
+                          std::tuple_size<typename std::remove_reference<tuple_t>::
+                          type>::value>::type{});
         }
+
+        /** template<typename ret_t> */
+        /** struct apply2future */
+
+        template <typename T>
+        typename std::enable_if<!(std::is_void<T>::value)>::type
+        foo(T t){}
+        template <typename T>
+        typename std::enable_if<std::is_void<T>::value>::type
+        foo(T t){}
     }
 }

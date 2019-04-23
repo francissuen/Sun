@@ -12,15 +12,24 @@
 #include <mutex>
 #include <condition_variable>
 #include <atomic>
+#include <future>
+
 #include "common.h"
 
 FS_SUN_NS_BEGIN
 
-template <typename ... param_t>
+template <typename ret_t, typename ... param_t>
 class async
 {
+private:
+    struct _package_
+    {
+        std::promise<ret_t> ret;
+        std::tuple<param_t ...> params;
+    };
+    
 public:
-    async(const typename std::function<void(param_t ...)> & func,
+    async(const typename std::function<ret_t(param_t ...)> & func,
           const std::uint8_t threadCount = 1):
         _func(func),
         _quit(false)
@@ -39,6 +48,7 @@ public:
     ~async()
     {
         _quit.store(true);
+        _threadFuncCV.notify_all();
         for(auto & t : _threads)
         {
             t.join();
@@ -47,23 +57,27 @@ public:
 
 public:
     /** TODO result */
-    void operator()(param_t ... param)
+    std::future<ret_t> operator()(param_t ... param)
     {
+        std::promise<ret_t> promise;
+        std::future<ret_t> ret = promise.get_future();
         {
-            std::lock_guard<std::mutex> lck(_paramsMtx);
-            _params.push(std::tuple<param_t ...>(param ...));
+            std::lock_guard<std::mutex> lck(_pkgsMtx);
+            _pkgs.push(_package_{std::move(promise),
+                    std::tuple<param_t ...>(param ...)});
         }
-        _cv.notify_one();
+        _threadFuncCV.notify_one();
+        return ret;
     }
 
-    void done()
+    void wait_for_empty()
     {
-        std::unique_lock<std::mutex> lck(_paramsMtx);
-        if(_params.size() > 0)
+        std::unique_lock<std::mutex> lck(_pkgsMtx);
+        if(_pkgs.size() > 0)
         {
-            _doneCV.wait(lck, [this]() -> bool
+            _emptyCV.wait(lck, [this]() -> bool
                               {
-                                  return _params.size() == 0;
+                                  return _pkgs.size() == 0;
                               });
         }
     }
@@ -71,35 +85,51 @@ public:
 private:
     void _thread_func()
     {
-        std::unique_lock<std::mutex> lck(_paramsMtx);
+        std::unique_lock<std::mutex> lck(_pkgsMtx);
         for(;;)
         {
-            _cv.wait(lck, [this]() -> bool
-                     {
-                         return _params.size() > 0;
-                     });
-
-            std::tuple<param_t ...> param(_params.back());
-            _params.pop();
-            lck.unlock();
-            /** int a = std::tuple_size<std::tuple<const fs::Sun::string &>>::value; */
-            apply(_func, param);
-            lck.lock();
-            if(_params.size() == 0)
-                _doneCV.notify_all();
             if(_quit.load())
                 break;
+            
+            if(_pkgs.size() > 0)
+            {
+                _package_ pkg(std::move(_pkgs.back()));
+                _pkgs.pop();
+                lck.unlock();
+                std::tuple<param_t ...> param(pkg.params);
+                /** pkg.ret.set_value(apply(_func, param)); */
+            }
+            else
+            {
+                _emptyCV.notify_all();
+                lck.lock();
+                _threadFuncCV.wait(lck);                
+            }
         }
     }
+
+    /** typename std::enable_if<std::is_void<ret_t>::value>::type */
+    /** _set_ret(std::promise<ret_t> & ret, const std::tuple<param_t ...> & param) */
+    /** { */
+    /**     apply(_func, param); */
+    /**     ret.set_value(); */
+    /** } */
+
+    /** typename std::enable_if<!(std::is_void<ret_t>::value), ret_t>::type */
+    /** _set_ret(std::promise<ret_t> & ret, const std::tuple<param_t ...> & param) */
+    /** { */
+    /**     ret.set_value(apply(_func, param)); */
+    /** } */
+    
 private:
     std::uint8_t _threadCount;
     std::vector<std::thread> _threads;
-    std::mutex _paramsMtx;
-    std::condition_variable _cv;
-    std::queue<std::tuple<param_t ...>> _params;
+    std::mutex _pkgsMtx;
+    std::condition_variable _threadFuncCV;
+    std::queue<_package_> _pkgs;
     const std::function<void(param_t ...)> _func;
     std::atomic_bool _quit;
-    std::condition_variable _doneCV;
+    std::condition_variable _emptyCV;
 };
 
 FS_SUN_NS_END

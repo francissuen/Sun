@@ -4,3 +4,4 @@
 + [ ] log redirect to file
 + [ ] guid(global uid), luid(local uid, self-incresing integer)
 + [ ] memorypool
++ [ ] c++11 apply, more feathured async

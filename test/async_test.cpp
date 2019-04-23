@@ -5,9 +5,9 @@ using namespace fs::Sun;
 
 int async_test()
 {
-    async<const string &> a([](const string & str) {}, 1);
+    async<void, const string &> a([](const string & str) {}, 1);
     const string str("hello");
-    a(str);
-    a.done();
+    const auto ret = a(str);
+    ret.wait();
     return 0;
 }

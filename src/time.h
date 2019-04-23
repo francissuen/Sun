@@ -3,8 +3,6 @@
  */
 
 #pragma once
-#include <stdio.h>
-#include <ctime>
 #include "common.h"
 #include "config.h"
 #include "string.h"
