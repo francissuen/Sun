@@ -3,7 +3,6 @@
  */
 
 #include "time.h"
-#define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <chrono>
 
@@ -15,8 +14,10 @@ void time::get_localtime(char * const buffer, const unsigned char length)const
     time_t rawTime;
     std::time(&rawTime);
     tm ret = {};
-#ifdef __STDC_LIB_EXT1__
-    tm* pTime = ::localtime_s(&rawTime, &ret);
+#ifdef _MSC_VER
+    tm* pTime = nullptr;
+    if(! ::localtime_s(&ret, &rawTime))
+        pTime = &ret;
 #else
     tm* pTime = ::localtime_r(&rawTime, &ret);
 #endif

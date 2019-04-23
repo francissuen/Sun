@@ -97,7 +97,7 @@ private:
                 _pkgs.pop();
                 lck.unlock();
                 std::tuple<param_t ...> param(pkg.params);
-                /** pkg.ret.set_value(apply(_func, param)); */
+                apply2promise(_func, param, pkg.ret);
             }
             else
             {
@@ -107,19 +107,6 @@ private:
             }
         }
     }
-
-    /** typename std::enable_if<std::is_void<ret_t>::value>::type */
-    /** _set_ret(std::promise<ret_t> & ret, const std::tuple<param_t ...> & param) */
-    /** { */
-    /**     apply(_func, param); */
-    /**     ret.set_value(); */
-    /** } */
-
-    /** typename std::enable_if<!(std::is_void<ret_t>::value), ret_t>::type */
-    /** _set_ret(std::promise<ret_t> & ret, const std::tuple<param_t ...> & param) */
-    /** { */
-    /**     ret.set_value(apply(_func, param)); */
-    /** } */
     
 private:
     std::uint8_t _threadCount;
