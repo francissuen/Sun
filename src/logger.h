@@ -4,11 +4,9 @@
 
 #pragma once
 #include <iostream>
-#include <string>
+#include "string.h"
 #include "time.h" 
-
-#include "ns.h"
-#include "config.h"
+#include "async.h"
 
 #ifdef _MSC_VER
 #include<Windows.h>
@@ -46,81 +44,96 @@
 #define FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS ">>>[]100% "
 
 // multi thread support
-#ifdef FS_SUN_MULTI_THREADS
-#include <mutex>
-#endif
+/** #ifdef FS_SUN_MULTI_THREADS */
+
+/** #endif */
 
 
 FS_SUN_NS_BEGIN
 
 FS_SUN_CLASS  logger
 {
-#ifdef _MSC_VER
-    typedef WORD color_code_t;
-//#elif __GNUC__ || __clang__
-#else
-    typedef std::string color_code_t;
-#endif
-    FS_SUN_SINGLETON_NO_CTORDEF(logger);
-    ~logger();
 public:
-    void log(const char* msg)const;
-    void set_log_color_code(const color_code_t szCode);
-    /**
-     * \param streambuf if streambuf == nullptr, then set back to default streambuf.
-     */
-    void set_log_streambuf(std::streambuf* streambuf);
-    void error(const char* msg)const;
-    void set_error_color_code(const color_code_t szCode);
-    void set_error_streambuf(std::streambuf* streambuf);
-    void warning(const char* msg)const;
-    void set_warning_color_code(const color_code_t szCode);
+enum severity : std::uint8_t
+{
+    S_FATAL = 0,
+    S_ERROR,
+    S_WARNING,
+    S_INFO,
+    S_DEBUG,
+    S_VERBOSE,
+    S_MAX
+};
 
-    /**
-     * \brief Progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
-     * \note Thread unsafe and will disable all other logger function until \see progress_done()
-     */
-    void progress(const float value, const char* title = nullptr);
-    void progress_done();
+FS_SUN_CLASS file
+{
+    
+};
+
+#ifdef _MSC_VER
+typedef WORD color_code_t;
+#else
+typedef std::string color_code_t;
+#endif
+public:
+logger();
+~logger();
+public:
+std::future<void> log(const string msg, const string tag, const severity s);
+void log(const char* msg)const;
+void set_log_color_code(const color_code_t szCode);
+/**
+ * \param streambuf if streambuf == nullptr, then set back to default streambuf.
+ */
+void set_log_streambuf(std::streambuf* streambuf);
+void error(const char* msg)const;
+void set_error_color_code(const color_code_t szCode);
+void set_error_streambuf(std::streambuf* streambuf);
+void warning(const char* msg)const;
+void set_warning_color_code(const color_code_t szCode);
+
+/**
+ * \brief Progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
+ * \note Thread unsafe and will disable all other logger function until \see progress_done()
+ */
+void progress(const float value, const char* title = nullptr);
+void progress_done();
 	    
-    void set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth);
+void set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth);
 
-    void enable_color(bool bState = true);
+void enable_color(bool bState = true);
+
+private:
+void _log(const string msg, const string tag, const severity s);
 private:
 #if ! defined(_MSC_VER)
-    color_code_t _normal_color_code;
+color_code_t _normal_color_code;
 #endif
-    color_code_t _log_color_code;
-    color_code_t _error_color_code;
-    color_code_t _warning_color_code;
-    color_code_t _progress_color_code[2];
+color_code_t _log_color_code;
+color_code_t _error_color_code;
+color_code_t _warning_color_code;
+color_code_t _progress_color_code[2];
 	    
-    /*
-     * Log and waring share same streambuf
-     */
-    std::streambuf* _log_default_streambuf;
-    std::streambuf* _error_default_streambuf;
+/*
+ * Log and waring share same streambuf
+ */
+std::streambuf* _log_default_streambuf;
+std::streambuf* _error_default_streambuf;
 
-    std::uint8_t _progress_bar_width;
-    std::uint8_t _progress_total_width;
-    std::uint8_t _progress_flexible_width;
-    bool _bProgressing;
-    bool _bEnableColor;
+std::uint8_t _progress_bar_width;
+std::uint8_t _progress_total_width;
+std::uint8_t _progress_flexible_width;
+bool _bProgressing;
+bool _bEnableColor;
 #ifdef _MSC_VER
-    HANDLE _hConsole;
-    CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
+HANDLE _hConsole;
+CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
 #endif
     
-#ifdef FS_SUN_MULTI_THREADS
-    std::mutex _mtx;
-#endif
-	    
-// #ifdef fsLUAAPI
-//     fs_LC_EXPORT_FUNC(log);
-//     fs_LC_EXPORT_FUNC(error);
-//     fs_LC_EXPORT_FUNC(warning);
-//     fs_LC_Register_PrvCns(log);
-// #endif
+/** #ifdef FS_SUN_MULTI_THREADS */
+/**     std::mutex _mtx; */
+/** #endif */
+async<void, const string, const string, const severity> _async;
 
 };
 	

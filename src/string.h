@@ -35,6 +35,9 @@ public:
 // ctor
 inline string() {}
 inline string(const char* str) :_data(str) { FS_SUN_ASSERT(str != nullptr); }
+inline string(const std::size_t size, const char c):
+_data(size, c)
+{}
 
 inline string(const string & str):
 _data(str._data)
@@ -196,14 +199,15 @@ _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu");
 //_FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned int, "%u");
 _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const float, "%f");
 
-/** dupicate with std::[u]int(32)|(64) above */
+/** duplicate with std::[u]int(32)|(64) above */
 /** _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const long, "%ld"); */
 /** _FS_SUN_STRING_OPERATOR_PLUS_DEFINE_(const unsigned long, "%lu"); */
 
 inline size_t length()const { return _data.length(); }
-inline const std::string & GetStdString()const { return _data; }
-inline const char * data() const { return _data.data(); }
+inline const std::string & get_std_string()const { return _data; }
 inline std::string& get_std_string() { return _data; }
+inline const char * data() const { return _data.data(); }
+
 bool operator < (const string& other) const;
 
 /**
@@ -284,7 +288,7 @@ namespace std
     {
 	std::size_t operator()(const fs::Sun::string& str) const noexcept
         {
-            return std::hash<std::string>()(str.GetStdString());
+            return std::hash<std::string>()(str.get_std_string());
         }
     };
 
@@ -293,7 +297,7 @@ namespace std
     {
 	std::size_t operator()(const fs::Sun::string& str) const noexcept
         {
-            return std::hash<std::string>()(str.GetStdString());
+            return std::hash<std::string>()(str.get_std_string());
         }
     };
 }

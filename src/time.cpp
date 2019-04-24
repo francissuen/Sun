@@ -6,18 +6,21 @@
 #include <ctime>
 #include <chrono>
 
-using namespace fs::Sun;
+#define _FS_SUN_TIMEBUFFER_MAX_LEN_ 128
 
-void time::get_localtime(char * const buffer, const unsigned char length)const
+using namespace fs::Sun;
+string time::localtime() const
 {
-    FS_SUN_ASSERT(buffer != nullptr);
+    string ret(_FS_SUN_TIMEBUFFER_MAX_LEN_,'\0');
+    std::string & stdStr = ret.get_std_string();
+    char * buffer = &(stdStr.front());
     time_t rawTime;
     std::time(&rawTime);
-    tm ret = {};
+    tm retTime = {};
 #ifdef _MSC_VER
     tm* pTime = nullptr;
-    if(! ::localtime_s(&ret, &rawTime))
-        pTime = &ret;
+    if(! ::localtime_s(&retTime, &rawTime))
+        pTime = &retTime;
 #else
     tm* pTime = ::localtime_r(&rawTime, &ret);
 #endif
@@ -30,6 +33,8 @@ void time::get_localtime(char * const buffer, const unsigned char length)const
 	    (pTime->tm_mon + 1),
 	    pTime->tm_mday,
 	    1900+pTime->tm_year);
+    stdStr.resize(std::strlen(ret.data()));
+    return ret;
 }
 
 std::uint64_t time::timestamp()const

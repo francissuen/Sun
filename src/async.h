@@ -62,8 +62,8 @@ public:
         std::promise<ret_t> promise;
         std::future<ret_t> ret = promise.get_future();
         {
-            std::lock_guard<std::mutex> lck(_pkgsMtx);
-            _pkgs.push(_package_{std::move(promise),
+            std::lock_guard<std::mutex> lck(_pkgBufferMtx);
+            _pkgBuffer.push(_package_{std::move(promise),
                     std::tuple<param_t ...>(param ...)});
         }
         _threadFuncCV.notify_one();
@@ -72,12 +72,12 @@ public:
 
     void wait_for_empty()
     {
-        std::unique_lock<std::mutex> lck(_pkgsMtx);
-        if(_pkgs.size() > 0)
+        std::unique_lock<std::mutex> lck(_pkgBufferMtx);
+        if(_pkgBuffer.size() > 0)
         {
             _emptyCV.wait(lck, [this]() -> bool
                               {
-                                  return _pkgs.size() == 0;
+                                  return _pkgBuffer.size() == 0;
                               });
         }
     }
@@ -85,16 +85,16 @@ public:
 private:
     void _thread_func()
     {
-        std::unique_lock<std::mutex> lck(_pkgsMtx);
+        std::unique_lock<std::mutex> lck(_pkgBufferMtx);
         for(;;)
         {
             if(_quit.load())
                 break;
             
-            if(_pkgs.size() > 0)
+            if(_pkgBuffer.size() > 0)
             {
-                _package_ pkg(std::move(_pkgs.back()));
-                _pkgs.pop();
+                _package_ pkg(std::move(_pkgBuffer.back()));
+                _pkgBuffer.pop();
                 lck.unlock();
                 std::tuple<param_t ...> param(pkg.params);
                 apply2promise(_func, param, pkg.ret);
@@ -111,9 +111,9 @@ private:
 private:
     std::uint8_t _threadCount;
     std::vector<std::thread> _threads;
-    std::mutex _pkgsMtx;
+    std::mutex _pkgBufferMtx;
     std::condition_variable _threadFuncCV;
-    std::queue<_package_> _pkgs;
+    std::queue<_package_> _pkgBuffer;
     const std::function<void(param_t ...)> _func;
     std::atomic_bool _quit;
     std::condition_variable _emptyCV;

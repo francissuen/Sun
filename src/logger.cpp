@@ -30,7 +30,11 @@ logger::logger() :
     _progress_bar_width(FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH),
     _progress_total_width(FS_SUN_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH),
     _bProgressing(false),
-    _bEnableColor(true)
+    _bEnableColor(true),
+    _async(std::bind(&logger::_log, this,
+                     std::placeholders::_1,
+                     std::placeholders::_2,
+                     std::placeholders::_3))
 {
     _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)strlen(FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS));
 #ifdef _MSC_VER
@@ -53,41 +57,41 @@ logger::~logger()
     }
 }
 
-#ifdef FS_SUN_MULTI_THREADS
-#define _FS_SUN_LOGGER_LOCK                                             \
-    std::lock_guard<std::mutex> lck(const_cast<std::mutex &>(_mtx));
-#else
-#define _FS_SUN_LOGGER_LOCK
-#endif
+/** #ifdef FS_SUN_MULTI_THREADS */
+/** #define _FS_SUN_LOGGER_LOCK                                             \ */
+/**     std::lock_guard<std::mutex> lck(const_cast<std::mutex &>(_mtx)); */
+/** #else */
+/** #define _FS_SUN_LOGGER_LOCK */
+/** #endif */
 
 void logger::enable_color(bool bState)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
     _bEnableColor = bState;
 }
 
 void logger::set_log_streambuf(std::streambuf* streambuf)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
     std::cout.rdbuf(streambuf != nullptr ? streambuf : _log_default_streambuf);
 }
 
 void logger::set_error_streambuf(std::streambuf* streambuf)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
     std::cerr.rdbuf(streambuf != nullptr ? streambuf : _error_default_streambuf);
 }
 
 #ifdef _MSC_VER
 
 #define _fs_fancy_print(ostream, title, win_color_code)         \
-    _FS_SUN_LOGGER_LOCK;                                        \
+    /*    _FS_SUN_LOGGER_LOCK;*/                                \
     assert(!_bProgressing);                                     \
     assert(szMsg != nullptr);                                   \
-    FS_SUN_GET_LOCALTIME(timeBuf);                              \
+    string timeBuf = time::Instance().localtime();              \
     if(_bEnableColor)                                           \
         ::SetConsoleTextAttribute(_hConsole, win_color_code);   \
-    ostream << timeBuf << std::endl                             \
+    ostream << timeBuf.data() << std::endl                      \
     << title << szMsg << std::endl;
 
 //#elif __GNUC__
@@ -113,7 +117,7 @@ void logger::log(const char* szMsg)const
 
 void logger::set_log_color_code(const color_code_t szCode)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
 #ifdef _MSC_VER
     _log_color_code = szCode;
 //#elif __GNUC__
@@ -128,7 +132,7 @@ void logger::error(const char * szMsg)const
 }
 void logger::set_error_color_code(const color_code_t szCode)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
 #ifdef _MSC_VER
     _error_color_code = szCode;
 //#elif __GNUC__
@@ -143,7 +147,7 @@ void logger::warning(const char* szMsg)const
 
 void logger::set_warning_color_code(const color_code_t szCode)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
 #ifdef _MSC_VER
     _warning_color_code = szCode;
 //#elif __GNUC__
@@ -154,7 +158,7 @@ void logger::set_warning_color_code(const color_code_t szCode)
 
 void logger::progress(const float value, const char* title)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
     assert(value >= 0.0f && value <= 1.0f);
     _bProgressing = true;
 
@@ -276,17 +280,23 @@ void logger::progress(const float value, const char* title)
 
 void logger::progress_done()
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
     std::cout << std::endl;
     _bProgressing = false;
 }
 void logger::set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth)
 {
-    _FS_SUN_LOGGER_LOCK;
+    /** _FS_SUN_LOGGER_LOCK; */
     _progress_bar_width = barWidth;
     _progress_total_width = totalWidth;
     _progress_flexible_width = _progress_total_width - (_progress_bar_width + (std::uint8_t)(strlen(FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS)));
 }
+
+void logger::_log(const string msg, const string tag, const severity s)
+{
+    
+}
+
 
 // #ifdef fsLUAAPI
 // void logger::fs_LC_Reg(lua_State* L)

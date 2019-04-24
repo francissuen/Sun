@@ -6,19 +6,16 @@
 #include "common.h"
 #include "config.h"
 #include "string.h"
-#define FS_SUN_TIMEBUFFER_MAX_LEN 64
-
-#define FS_SUN_GET_LOCALTIME(buffer)                    \
-    char buffer[FS_SUN_TIMEBUFFER_MAX_LEN] = {0};	\
-    time::Instance().get_localtime(buffer);
 
 FS_SUN_NS_BEGIN
 
-FS_SUN_CLASS time
+FS_SUN_CLASS time : public singleton<time>
 {
-    FS_SUN_SINGLETON(time);
+    friend class singleton<time>;
+private:
+    time() = default;
 public:
-    void get_localtime(char * const buffer, const unsigned char length = FS_SUN_TIMEBUFFER_MAX_LEN)const;
+    string localtime() const;
     std::uint64_t timestamp()const;
 
     /**

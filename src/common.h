@@ -13,41 +13,6 @@
 // Sun useful macros //
 ///////////////////////
 
-#define FS_SUN_SINGLETON(x)                     \
-    public:                                     \
-    static inline x& Instance()                 \
-    {                                           \
-        static x _instance;                     \
-        return _instance;                       \
-    }                                           \
-private:                                        \
-inline x(){};                                   \
-inline x(x const&)   = delete;                  \
-inline void operator = (x const&){}
-
-#define FS_SUN_SINGLETON_NO_CTORDEF(x)          \
-    public:                                     \
-    static inline x& Instance()                 \
-    {                                           \
-        static x _instance;                     \
-        return _instance;                       \
-    }                                           \
-private:                                        \
-x();                                            \
-inline x(x const&)   = delete;                  \
-inline void operator = (x const&){}
-
-#define FS_SUN_SINGLETON_NO_CTORDCLR(x)         \
-    public:                                     \
-    static inline x& Instance()                 \
-    {                                           \
-        static x _instance;                     \
-        return _instance;                       \
-    }                                           \
-private:                                        \
-inline x(x const&)   = delete;                  \
-inline void operator = (x const&){}
-
 #define FS_SUN_FRIEND_BINARY_OPERATOR_DECLARE(return_t, operator_, operand_1_t, operand_2_t) \
     friend return_t operator operator_ (operand_1_t, operand_2_t);      \
     friend return_t operator operator_ (operand_2_t, operand_1_t);      \
@@ -144,7 +109,7 @@ private:
 #define FS_SUN_EXCLUDE_FIRST_ARG(...)     _FS_SUN_EXCLUDE_FIRST_ARG_(__VA_ARGS__)
 #endif
 
-// tailing comma suppressing
+// trailing comma suppressing
 //https://msdn.microsoft.com/en-us/library/ms177415.aspx
 //https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 #ifdef _MSC_VER
@@ -299,10 +264,31 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
     
 #endif
 
+/**************/
+/** singleton */
+/**************/
+template <typename T>
+class singleton
+{
+public:
+    static T & Instance()
+    {
+        static T instance;
+        return instance;
+    }
+    singleton(const singleton &) = delete;
+    singleton & operator=(const singleton &) = delete;
+protected:
+    singleton() = default;
+    ~singleton() = default;
+};
 
-////////////////////////////////
-// type tarits
-////////////////////////////////
+template <typename T>
+T & GetSingleton()
+{
+    static T instance;
+    return instance;
+}
 
 namespace fs
 {
