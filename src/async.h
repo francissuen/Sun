@@ -25,7 +25,7 @@ private:
     struct _package_
     {
         std::promise<ret_t> ret;
-        std::tuple<param_t ...> params;
+        std::tuple<typename std::decay<param_t>::type ...> params;
     };
     
 public:
@@ -56,15 +56,16 @@ public:
     }
 
 public:
-    /** TODO result */
-    std::future<ret_t> operator()(param_t ... param)
+    std::future<ret_t> operator()(typename std::decay<param_t>::type ... param)
     {
         std::promise<ret_t> promise;
         std::future<ret_t> ret = promise.get_future();
         {
             std::lock_guard<std::mutex> lck(_pkgBufferMtx);
             _pkgBuffer.push(_package_{std::move(promise),
-                    std::tuple<param_t ...>(param ...)});
+                                      std::tuple<
+                                      typename std::decay<param_t>::type ...>(
+                                          std::move(param) ...)});
         }
         _threadFuncCV.notify_one();
         return ret;
@@ -96,8 +97,7 @@ private:
                 _package_ pkg(std::move(_pkgBuffer.back()));
                 _pkgBuffer.pop();
                 lck.unlock();
-                std::tuple<param_t ...> param(pkg.params);
-                apply2promise(_func, param, pkg.ret);
+                apply2promise(_func, std::move(pkg.params), pkg.ret);
             }
             else
             {

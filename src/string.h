@@ -29,7 +29,7 @@ struct is_string: _is_string<typename std::decay<T>::type> {};
 /**
  * \brief A wrapper for std::string, but with more useful features.
  */
-FS_SUN_CLASS string
+FS_SUN_CLASS string             /**TODO inherit from std::string? */
 {
 public:
 // ctor

@@ -8,6 +8,17 @@
 
 FS_SUN_NS_BEGIN
 
+FS_SUN_CLASS ifile: public std::ifstream
+{
+public:
+    std::size_t size() const;
+};
+
+FS_SUN_CLASS ofile: public std::ofstream
+{
+    
+};
+
 FS_SUN_CLASS file
 {
 public:

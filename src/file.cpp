@@ -6,6 +6,11 @@
 #include "string.h"
 using namespace fs::Sun;
 
+std::size_t ifile::size() const
+{
+    
+}
+
 file::file(const char* filePath, bool bRead):
     _size(0),
     _filePath(filePath)

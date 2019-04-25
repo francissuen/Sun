@@ -362,7 +362,7 @@ namespace fs
         typename std::remove_reference<func_t>::type::result_type
         _apply(func_t && f, tuple_t && t, index_sequence<idx...>)
         {
-            return f(std::get<idx>(t)...);
+            return std::forward<func_t>(f)(std::get<idx>(std::forward<tuple_t>(t))...);
         }
         template <typename func_t, typename tuple_t>
         typename std::remove_reference<func_t>::type::result_type
