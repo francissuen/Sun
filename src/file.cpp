@@ -8,50 +8,56 @@ using namespace fs::Sun;
 
 std::size_t ifile::size() const
 {
-    
-}
-
-file::file(const char* filePath, bool bRead):
-    _size(0),
-    _filePath(filePath)
-{
-    std::ios_base::openmode openmode = std::ios_base::binary;
-    if(bRead)
-	openmode = openmode | std::ios_base::in;
-    else
-	openmode = openmode | std::ios_base::out;
-
-    _file = std::fstream(filePath, openmode);
-
-    if(bRead)
+    if(is_open())
     {
-	_file.seekg(0, std::ios_base::end);
-
-	_size = (std::uint32_t)_file.tellg();
-
-	_file.seekg(0, std::ios_base::beg);
+        seekg(0, std::ios_base::end);
+        const std::size_t ret = tellg();
+        seekg(0, std::ios_base::beg);
     }
+    return 0u;
 }
 
-file::~file()
-{
-    _file.close();
-}
+/** file::file(const char* filePath, bool bRead): */
+/**     _size(0), */
+/**     _filePath(filePath) */
+/** { */
+/**     std::ios_base::openmode openmode = std::ios_base::binary; */
+/**     if(bRead) */
+/** 	openmode = openmode | std::ios_base::in; */
+/**     else */
+/** 	openmode = openmode | std::ios_base::out; */
 
-void file::close()
-{
-    _file.close();
-}
-bool file::read(void* const buffer, const size_t bufferSize)
-{
-    assert(buffer != nullptr);
-    _file.read((char* const)buffer, bufferSize);
-    return ! _file.fail();
-}
+/**     _file = std::fstream(filePath, openmode); */
 
-bool file::write(const void* data, const size_t size)
-{
-    assert(data != nullptr);
-    _file.write((const char*)data, size);
-    return ! _file.fail();
-}
+/**     if(bRead) */
+/**     { */
+/** 	_file.seekg(0, std::ios_base::end); */
+
+/** 	_size = (std::uint32_t)_file.tellg(); */
+
+/** 	_file.seekg(0, std::ios_base::beg); */
+/**     } */
+/** } */
+
+/** file::~file() */
+/** { */
+/**     _file.close(); */
+/** } */
+
+/** void file::close() */
+/** { */
+/**     _file.close(); */
+/** } */
+/** bool file::read(void* const buffer, const size_t bufferSize) */
+/** { */
+/**     assert(buffer != nullptr); */
+/**     _file.read((char* const)buffer, bufferSize); */
+/**     return ! _file.fail(); */
+/** } */
+
+/** bool file::write(const void* data, const size_t size) */
+/** { */
+/**     assert(data != nullptr); */
+/**     _file.write((const char*)data, size); */
+/**     return ! _file.fail(); */
+/** } */
