@@ -4,7 +4,6 @@
 
 #pragma once
 #include "common.h"
-#include "config.h"
 #include "string.h"
 
 FS_SUN_NS_BEGIN

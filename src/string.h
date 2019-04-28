@@ -19,6 +19,7 @@ FS_SUN_NS_BEGIN
  */
 FS_SUN_CLASS string: public std::string /**TOD wstring */
 {
+    using std::string::string;
 public:
     inline string(const std::string & str):
     std::string(str)
@@ -26,7 +27,7 @@ public:
     inline string(std::string && str):
     std::string(std::move(str))
     {}
-
+    
     /** operator +=, + for numeric type */
     template<typename number_t>
     typename std::enable_if<std::is_arithmetic<number_t>::value,
@@ -39,7 +40,7 @@ public:
 
     template<typename string_t, typename number_t>
     friend typename std::enable_if<std::is_arithmetic<number_t>::value,
-                                   std::decay<string_t>>::type
+                                   typename std::decay<string_t>::type>::type
     operator+(string_t && str, number_t num)
     {
         return std::forward<string_t>(str) + std::to_string(num);
@@ -47,7 +48,7 @@ public:
 
     template<typename string_t, typename number_t>
     friend typename std::enable_if<std::is_arithmetic<number_t>::value,
-                                   std::decay<string_t>>::type
+                                   typename std::decay<string_t>::type>::type
     operator+(number_t num, string_t && str)
     {
         return std::forward<string_t>(str) + std::to_string(num);

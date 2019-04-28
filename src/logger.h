@@ -5,53 +5,15 @@
 #pragma once
 #include <iostream>
 #include "string.h"
-#include "time.h" 
 #include "async.h"
 
 #ifdef _MSC_VER
 #include<Windows.h>
-
-// colors are 0=black 1=blue 2=green ... 9=light blue 10=light green ...and so on to 15=white  
-// colorattribute = foreground + background * 16
-// to get red text on yellow use 4 + 14*16 = 228
-// light red on yellow would be 12 + 14*16 = 236
-#define FS_SUN_LOGGER_DEFAULT_LOG_MS_COLOR_CODE 15
-#define FS_SUN_LOGGER_DEFAULT_ERROR_MS_COLOR_CODE 12
-#define FS_SUN_LOGGER_DEFAULT_WARNING_MS_COLOR_CODE 14
-#define FS_SUN_LOGGER_DEFAULT_PROGRESS_MS_COLOR_CODE 9
-#define FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_MS_COLOR_CODE 160
-
-//#elif __GNUC__
-#else
-
-// ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS
-#define FS_SUN_LOGGER_COLOR_BEGIN "\033["
-#define FS_SUN_LOGGER_COLOR_END "m"
-#define FS_SUN_LOGGER_COLOR_BACKTONORMAL "\033[0m"
-
-#define FS_SUN_LOGGER_DEFAULT_LOG_COLOR_CODE "1;37;40"
-#define FS_SUN_LOGGER_DEFAULT_ERROR_COLOR_CODE "1;31;40"
-#define FS_SUN_LOGGER_DEFAULT_WARNING_COLOR_CODE "1;33;40"
-#define FS_SUN_LOGGER_DEFAULT_PROGRESS_COLOR_CODE "1;34;40"
-#define FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_COLOR_CODE "1;32;42"
 #endif
-
-
-#define FS_SUN_LOGGER_DEFAULT_PROGRESS_BAR_WIDTH 20
-#define FS_SUN_LOGGER_DEFAULT_PROGRESS_TOTAL_WIDTH 64
-
-//len 10
-#define FS_SUN_LOGGER_DEFAULT_PROGRESS_FIXED_CHARS ">>>[]100% "
-
-// multi thread support
-/** #ifdef FS_SUN_MULTI_THREADS */
-
-/** #endif */
-
 
 FS_SUN_NS_BEGIN
 
-FS_SUN_CLASS  logger
+FS_SUN_CLASS logger
 {
 public:
 enum severity : std::uint8_t
@@ -65,76 +27,52 @@ enum severity : std::uint8_t
     S_MAX
 };
 
-FS_SUN_CLASS file
+FS_SUN_CLASS term_file          /** terminal file */
 {
-    
-};
-
-#ifdef _MSC_VER
-typedef WORD color_code_t;
-#else
-typedef std::string color_code_t;
-#endif
 public:
-logger();
-~logger();
+term_file();
+~term_file();
 public:
-std::future<void> log(const string msg, const string tag, const severity s);
-void log(const char* msg)const;
-void set_log_color_code(const color_code_t szCode);
-/**
- * \param streambuf if streambuf == nullptr, then set back to default streambuf.
- */
-void set_log_streambuf(std::streambuf* streambuf);
-void error(const char* msg)const;
-void set_error_color_code(const color_code_t szCode);
-void set_error_streambuf(std::streambuf* streambuf);
-void warning(const char* msg)const;
-void set_warning_color_code(const color_code_t szCode);
-
-/**
- * \brief Progress print, string printed will be like this ">>>tile[]100% ETA: 1s...",
- * \note Thread unsafe and will disable all other logger function until \see progress_done()
- */
-void progress(const float value, const char* title = nullptr);
-void progress_done();
-	    
-void set_progress_width(const std::uint8_t barWidth, const std::uint8_t totalWidth);
-
-void enable_color(bool bState = true);
-
+void log(const string & tag, const string & msg, const severity s) const;
 private:
-void _log(const string msg, const string tag, const severity s);
+string _format(const string & tag, const string & msg) const;
 private:
-#if ! defined(_MSC_VER)
-color_code_t _normal_color_code;
-#endif
-color_code_t _log_color_code;
-color_code_t _error_color_code;
-color_code_t _warning_color_code;
-color_code_t _progress_color_code[2];
-	    
-/*
- * Log and waring share same streambuf
- */
-std::streambuf* _log_default_streambuf;
-std::streambuf* _error_default_streambuf;
-
-std::uint8_t _progress_bar_width;
-std::uint8_t _progress_total_width;
-std::uint8_t _progress_flexible_width;
-bool _bProgressing;
-bool _bEnableColor;
 #ifdef _MSC_VER
+const WORD _color[severity::S_MAX];
 HANDLE _hConsole;
 CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
+#else
+const string _color[severity::S_MAX];
 #endif
-    
-/** #ifdef FS_SUN_MULTI_THREADS */
-/**     std::mutex _mtx; */
-/** #endif */
-async<void, const string, const string, const severity> _async;
-
 };
-	
+
+template <typename file_t>
+class log
+{
+public:
+    log():
+        _async(std::bind(&log::_log, this,
+                         std::placeholders::_1,
+                         std::placeholders::_2,
+                         std::placeholders::_3))
+    {}
+    
+public:
+    void operator()(string tag, string msg, const severity s)
+    {
+        _async(tag, msg, s);
+    }
+private:
+    void _log(const string & tag, const string & msg, const severity s)
+    {
+        _file.log(tag, msg, s);
+    }
+private:
+    file_t _file;
+    async<void, const string & , const string &, const severity> _async;
+};
+};
+
+extern logger::log<logger::term_file> cout;
+
 FS_SUN_NS_END

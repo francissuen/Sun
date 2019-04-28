@@ -5,7 +5,7 @@ include(../fsCMake/CMakeLists.txt)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../fsCMake/)
 
 add_executable(Test
-  test.cpp
+  main.cpp
   )
 
 set(pthread_lib)

@@ -12,8 +12,7 @@ using namespace fs::Sun;
 string time::localtime() const
 {
     string ret(_FS_SUN_TIMEBUFFER_MAX_LEN_,'\0');
-    std::string & stdStr = ret.get_std_string();
-    char * buffer = &(stdStr.front());
+    char * buffer = &(ret.front());
     time_t rawTime;
     std::time(&rawTime);
     tm retTime = {};
@@ -33,7 +32,7 @@ string time::localtime() const
 	    (pTime->tm_mon + 1),
 	    pTime->tm_mday,
 	    1900+pTime->tm_year);
-    stdStr.resize(std::strlen(ret.data()));
+    ret.resize(std::strlen(ret.data()));
     return ret;
 }
 
