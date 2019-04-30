@@ -3,28 +3,30 @@
  */
 
 #include "string.h"
+#include "logger.h"
+using namespace fs::Sun::string;
 
-using fs::Sun::string;
-
-std::map<const std::string, std::string> string::extract_blocks(
-    const std::vector<std::pair<std::string, std::string>>& pairedDelimiters)const
+std::unordered_map<const std::string, std::string> extract_blocks(
+    const std::string & src,
+    const std::vector<std::pair<std::string, std::string>>& pairedDelimiters)
 {
-    std::map<const std::string, std::string> ret;
+    std::unordered_map<const std::string, std::string> ret;
 
     for(const auto pd : pairedDelimiters)
     {
         const std::string & first = pd.first;
-	const size_t startPos = find(first, 0);
+	const size_t startPos = src.find(first, 0);
 	const size_t dlmtrLen = first.size();
 
 	if (startPos != std::string::npos)
 	{
 	    const size_t blockStartPos = startPos + dlmtrLen;
 
-	    const size_t endPos = find(pd.second, blockStartPos);
+	    const size_t endPos = src.find(pd.second, blockStartPos);
 	    if (endPos != std::string::npos)
 	    {
-		ret.insert(std::make_pair(pd.first, substr(blockStartPos, endPos - blockStartPos)));
+		ret.insert(std::make_pair(pd.first,
+                                          src.substr(blockStartPos, endPos - blockStartPos)));
 	    }
 	}
     }
@@ -32,34 +34,34 @@ std::map<const std::string, std::string> string::extract_blocks(
     return ret;
 }
 
-std::vector<string> string::split(const char* delimeter)const
+std::vector<std::string> split(const std::string & src, const char* delimeter)
 {
     FS_SUN_ASSERT(delimeter != nullptr);
-    std::vector<string> ret;
+    std::vector<std::string> ret;
     size_t curPos = 0;
     const size_t dlmtrLen = strlen(delimeter);
     while(true)
     {
-	const size_t pos = find(delimeter, curPos);
+	const size_t pos = src.find(delimeter, curPos);
 	if(pos != std::string::npos)
 	{
-	    ret.push_back(substr(curPos, pos));
+	    ret.push_back(src.substr(curPos, pos));
 	    curPos += (pos + dlmtrLen);
 	}
 	else
 	{
-	    ret.push_back(substr(curPos));
+	    ret.push_back(src.substr(curPos));
 	    break;
 	}
     }
     return ret;
 }
 
-string string::file_extension() const
+std::string file_extension(const std::string & src)
 {
-    const size_t pos = find_last_of('.');
+    const size_t pos = src.find_last_of('.');
     if(pos == std::string::npos)
-        return string("");
+        return std::string("");
     else
-        return string(substr(pos + 1));
+        return src.substr(pos + 1);
 }

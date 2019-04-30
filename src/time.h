@@ -14,13 +14,8 @@ FS_SUN_CLASS time : public singleton<time>
 private:
     time() = default;
 public:
-    string localtime() const;
+    std::string localtime() const;
     std::uint64_t timestamp()const;
-
-    /**
-     * \brief Format seconds to [*d:][*h:][*m:]*s string
-     */
-    string format(const time_t seconds);
 };
 
 FS_SUN_NS_END

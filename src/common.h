@@ -9,6 +9,8 @@
 #include <tuple>
 #include <future>
 
+#include "ns.h"
+
 ///////////////////////
 // Sun useful macros //
 ///////////////////////
@@ -177,92 +179,27 @@ static_assert(FS_SUN_ARGC(a, a, a, a, a, a, a, a, a, a,
 #endif
 
 #ifdef NDEBUG
-#define FS_SUN_ASSERT(condition, ...) 
+#define FS_SUN_ASSERT(condition) 
 #else
-
-#define FS_SUN_ASSERT(condition, ...)                                   \
+#define FS_SUN_ASSERT(condition)                                        \
     {                                                                   \
-        static_assert(FS_SUN_ARGC(__VA_ARGS__) == 0 || FS_SUN_ARGC(__VA_ARGS__) == 1, \
-                      "FS_SUN_ASSERT can take only zero or one MSG arg"); \
         if(!(condition))                                                \
         {                                                               \
-            std::cerr << "**************** FS_SUN_ASSERT FAILED ****************" \
-                      << std::endl;                                     \
-            std::cerr << "@CONDITION: " << #condition << std::endl;     \
-            std::cerr << "@LINE: " << __LINE__ << std::endl             \
-                      << "@FILE: " << __FILE__ << std::endl;            \
-            std::cerr << "@FUNCTION: " << FS_SUN_FUNC_NAME << std::endl; \
-            std::cerr << "@MSG: " FS_SUN_SMART_PARAM(<< ,__VA_ARGS__)  __VA_ARGS__ \
-                      << std::endl;                                     \
-            std::cerr << "**************** FS_SUN_ASSERT FAILED ****************" \
-                      << std::endl;                                     \
+            std::string msg;                                            \
+            msg += "**************** FS_SUN_ASSERT FAILED ****************\n"; \
+            msg += "**************** FS_SUN_ASSERT FAILED ****************\n" \
+            msg += "@CONDITION: " #condition "\n";                      \
+            msg += "@LINE: "  __LINE__ "\n";                            \
+            msg += "@FILE: " __FILE__ "\n";                             \
+            msg += "@FUNCTION: "  FS_SUN_FUNC_NAME "\n";                \
+            msg += "**************** FS_SUN_ASSERT FAILED ****************\n"; \
+            fs::Sun::cout("FS_SUN_ASSERT", msg, fs::Sun::logger::S_FATAL); \
             assert(false);                                              \
         }                                                               \
     }
 #endif
 
-#define _FS_SUN_FUNC_LOG_(functionName, ...)                            \
-    {                                                                   \
-        fs::Sun::string msg("@function: ");                             \
-        msg += functionName;                                            \
-        if(FS_SUN_ARGC(__VA_ARGS__) > 0)                                \
-        {                                                               \
-            msg += " @param";                                           \
-            msg = msg.concat_with_delimiter(" : " FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)); \
-        }                                                               \
-        fs::Sun::logger::Instance().log(msg);                           \
-    }
-
-#define _FS_SUN_FUNC_LOG_WRAPPER_(...) _FS_SUN_FUNC_LOG_(__VA_ARGS__)
-
-#ifdef _MSC_VER
-#define FS_SUN_FUNC_LOG(...)                                            \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_, (FS_SUN_FUNC_NAME FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
-#else  /** using a wrapper to avoid binding all args to functionName of MACRO _FS_SUN_FUNC_LOG_*/
-#define FS_SUN_FUNC_LOG(...)                                            \
-    _FS_SUN_FUNC_LOG_WRAPPER_(FS_SUN_FUNC_NAME FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
-#endif
-
-#define _FS_SUN_FUNC_ERR_(functionName, errMsg, ...)                    \
-    {                                                                   \
-        fs::Sun::string msg("@function: ");                             \
-        msg += functionName;                                            \
-        msg += ", ";                                                    \
-        msg += errMsg;                                                  \
-        if(FS_SUN_ARGC(__VA_ARGS__) > 0)                                \
-        {                                                               \
-            msg += " @param";                                           \
-            msg = msg.concat_with_delimiter(" : " FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)); \
-        }                                                               \
-        fs::Sun::logger::Instance().error(msg);                         \
-    }
-
-#define _FS_SUN_FUNC_ERR_WRAPPER_(...) _FS_SUN_FUNC_ERR_(__VA_ARGS__)
-
-#ifdef _MSC_VER
-#define FS_SUN_FUNC_ERR(errMsg, ...)                                    \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_ERR_, (FS_SUN_FUNC_NAME, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__)))
-#else  /** see _FS_SUN_FUNC_LOG_WRAPPER_ */
-#define FS_SUN_FUNC_ERR(errMsg, ...)                                    \
-    _FS_SUN_FUNC_ERR_WRAPPER_(FS_SUN_FUNC_NAME, errMsg FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))
-#endif
-
-
-#ifdef FS_SUN_VERBOSE
-///////////////////////////////
-// verbosely call a function //
-///////////////////////////////
-#define FS_SUN_V_CALL(function, ...)                                    \
-    FS_SUN_MACRO_CALL(_FS_SUN_FUNC_LOG_,                                \
-                      (FS_SUN_STRING(function) FS_SUN_COMMA__VA_ARGS__(__VA_ARGS__))) \
-    function(__VA_ARGS__);
-
-#else
-
-#define FS_SUN_V_CALL(function, ...)            \
-    function(__VA_ARGS__);
-    
-#endif
+FS_SUN_NS_BEGIN
 
 /**************/
 /** singleton */
@@ -290,111 +227,94 @@ T & GetSingleton()
     return instance;
 }
 
-namespace fs
-{
-    namespace Sun
-    {
-        template <typename T>
-        struct _is_std_string: std::false_type {};
-        template <> struct _is_std_string <std::string> : std::true_type {};
+/*****************/
+/** string utils */
+/*****************/
 
-        template<typename T>
-        struct is_std_string: _is_std_string<typename std::decay<T>::type> {};
-    }
+template<typename To, typename From>
+inline To* cast(From* from)
+{
+#ifdef NDEBUG
+    return static_cast<To*>(from);
+#else
+    To* to = dynamic_cast<To*>(from);
+    assert(to != nullptr);
+    return to;
+#endif    
 }
 
-
-////////////////////////////////
-// misc
-////////////////////////////////
-namespace fs
+template<typename To, typename From>
+inline To& cast(From && from)   /**TODO */
 {
-    namespace Sun
-    {
-        template<typename To, typename From>
-        inline To* cast(From* from)
-        {
 #ifdef NDEBUG
-            return static_cast<To*>(from);
+    return static_cast<To&&>(from);
 #else
-            To* to = dynamic_cast<To*>(from);
-            assert(to != nullptr);
-            return to;
+    return dynamic_cast<To&&>(from);
 #endif    
-        }
-
-        template<typename To, typename From>
-        inline To& cast(From && from)
-        {
-#ifdef NDEBUG
-            return static_cast<To&&>(from);
-#else
-            return dynamic_cast<To&&>(from);
-#endif    
-        }
-
-        template <typename T>
-        struct less_ptr
-        {
-            bool operator()(const T* l, const T* r) const
-            {
-                return (*l) < (*r);
-            }
-        };
-
-        /** index sequence */
-        template <std::size_t ...>
-        struct index_sequence
-        {};
-        template <std::size_t n, std::size_t ... s>
-        struct make_index_sequence : make_index_sequence<n-1, n-1, s...>
-        {};
-
-        template <std::size_t ... s>
-        struct make_index_sequence<0, s...>
-        {
-            using type = index_sequence<s...>;
-        };
-        template <typename ... T>
-        using index_sequence_for = make_index_sequence<sizeof...(T)>;
-
-        template <typename func_t, typename tuple_t, std::size_t ... idx>
-        typename std::remove_reference<func_t>::type::result_type
-        _apply(func_t && f, tuple_t && t, index_sequence<idx...>)
-        {
-            return std::forward<func_t>(f)(std::get<idx>(std::forward<tuple_t>(t))...);
-        }
-        template <typename func_t, typename tuple_t>
-        typename std::remove_reference<func_t>::type::result_type
-        apply(func_t && f, tuple_t && t)
-        {
-            return _apply(std::forward<func_t>(f), std::forward<tuple_t>(t),
-                          typename make_index_sequence<
-                          std::tuple_size<typename std::remove_reference<tuple_t>::
-                          type>::value>::type{});
-        }
-
-        template <typename func_t, typename tuple_t>
-        void apply2promise(func_t && f, tuple_t && t,
-                           std::promise<typename
-                           std::enable_if<std::is_void<
-                           typename std::remove_reference<
-                           func_t>::type::result_type>::value, typename std::remove_reference<
-                           func_t>::type::result_type>::type> & promise)
-        {
-            apply(std::forward<func_t>(f), std::forward<tuple_t>(t));
-            promise.set_value();
-        }
-
-        template <typename func_t, typename tuple_t>
-        void apply2promise(func_t && f, tuple_t && t,
-                           std::promise<typename
-                           std::enable_if<! (std::is_void<typename std::remove_reference<
-                                             func_t>::type::result_type>::value),
-                           typename std::remove_reference<
-                           func_t>::type::result_type>::type> & promise)
-        {
-            promise.set_value(apply(std::forward<func_t>(f), std::forward<tuple_t>(t)));
-        }
-    }
 }
+
+template <typename T>
+struct less_ptr
+{
+    bool operator()(const T* l, const T* r) const
+    {
+        return (*l) < (*r);
+    }
+};
+
+/** index sequence */
+template <std::size_t ...>
+struct index_sequence
+{};
+template <std::size_t n, std::size_t ... s>
+struct make_index_sequence : make_index_sequence<n-1, n-1, s...>
+{};
+
+template <std::size_t ... s>
+struct make_index_sequence<0, s...>
+{
+    using type = index_sequence<s...>;
+};
+template <typename ... T>
+using index_sequence_for = make_index_sequence<sizeof...(T)>;
+
+template <typename func_t, typename tuple_t, std::size_t ... idx>
+typename std::remove_reference<func_t>::type::result_type
+_apply(func_t && f, tuple_t && t, index_sequence<idx...>)
+{
+    return std::forward<func_t>(f)(std::get<idx>(std::forward<tuple_t>(t))...);
+}
+template <typename func_t, typename tuple_t>
+typename std::remove_reference<func_t>::type::result_type
+apply(func_t && f, tuple_t && t)
+{
+    return _apply(std::forward<func_t>(f), std::forward<tuple_t>(t),
+                  typename make_index_sequence<
+                  std::tuple_size<typename std::remove_reference<tuple_t>::
+                  type>::value>::type{});
+}
+
+template <typename func_t, typename tuple_t>
+void apply2promise(func_t && f, tuple_t && t,
+                   std::promise<typename
+                   std::enable_if<std::is_void<
+                   typename std::remove_reference<
+                   func_t>::type::result_type>::value, typename std::remove_reference<
+                   func_t>::type::result_type>::type> & promise)
+{
+    apply(std::forward<func_t>(f), std::forward<tuple_t>(t));
+    promise.set_value();
+}
+
+template <typename func_t, typename tuple_t>
+void apply2promise(func_t && f, tuple_t && t,
+                   std::promise<typename
+                   std::enable_if<! (std::is_void<typename std::remove_reference<
+                                     func_t>::type::result_type>::value),
+                   typename std::remove_reference<
+                   func_t>::type::result_type>::type> & promise)
+{
+    promise.set_value(apply(std::forward<func_t>(f), std::forward<tuple_t>(t)));
+}
+
+FS_SUN_NS_END

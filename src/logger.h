@@ -4,7 +4,8 @@
 
 #pragma once
 #include <iostream>
-#include "string.h"
+#include <string>
+#include "config.h"
 #include "async.h"
 
 #ifdef _MSC_VER
@@ -33,9 +34,9 @@ public:
 term_file();
 ~term_file();
 public:
-void log(const string & tag, const string & msg, const severity s) const;
+void log(const std::string & tag, const std::string & msg, const severity s) const;
 private:
-string _format(const string & tag, const string & msg) const;
+std::string _format(const std::string & tag, const std::string & msg) const;
 private:
 #ifdef _MSC_VER
 const WORD _color[severity::S_MAX];
@@ -50,29 +51,37 @@ template <typename file_t>
 class log
 {
 public:
-    log():
+    log(const char* default_tag):
         _async(std::bind(&log::_log, this,
                          std::placeholders::_1,
                          std::placeholders::_2,
-                         std::placeholders::_3))
+                         std::placeholders::_3)),
+        _default_tag(default_tag)
     {}
     
 public:
-    void operator()(string tag, string msg, const severity s)
+    void operator()(std::string msg, const severity s)
     {
-        _async(tag, msg, s);
+        _async(_default_tag, std::move(msg), s);
+    }
+    void operator()(std::string tag, std::string msg, const severity s)
+    {
+        _async(std::move(tag), std::move(msg), s);
     }
 private:
-    void _log(const string & tag, const string & msg, const severity s)
+    void _log(const std::string & tag, const std::string & msg, const severity s)
     {
         _file.log(tag, msg, s);
     }
 private:
     file_t _file;
-    async<void, const string & , const string &, const severity> _async;
+    async<void, const std::string & , const std::string &, const severity> _async;
+    std::string _default_tag;
 };
 };
 
 extern logger::log<logger::term_file> cout;
+
+#define FS_SUN_DEBUG_LOG        /**TODO */
 
 FS_SUN_NS_END
