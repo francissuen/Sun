@@ -8,7 +8,6 @@
 #include <string>
 #include <type_traits>
 #include <unordered_map>
-#include <vector>
 
 #include "ns.h"
 
@@ -22,7 +21,7 @@ namespace string
  * \return String blocks are always returned and mapped by key std::pair<>::first of
  * pairedDelimiter.
  */
-    std::unordered_map<const std::string, std::string> extract_blocks(
+    std::vector<std::string> extract_blocks(
         const std::string & src,
         const std::vector<std::pair<std::string, std::string>>& pairedDelimiters);
     
