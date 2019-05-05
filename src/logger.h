@@ -68,6 +68,10 @@ public:
     {
         _async(std::move(tag), std::move(msg), s);
     }
+    void flush()
+    {
+        _async.wait_for_empty();
+    }
 private:
     void _log(const std::string & tag, const std::string & msg, const severity s)
     {

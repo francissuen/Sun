@@ -4,6 +4,8 @@
 
 #include "args.h"
 #include <cstdlib>
+#include "logger.h"
+
 using namespace fs::Sun;
 
 args::~args()
@@ -27,7 +29,7 @@ void args::register_namedArg(const char opt, const enmType type)
 }
 
 
-void args::parse(const int argc, char** argv)
+bool args::parse(const int argc, char** argv)
 {
     assert(argv != nullptr);
 
@@ -46,11 +48,19 @@ void args::parse(const int argc, char** argv)
             {
                 curOpt      = arg[j];
                 if (curOpt == '\0')
-                    throw string("unexpected '\\0' after '-' when expecting a opt");
+                {
+                    cout("unexpected '\\0' after '-' when expecting a opt",
+                         logger::S_ERROR);
+                    return false;
+                }
 
                 mpNamedArg_t::iterator i = _mpNamedArgs.find(curOpt);
                 if (i                    == _mpNamedArgs.end())
-                    throw string("unknown opt: ") + curOpt;
+                {
+                    cout(std::string("unknown opt: ") + curOpt, logger::S_ERROR);
+                    return false;
+                }
+
 
                 curNamedArg  = i->second;
                 curType      = curNamedArg->type;
@@ -60,7 +70,11 @@ void args::parse(const int argc, char** argv)
             else                //unnamed args
             {
                 if (*arg == '-')
-                    throw string("unexpected '-' when expecting a arg");
+                {
+                    cout("unexpected '-' when expecting a arg", logger::S_ERROR);
+                    return false;
+                }
+
 
                 _vUnnamedArgs.push_back(arg);
                 if (i       != 0) //argv[0] always is current executable path
@@ -70,7 +84,11 @@ void args::parse(const int argc, char** argv)
         else                    //arg
         {
             if (*arg == '-')
-                throw string("unexpected '-' when expecting a arg");
+            {
+                cout("unexpected '-' when expecting a arg", logger::S_ERROR);
+                return false;
+            }
+
             if (curType      == enmType::UNNAMED)
                 _vUnnamedArgs.push_back(arg);
             else if (curType == enmType::INT)
@@ -86,6 +104,7 @@ void args::parse(const int argc, char** argv)
             }
         }
     }
+    return true;
 }
 
 template<typename T>
@@ -93,7 +112,7 @@ T args::named_arg(const char opt)const
 {
     mpNamedArg_t::const_iterator i = _mpNamedArgs.find(opt);
     if (i                          == _mpNamedArgs.end())
-        throw string("unknown opt: ") + opt;
+        throw std::string("unknown opt: ") + opt;
     if (i->second->IsSupplied())
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -104,7 +123,7 @@ T args::named_arg(const char opt)const
 #pragma warning(pop)
 #endif
     else
-        throw string("unsupplied opt: ") + opt;
+        throw std::string("unsupplied opt: ") + opt;
 }
 
 bool args::has_named_arg(const char opt)const
@@ -122,6 +141,6 @@ template FS_SUN_EXPORT char* args::named_arg<char*>(const char opt)const;
 const char* args::unnamed_arg(const std::size_t idx)const
 {
     if (idx >= _vUnnamedArgs.size())
-        throw string("idx >= _vUnnamedargs idx:") + idx;
+        throw std::string("idx >= _vUnnamedargs idx:") + std::to_string(idx);
     return _vUnnamedArgs[idx];
 }

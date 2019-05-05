@@ -8,7 +8,7 @@ using namespace fs::Sun;
 
 #define _FS_SUN_LOGGER_DEFAULT_TAG_ "Sun"
 
-logger::log<logger::term_file> cout(_FS_SUN_LOGGER_DEFAULT_TAG_);
+logger::log<logger::term_file> fs::Sun::cout(_FS_SUN_LOGGER_DEFAULT_TAG_);
 
 /** ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS */
 logger::term_file::term_file():
@@ -52,9 +52,10 @@ void logger::term_file::log(const std::string & tag, const std::string & msg, co
     std::cout << _color[s];
     #endif
     std::cout << _format(tag, msg);
+    std::cout.flush();
 }
 
 std::string logger::term_file::_format(const std::string & tag, const std::string & msg) const
 {
-    return time::Instance().localtime() + "\n" + "@tag: " + tag + ", @msg: " + msg + "\n";
+    return time::Instance().localtime() + "@tag: " + tag + ", @msg: " + msg + "\n";
 }

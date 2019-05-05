@@ -91,19 +91,18 @@ private:
         {
             if(_quit.load())
                 break;
-            
             if(_pkgBuffer.size() > 0)
             {
-                _package_ pkg(std::move(_pkgBuffer.back()));
+                _package_ pkg(std::move(_pkgBuffer.front()));
                 _pkgBuffer.pop();
                 lck.unlock();
                 apply2promise(_func, std::move(pkg.params), pkg.ret);
+                lck.lock();
             }
             else
             {
                 _emptyCV.notify_all();
-                lck.lock();
-                _threadFuncCV.wait(lck);                
+                _threadFuncCV.wait(lck);
             }
         }
     }

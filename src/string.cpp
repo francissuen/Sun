@@ -6,11 +6,11 @@
 #include "logger.h"
 using namespace fs::Sun::string;
 
-std::unordered_map<const std::string, std::string> extract_blocks(
+std::vector<std::string> extract_blocks(
     const std::string & src,
     const std::vector<std::pair<std::string, std::string>>& pairedDelimiters)
 {
-    std::unordered_map<const std::string, std::string> ret;
+    std::vector<std::string> ret;
 
     for(const auto pd : pairedDelimiters)
     {
@@ -25,8 +25,7 @@ std::unordered_map<const std::string, std::string> extract_blocks(
 	    const size_t endPos = src.find(pd.second, blockStartPos);
 	    if (endPos != std::string::npos)
 	    {
-		ret.insert(std::make_pair(pd.first,
-                                          src.substr(blockStartPos, endPos - blockStartPos)));
+		ret.push_back(src.substr(blockStartPos, endPos - blockStartPos));
 	    }
 	}
     }

@@ -4,10 +4,11 @@
 
 #pragma once
 
+#include "ns.h"
+#include "config.h"
 #include <cassert>
 #include <unordered_map>
 #include <vector>
-#include "string.h"
 
 FS_SUN_NS_BEGIN
 
@@ -51,7 +52,7 @@ public:
 inline args(){}
 ~args();
 void               register_namedArg(const char opt, const enmType type);
-void               parse(const int argc, char** argv);
+bool               parse(const int argc, char** argv);
 template<typename T>
 T named_arg(const char opt)const;
 bool has_named_arg(const char opt)const;

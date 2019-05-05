@@ -20,6 +20,7 @@ std::string time::localtime() const
 #else
     ::ctime_r(&rawTime, buffer);
 #endif
+    ret.resize(std::strlen(ret.c_str()));
     return ret;
 }
 
