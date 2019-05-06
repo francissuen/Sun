@@ -43,7 +43,7 @@ const WORD _color[severity::S_MAX];
 HANDLE _hConsole;
 CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
 #else
-const string _color[severity::S_MAX];
+const std::string _color[severity::S_MAX];
 #endif
 };
 

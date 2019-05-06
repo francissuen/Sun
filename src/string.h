@@ -7,7 +7,7 @@
 #include "config.h"
 #include <string>
 #include <type_traits>
-#include <unordered_map>
+#include <vector>
 
 #include "ns.h"
 
@@ -37,8 +37,8 @@ namespace string
     template<typename string_0, typename string_1, typename string_2, typename ... string_n>
     std::string concat(string_0 && str0, string_1 && str1, string_2 && str2, string_n ... strn)
     {
-        concat(concat(std::forward<string_0>(str0), std::forward<string_1>(str1)),
-               str2, strn ...);
+        return concat(concat(std::forward<string_0>(str0), std::forward<string_1>(str1)),
+                      str2, strn ...);
     }
 
     template<typename string_0, typename string_1>
@@ -51,9 +51,9 @@ namespace string
     std::string concat_with_delimiter(const char* delimiter, string_0 && str0, string_1 && str1,
                                       string_2 && str2, string_n ... strn)
     {
-        concat(delimiter, concat(delimiter, std::forward<string_0>(str0),
-                                 std::forward<string_1>(str1)),
-               str2, strn ...);
+        return concat(delimiter, concat(delimiter, std::forward<string_0>(str0),
+                                        std::forward<string_1>(str1)),
+                      str2, strn ...);
     }
 }
 

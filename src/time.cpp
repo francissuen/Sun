@@ -5,7 +5,7 @@
 #include "time.h"
 #include <ctime>
 #include <chrono>
-
+#include <cstring>
 #define _FS_SUN_TIMEBUFFER_MAX_LEN_ 128
 
 using namespace fs::Sun;
@@ -26,5 +26,6 @@ std::string time::localtime() const
 
 std::uint64_t time::timestamp()const
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
 }

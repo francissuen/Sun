@@ -4,6 +4,7 @@
 
 #include "string.h"
 #include "logger.h"
+#include <cstring>
 using namespace fs::Sun::string;
 
 std::vector<std::string> extract_blocks(
@@ -38,7 +39,7 @@ std::vector<std::string> split(const std::string & src, const char* delimeter)
     FS_SUN_ASSERT(delimeter != nullptr);
     std::vector<std::string> ret;
     size_t curPos = 0;
-    const size_t dlmtrLen = strlen(delimeter);
+    const size_t dlmtrLen = std::strlen(delimeter);
     while(true)
     {
 	const size_t pos = src.find(delimeter, curPos);
