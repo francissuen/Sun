@@ -4,6 +4,7 @@
 
 #include "string.h"
 #include "logger.h"
+#include "debug.h"
 #include <cstring>
 using namespace fs::Sun::string;
 

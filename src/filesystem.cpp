@@ -5,6 +5,7 @@
 #include "filesystem.h"
 #include "logger.h"
 #include "string.h"
+#include "debug.h"
 #ifdef __GNUC__
 #include <unistd.h>
 #elif _MSC_VER
