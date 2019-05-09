@@ -3,7 +3,7 @@
  */
 
 #pragma once
-#include "common.h"
+#include "singleton.h"
 #include "string.h"
 
 FS_SUN_NS_BEGIN

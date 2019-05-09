@@ -28,10 +28,3 @@
         }                                                               \
     }
 #endif
-
-
-FS_SUN_NS_BEGIN
-
-
-
-FS_SUN_NS_END

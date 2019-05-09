@@ -4,7 +4,7 @@
 
 #pragma once
 #include "config.h"
-#include "common.h"
+#include "singleton.h"
 #include <vector>
 #include <unordered_set>
 #include <string>

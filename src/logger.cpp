@@ -57,5 +57,5 @@ void logger::term_file::log(const std::string & tag, const std::string & msg, co
 
 std::string logger::term_file::_format(const std::string & tag, const std::string & msg) const
 {
-    return time::Instance().localtime() + "@tag: " + tag + ", @msg: " + msg + "\n";
+    return time::instance().localtime() + "@tag: " + tag + ", @msg: " + msg + "\n";
 }
