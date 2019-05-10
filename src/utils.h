@@ -94,9 +94,9 @@ void apply2promise(func_t && f, tuple_t && t,
     promise.set_value(apply(std::forward<func_t>(f), std::forward<tuple_t>(t)));
 }
 
-/**********/
+/*****************/
 /** index_of_seq */
-/**********/
+/*****************/
 template<typename T, typename ... SEQ>
 struct _index_of_seq;
 
@@ -118,35 +118,98 @@ struct _index_of_seq<T>
 template<typename T, typename ... SEQ>
 struct index_of_seq
 {
-    static constexpr std::uint8_t invalide_value = std::numeric_limits<std::uint8_t>::max();
+    static constexpr std::uint8_t npos = std::numeric_limits<std::uint8_t>::max();
     static constexpr std::uint8_t _other_count = _index_of_seq<T, SEQ...>::value;
-    static_assert(_other_count != invalide_value, "T is not in SET");
-    static constexpr typename std::enable_if<_other_count != invalide_value, std::uint8_t>::type
-    value = sizeof...(SEQ) - _other_count - 1;
-
+    static constexpr std::uint8_t value = _other_count != npos? sizeof...(SEQ) - _other_count - 1 : npos;
 };
+
+/****************/
+/** type of seq */
+/****************/
+template<std::uint8_t index, std::uint8_t cur_index, typename ... SEQ>
+struct _type_of_seq;
+
+template<std::uint8_t index, std::uint8_t cur_index, typename _0_t, typename _1_t, typename ... _n_t>
+struct _type_of_seq<index, cur_index, _0_t, _1_t, _n_t ...>
+{
+    using type = typename std::conditional<index == cur_index,
+                                           _0_t,
+                                           typename _type_of_seq<
+                                               index, cur_index+1, _1_t, _n_t ...>::type>::type;
+};
+
+template<std::uint8_t index, std::uint8_t cur_index, typename last_t>
+struct _type_of_seq<index, cur_index, last_t>
+{
+    using type = typename std::enable_if<index == cur_index, last_t>::type;
+};
+
+template<std::uint8_t index, typename ... SEQ>
+struct type_of_seq
+{
+    using type = typename _type_of_seq<index, (std::uint8_t)0u, SEQ...>::type;
+};
+
 /***********************/
 /** for_each for types */
 /***********************/
-template<template<typename> class func_t, typename _0_t, typename _1_t, typename ... _n_t>
-void _for_each(std::uint8_t idx, func_t<_0_t> func)
+template<template<typename> class func_t, typename last_t>
+void _for_each(std::uint8_t idx)
 {
+    static constexpr func_t<last_t> func;
+    func(idx);
+}
+
+template<template<typename> class func_t, typename _0_t, typename _1_t, typename ... _n_t>
+void _for_each(std::uint8_t idx)
+{
+    static constexpr func_t<_0_t> func;
     func(idx);
     idx++;
-    _for_each<func_t, _1_t, _n_t ...>(idx, func_t<_1_t>{});
+    _for_each<func_t, _1_t, _n_t ...>(idx);
 }
-template<template<typename> class func_t, typename _0_t>
-void _for_each(std::uint8_t idx, func_t<_0_t> func)
-{
-    func(idx);
-}
+
 /**
- *  \brief for each T in Ts do func_t<T>(std::uint8_t idx)
+ * \brief For each T in Ts do func_t<T>(std::uint8_t idx).
  */
 template<template<typename> class func_t, typename _0_t, typename ... _n_t>
 void for_each()
 {
-    _for_each<func_t, _0_t, _n_t ...>((std::uint8_t)0u, func_t<_0_t>{});
+    _for_each<func_t, _0_t, _n_t ...>((std::uint8_t)0u);
 }
+/***************/
+/** static_and */
+/***************/
+/** 
+ * \brief value = (func_t<SET>::value &&)...
+ */
+template<template<typename> class func_t, typename ... SET>
+struct static_and;
+template<template<typename> class func_t, typename _0_t, typename _1_t, typename ... _n_t>
+struct static_and<func_t, _0_t, _1_t, _n_t ...>
+{
+    static constexpr bool value = func_t<_0_t>::value && static_and<func_t, _1_t, _n_t ...>::value;
+};
+template<template<typename> class func_t, typename last_t>
+struct static_and<func_t, last_t>
+{
+    static constexpr bool value = func_t<last_t>::value;
+};
 
+/**************/
+/** is_one_of */
+/**************/
+template<typename ... T>
+struct is_one_of;
+
+template<typename T, typename _0_t, typename _1_t, typename ... _n_t>
+struct is_one_of<T, _0_t, _1_t, _n_t ...>
+{
+    static constexpr bool value = std::is_same<T, _0_t>::value? true : is_one_of<T, _1_t, _n_t ...>::value;
+};
+template<typename T, typename last_t>
+struct is_one_of<T, last_t>
+{
+    static constexpr bool value = std::is_same<T, last_t>::value;
+};
 FS_SUN_NS_END

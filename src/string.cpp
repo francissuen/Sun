@@ -66,3 +66,8 @@ std::string file_extension(const std::string & src)
     else
         return src.substr(pos + 1);
 }
+
+std::string std::to_string(const bool value)
+{
+    return value? "true" : "false";
+}

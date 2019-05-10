@@ -58,3 +58,8 @@ namespace string
 }
 
 FS_SUN_NS_END
+
+namespace std
+{
+    std::string to_string(const bool value);
+}
