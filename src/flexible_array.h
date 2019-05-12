@@ -11,11 +11,14 @@
 FS_SUN_NS_BEGIN
 
 template<typename T>
-class flexible_vector
+class flexible_array
 {
 public:
-    flexible_vector(const std::size_t size):
-        _data(size),
+    using data_t = typename std::aligned_storage<sizeof(T), alignof(T)>::type;
+public:
+    flexible_array(const std::size_t capacity):
+        _data(new data_t[capacity]),
+        _capacity(capacity),
         _beginItr(0),
         _endItr(size)
     {}
@@ -26,32 +29,32 @@ public:
     }
     T * data()
     {
-        return _data.data() + _beginItr;
+        return _data + _beginItr;
     }
     const T * data() const
     {
-        return const_cast<flexible_vector*>(this)->data();
+        return const_cast<flexible_array*>(this)->data();
     }
     void set_begin(const std::size_t new_begin)
     {
-        FS_SUN_ASSERT(new_begin < _data.size());
+        FS_SUN_ASSERT(new_begin < _capacity);
         _beginItr = new_begin;
     }
     void begin_increase(const std::size_t begin_offset)
     {
         _beginItr += begin_offset;
-        FS_SUN_ASSERT(_beginItr < _data.size());
+        FS_SUN_ASSERT(_beginItr < _capacity);
     }
 
     void set_end(const std::size_t new_end)
     {
-        FS_SUN_ASSERT(new_end < _data.size() && new_end > _beginItr);
+        FS_SUN_ASSERT(new_end < _capacity && new_end > _beginItr);
         _endItr = new_end;
     }
 
 private:
-    std::vector<T> _data;
-    std::size_t _beginItr, _endItr;
+    data_t * _data;
+    std::size_t _capacity, _beginItr, _endItr;
 };
 
 FS_SUN_NS_END
