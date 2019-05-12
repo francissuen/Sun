@@ -20,7 +20,7 @@ public:
         _data(new data_t[capacity]),
         _capacity(capacity),
         _beginItr(0),
-        _endItr(size)
+        _endItr(capacity - 1)
     {}
 public:
     std::size_t size() const
@@ -29,7 +29,7 @@ public:
     }
     T * data()
     {
-        return _data + _beginItr;
+        return reinterpret_cast<T*>(_data) + _beginItr;
     }
     const T * data() const
     {

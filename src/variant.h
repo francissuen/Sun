@@ -90,7 +90,7 @@ public:
     template<typename T>
     const T & raw_get() const noexcept
     {
-        return const_cast<variant*>(this)->raw_get();
+        return const_cast<variant*>(this)->raw_get<T>();
     }
 
     template<typename T>
@@ -106,7 +106,7 @@ public:
     template<typename T>
     const T & get() const
     {
-        return const_cast<variant*>(this)->get();
+        return const_cast<variant*>(this)->get<T>();
     }
 
 private:
