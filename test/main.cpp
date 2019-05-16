@@ -1,6 +1,8 @@
 #include "../src/logger.h"
 #include "../src/variant.h"
 #include "../src/string.h"
+#include "../src/factory.h"
+
 using namespace fs::Sun;
 
 struct stTest
@@ -16,6 +18,7 @@ struct stTest
     }
     const int a;
 };
+
 int main(int argc, char ** argv)
 {
     cout("hello world!", logger::S_VERBOSE);
@@ -43,7 +46,19 @@ int main(int argc, char ** argv)
     v = 1;
     cout("v @idx: " + std::to_string(v.index()), logger::S_INFO);
     
-    cout.flush();    
+    cout.flush();
+
+    struct A{};
+    struct B: public A{B(int){}};
+    struct C: public A{C(int){}};
+
+    const factory<A, int> f = factory<A, int>::with<B, C>();
+    using order_info = factory<A, int>::with<B, C>;
+    std::unique_ptr<A> a = f.create(order_info::order_num_of<B>(), 1);
+    
+    const static_factory<A, B, C>::with_ctor_t<int> f2;
+    std::unique_ptr<A> a2 = f2.create(static_factory<A, B, C>::order_num_of<B>(), 1);
+    
     ::getchar();
     return 0;
 }

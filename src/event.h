@@ -4,8 +4,10 @@
 
 #pragma once
 
+#include "ns.h"
 #include <unordered_map>
 
+FS_SUN_NS_BEGIN
 
 template<typename event_t, typename callback_t, typename callback_tag_t = std::uintptr_t>
 class event
@@ -51,3 +53,5 @@ public:
 private:
     std::unordered_map<event_t, std::unordered_map<callback_tag_t, callback_t>> _callbacks;
 };
+
+FS_SUN_NS_END

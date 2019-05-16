@@ -30,7 +30,7 @@ public:
                                           static_max<std::size_t, alignof(Ele_t)...>::value>::type data_t;
 
 public:
-    static constexpr std::uint8_t npos = std::numeric_limits<std::uint8_t>::max();
+    static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 public:
     variant():
         _idx(npos)
@@ -55,13 +55,13 @@ public:
         static_assert(is_one_of<T, Ele_t ...>::value, "T is not one of Ele_t");
         _call_dtor();
         new (&_data) T(std::forward<T>(t));
-        static constexpr std::uint8_t idx = index_of_seq<T, Ele_t ...>::value;
+        static constexpr std::size_t idx = index_of_seq<T, Ele_t ...>::value;
         static_assert(idx != index_of_seq<T, Ele_t ...>::npos,
                       "_idx is index_of_seq::npos");
         _idx = idx;
     }
 
-    std::uint8_t index() const
+    std::size_t index() const
     {
         return _idx;
     }
@@ -70,7 +70,7 @@ public:
     bool is() const
     {
         static_assert(is_one_of<T, Ele_t ...>::value, "T is not one of Ele_t");
-        static constexpr std::uint8_t idx = index_of_seq<T, Ele_t ...>::value;
+        static constexpr std::size_t idx = index_of_seq<T, Ele_t ...>::value;
         return _idx == idx;
     }
 
@@ -96,7 +96,7 @@ public:
     template<typename T>
     T & get()
     {
-        static constexpr std::uint8_t idx = index_of_seq<T, Ele_t ...>::value;
+        static constexpr std::size_t idx = index_of_seq<T, Ele_t ...>::value;
         if(idx != index_of_seq<T, Ele_t ...>::npos)
             return raw_get<T>();
         else
@@ -113,7 +113,7 @@ private:
     template<typename T>
     struct _store_dtor
     {
-        void operator()(const std::uint8_t idx) const
+        void operator()(const std::size_t idx) const
         {
             if(std::is_class<T>::value)
                 _dtors.insert(std::make_pair(idx, [](void* ptr)
@@ -132,11 +132,11 @@ private:
     
 private:
     data_t _data;
-    std::uint8_t _idx;
-    static std::unordered_map<std::uint8_t, std::function<void(void*)>> _dtors;
+    std::size_t _idx;
+    static std::unordered_map<std::size_t, std::function<void(void*)>> _dtors;
 };
 
 template<typename ... Ele_t>
-std::unordered_map<std::uint8_t, std::function<void(void*)>> variant<Ele_t ...>::_dtors;
+std::unordered_map<std::size_t, std::function<void(void*)>> variant<Ele_t ...>::_dtors;
 
 FS_SUN_NS_END

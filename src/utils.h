@@ -103,13 +103,13 @@ struct _index_of_seq;
 template<typename T, typename First, typename ... Other>
 struct _index_of_seq<T, First, Other...>
 {
-    static constexpr std::uint8_t value = std::is_same<T, First>::value? sizeof...(Other) :
+    static constexpr std::size_t value = std::is_same<T, First>::value? sizeof...(Other) :
     _index_of_seq<T, Other...>::value;
 };
 template<typename T>
 struct _index_of_seq<T>
 {
-    static constexpr std::uint8_t value = std::numeric_limits<std::uint8_t>::max();
+    static constexpr std::size_t value = std::numeric_limits<std::size_t>::max();
 };
 
 /**
@@ -118,18 +118,18 @@ struct _index_of_seq<T>
 template<typename T, typename ... SEQ>
 struct index_of_seq
 {
-    static constexpr std::uint8_t npos = std::numeric_limits<std::uint8_t>::max();
-    static constexpr std::uint8_t _other_count = _index_of_seq<T, SEQ...>::value;
-    static constexpr std::uint8_t value = _other_count != npos? sizeof...(SEQ) - _other_count - 1 : npos;
+    static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
+    static constexpr std::size_t _other_count = _index_of_seq<T, SEQ...>::value;
+    static constexpr std::size_t value = _other_count != npos? sizeof...(SEQ) - _other_count - 1 : npos;
 };
 
 /****************/
 /** type of seq */
 /****************/
-template<std::uint8_t index, std::uint8_t cur_index, typename ... SEQ>
+template<std::size_t index, std::size_t cur_index, typename ... SEQ>
 struct _type_of_seq;
 
-template<std::uint8_t index, std::uint8_t cur_index, typename _0_t, typename _1_t, typename ... _n_t>
+template<std::size_t index, std::size_t cur_index, typename _0_t, typename _1_t, typename ... _n_t>
 struct _type_of_seq<index, cur_index, _0_t, _1_t, _n_t ...>
 {
     using type = typename std::conditional<index == cur_index,
@@ -138,62 +138,63 @@ struct _type_of_seq<index, cur_index, _0_t, _1_t, _n_t ...>
                                                index, cur_index+1, _1_t, _n_t ...>::type>::type;
 };
 
-template<std::uint8_t index, std::uint8_t cur_index, typename last_t>
+template<std::size_t index, std::size_t cur_index, typename last_t>
 struct _type_of_seq<index, cur_index, last_t>
 {
     using type = typename std::enable_if<index == cur_index, last_t>::type;
 };
 
-template<std::uint8_t index, typename ... SEQ>
+template<std::size_t index, typename ... SEQ>
 struct type_of_seq
 {
-    using type = typename _type_of_seq<index, (std::uint8_t)0u, SEQ...>::type;
+    using type = typename _type_of_seq<index, (std::size_t)0u, SEQ...>::type;
 };
 
 /***********************/
 /** for_each for types */
 /***********************/
-template<template<typename> class func_t, typename last_t>
-void _for_each(std::uint8_t idx)
+template<template<typename> class functor_t, typename last_t>
+void _for_each(std::size_t idx)
 {
-    static constexpr func_t<last_t> func;
+    static constexpr functor_t<last_t> func;
     func(idx);
 }
 
-template<template<typename> class func_t, typename _0_t, typename _1_t, typename ... _n_t>
-void _for_each(std::uint8_t idx)
+template<template<typename> class functor_t, typename _0_t, typename _1_t, typename ... _n_t>
+void _for_each(std::size_t idx)
 {
-    static constexpr func_t<_0_t> func;
+    static constexpr functor_t<_0_t> func;
     func(idx);
     idx++;
-    _for_each<func_t, _1_t, _n_t ...>(idx);
+    _for_each<functor_t, _1_t, _n_t ...>(idx);
 }
 
 /**
- * \brief For each T in Ts do func_t<T>(std::uint8_t idx).
+ * \brief For each T in Ts do functor_t<T>(std::size_t idx).
+ * \note fonctor's ctor accepts zero argument.
  */
-template<template<typename> class func_t, typename _0_t, typename ... _n_t>
+template<template<typename> class functor_t, typename _0_t, typename ... _n_t>
 void for_each()
 {
-    _for_each<func_t, _0_t, _n_t ...>((std::uint8_t)0u);
+    _for_each<functor_t, _0_t, _n_t ...>((std::size_t)0u);
 }
 /***************/
 /** static_and */
 /***************/
 /** 
- * \brief value = (func_t<SET>::value &&)...
+ * \brief value = (type_t<SET>::value &&)...
  */
-template<template<typename> class func_t, typename ... SET>
+template<template<typename> class type_t, typename ... SET>
 struct static_and;
-template<template<typename> class func_t, typename _0_t, typename _1_t, typename ... _n_t>
-struct static_and<func_t, _0_t, _1_t, _n_t ...>
+template<template<typename> class type_t, typename _0_t, typename _1_t, typename ... _n_t>
+struct static_and<type_t, _0_t, _1_t, _n_t ...>
 {
-    static constexpr bool value = func_t<_0_t>::value && static_and<func_t, _1_t, _n_t ...>::value;
+    static constexpr bool value = type_t<_0_t>::value && static_and<type_t, _1_t, _n_t ...>::value;
 };
-template<template<typename> class func_t, typename last_t>
-struct static_and<func_t, last_t>
+template<template<typename> class type_t, typename last_t>
+struct static_and<type_t, last_t>
 {
-    static constexpr bool value = func_t<last_t>::value;
+    static constexpr bool value = type_t<last_t>::value;
 };
 
 /**************/
