@@ -8,6 +8,7 @@
 #include <functional>
 #include <memory>
 #include "logger.h"
+#include "debug.h"
 
 FS_SUN_NS_BEGIN
 
@@ -20,6 +21,7 @@ public:
     using order_num_t = factory_order_num_t;
     using goods_base_t = base_t;
     using ctor_t = std::function<std::unique_ptr<goods_base_t>(ctor_args_t ...)>;
+    using in_place_ctor_t = std::function<std::unique_ptr<goods_base_t>(void*, ctor_args_t ...)>;
     template<typename ... goods_t>
     friend class take_order;
 
@@ -54,6 +56,19 @@ private:
         }
     };
 
+    template<typename T, typename ... goods_t>
+    struct _construct_in_place
+    {
+        operator std::pair<const order_num_t, in_place_ctor_t>()
+        {
+            /** non-odr-used version */
+            static constexpr order_num_t order_num = index_of_seq<T, goods_t ...>::value;
+            return {order_num, [](void* addr, ctor_args_t ... args) -> std::unique_ptr<base_t>{
+                    return std::unique_ptr<base_t>(new (addr) T(args ...));}};
+        }
+    };
+
+
 public:
     std::unique_ptr<goods_base_t> create(const order_num_t order_num, ctor_args_t ... args) const
     {
@@ -67,15 +82,34 @@ public:
         }
     }
 
+    std::unique_ptr<goods_base_t> create_in_place(void * const addr,
+                                                  const order_num_t order_num,
+                                                  ctor_args_t ... args) const
+    {
+        FS_SUN_ASSERT(addr != nullptr);
+        const auto & itr = _in_place_ctors.find(order_num);
+        if(itr != _ctors.end())
+            return itr->second(addr, args ...);
+        else
+        {
+            cout("No corresponding ctor found @order_num: " + std::to_string(order_num), logger::S_ERROR);
+            return nullptr;
+        }
+    }
+
+
 private:
     template <typename ... goods_t>
     void construct()
     {
         _ctors = std::unordered_map<order_num_t, ctor_t>{_construct<goods_t, goods_t ... >() ...};
+        _in_place_ctors = std::unordered_map<order_num_t, in_place_ctor_t>{
+            _construct_in_place<goods_t, goods_t ... >() ...};
     }
 
 private:
     std::unordered_map<order_num_t, ctor_t> _ctors;
+    std::unordered_map<order_num_t, in_place_ctor_t> _in_place_ctors;
 };
 
 
