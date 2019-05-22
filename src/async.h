@@ -26,7 +26,29 @@ private:
         std::promise<ret_t> ret;
         std::tuple<typename std::decay<param_t>::type ...> params;
     };
-    
+
+    template<typename T>
+    struct _param_t_validator
+    {
+        static constexpr bool value = std::is_reference<T>::value?
+        std::is_const<typename std::remove_reference<T>::type>::value : true;
+    };
+
+    static_assert(std::conditional<sizeof...(param_t) == 0,
+                  std::true_type,
+                  static_and<_param_t_validator, param_t ...>>::type::value,
+                  "param_t only accepts const reference or non-reference type");
+
+    /** template <typename T> */
+    /** struct testT */
+    /** { */
+    /**     static constexpr bool value = true;   */
+    /** }; */
+
+    /** void foo() */
+    /** { */
+    /**     bool v = testT<int>::value; */
+    /** } */
 public:
     async(const typename std::function<ret_t(param_t ...)> & func,
           const std::uint8_t threadCount = 1):

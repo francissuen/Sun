@@ -2,6 +2,7 @@
 #include "../src/variant.h"
 #include "../src/string.h"
 #include "../src/factory.h"
+#include "../src/string.h"
 
 using namespace fs::Sun;
 
@@ -54,9 +55,6 @@ int main(int argc, char ** argv)
 
     const factory<A, int> f = factory<A, int>::with<B, C>();
     std::unique_ptr<A> a = f.create(factory<A, int>::with<B, C>::order_num_of<B>(), 1);
-    
-    const static_factory<A, B, C>::with_ctor_t<int> f2;
-    std::unique_ptr<A> a2 = f2.create(static_factory<A, B, C>::order_num_of<B>(), 1);
     
     ::getchar();
     return 0;
