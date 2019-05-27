@@ -24,18 +24,18 @@ public:
     {}
 
 public:
-    range_viewer sub_viewer(const std::size_t new_begin, const std::size_t new_size)
+    range_viewer sub_viewer(const std::ptrdiff_t begin_offset, const std::size_t new_size)
     {
         range_viewer ret(*this);
-        ret.set_begin(new_begin);
-        ret.set_end(new_begin + new_size);
+        ret.advance_begin(begin_offset);
+        ret.set_end(ret._begin + new_size);
         return ret;
     }
     
-    range_viewer sub_viewer(const std::size_t new_begin)
+    range_viewer sub_viewer(const std::size_t begin_offset)
     {
         range_viewer ret(*this);
-        ret.set_begin(new_begin);
+        ret.advance_begin(begin_offset);
         return ret;
     }
 
