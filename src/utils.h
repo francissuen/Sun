@@ -165,32 +165,36 @@ struct type_of_seq
 /** for_each for types */
 /***********************/
 /**
- * \brief invoke functor_t<T>() for each T in Ts.
+ * \brief invoke functor_t<T> with args for each T in Ts.
  * \note fonctor's ctor accepts zero argument, and will be finally bound by stack size.
  */
-template<template<typename> class functor_t, typename ... functor_ctor_args_t>
+template<template<typename> class functor_t>
 struct invoke
 {
-    template<typename last_t>
-    static void _for_each(functor_ctor_args_t ... functor_ctor_args)
+    template<typename ... args_t>
+    struct with
     {
-        functor_t<last_t> func(functor_ctor_args ...);
-        func();
-    }
+        template<typename last_t>
+        static void _for_each(args_t ... args)
+        {
+            functor_t<last_t> func;
+            func(args ...);
+        }
 
-    template<typename _0_t, typename _1_t, typename ... _n_t>
-    static void _for_each(functor_ctor_args_t ... functor_ctor_args)
-    {
-        functor_t<_0_t> func(functor_ctor_args ...);
-        func();
-        _for_each<_1_t, _n_t ...>(functor_ctor_args ...);
-    }
+        template<typename _0_t, typename _1_t, typename ... _n_t>
+        static void _for_each(args_t ... args)
+        {
+            functor_t<_0_t> func;
+            func(args ...);
+            _for_each<_1_t, _n_t ...>(args ...);
+        }
 
-    template<typename _0_t, typename ... _n_t>
-    static void for_each(functor_ctor_args_t ... functor_ctor_args)
-    {
-        _for_each<_0_t, _n_t ...>(functor_ctor_args ...);
-    }
+        template<typename _0_t, typename ... _n_t>
+        static void for_each(args_t ... args)
+        {
+            _for_each<_0_t, _n_t ...>(args ...);
+        }
+    };
 };
 
 /***************/

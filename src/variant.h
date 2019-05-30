@@ -48,7 +48,7 @@ public:
     variant():
         _idx(npos)
     {
-        invoke<_store_dtor>::template for_each<Ele_t ...>();        
+        invoke<_store_dtor>::template with<>::template for_each<Ele_t ...>();        
     }
 
     
