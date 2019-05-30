@@ -153,31 +153,35 @@ struct type_of_seq
 /***********************/
 /** for_each for types */
 /***********************/
-template<template<typename> class functor_t, typename last_t>
-void _for_each(std::size_t idx)
-{
-    static constexpr functor_t<last_t> func;
-    func(idx);
-}
-
-template<template<typename> class functor_t, typename _0_t, typename _1_t, typename ... _n_t>
-void _for_each(std::size_t idx)
-{
-    static constexpr functor_t<_0_t> func;
-    func(idx);
-    idx++;
-    _for_each<functor_t, _1_t, _n_t ...>(idx);
-}
-
 /**
- * \brief For each T in Ts do functor_t<T>(std::size_t idx).
- * \note fonctor's ctor accepts zero argument.
+ * \brief invoke functor_t<T>() for each T in Ts.
+ * \note fonctor's ctor accepts zero argument, and will be finally bound by stack size.
  */
-template<template<typename> class functor_t, typename _0_t, typename ... _n_t>
-void for_each()
+template<template<typename> class functor_t, typename ... functor_ctor_args_t>
+struct invoke
 {
-    _for_each<functor_t, _0_t, _n_t ...>((std::size_t)0u);
-}
+    template<typename last_t>
+    static void _for_each(functor_ctor_args_t ... functor_ctor_args)
+    {
+        functor_t<last_t> func(functor_ctor_args ...);
+        func();
+    }
+
+    template<typename _0_t, typename _1_t, typename ... _n_t>
+    static void _for_each(functor_ctor_args_t ... functor_ctor_args)
+    {
+        functor_t<_0_t> func(functor_ctor_args ...);
+        func();
+        _for_each<_1_t, _n_t ...>(functor_ctor_args ...);
+    }
+
+    template<typename _0_t, typename ... _n_t>
+    static void for_each(functor_ctor_args_t ... functor_ctor_args)
+    {
+        _for_each<_0_t, _n_t ...>(functor_ctor_args ...);
+    }
+};
+
 /***************/
 /** static_and */
 /***************/
