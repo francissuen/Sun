@@ -29,13 +29,26 @@ public:
     typedef typename std::aligned_storage<static_max<std::size_t, sizeof(Ele_t)...>::value,
                                           static_max<std::size_t, alignof(Ele_t)...>::value>::type data_t;
 
+    template<typename T>
+    struct _store_dtor
+    {
+        void operator()() const
+        {
+            if(std::is_class<T>::value)
+                _dtors.insert(std::make_pair(index_of_seq<T, Ele_t ...>::value, [](void* ptr)
+                                             {
+                                                 ((T*)ptr)->~T();
+                                             }));
+        }
+    };
+
 public:
     static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 public:
     variant():
         _idx(npos)
     {
-        for_each<_store_dtor, Ele_t...>();        
+        invoke<_store_dtor>::template for_each<Ele_t ...>();        
     }
 
     
@@ -110,19 +123,6 @@ public:
     }
 
 private:
-    template<typename T>
-    struct _store_dtor
-    {
-        void operator()(const std::size_t idx) const
-        {
-            if(std::is_class<T>::value)
-                _dtors.insert(std::make_pair(idx, [](void* ptr)
-                                             {
-                                                 ((T*)ptr)->~T();
-                                             }));
-        }
-    };
-
     inline void _call_dtor()
     {
         const auto dtor = _dtors.find(_idx);

@@ -123,6 +123,17 @@ struct index_of_seq
     static constexpr std::size_t value = _other_count != npos? sizeof...(SEQ) - _other_count - 1 : npos;
 };
 
+template<typename T, typename ... SEQ>
+constexpr std::size_t index_of_seq<T, SEQ ...>::npos;
+
+template<typename T, typename ... SEQ>
+constexpr std::size_t index_of_seq<T, SEQ ...>::_other_count;
+
+
+template<typename T, typename ... SEQ>
+constexpr std::size_t index_of_seq<T, SEQ ...>::value;
+
+
 /****************/
 /** type of seq */
 /****************/
