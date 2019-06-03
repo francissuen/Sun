@@ -23,3 +23,4 @@ fsCMake/
 fsCMake.tar.xz
 build.sh
 README.html
+.vscode/

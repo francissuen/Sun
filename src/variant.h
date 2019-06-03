@@ -22,7 +22,7 @@ private:
     template<typename T>
     struct _is_valid_type
     {
-        static constexpr bool value = ((not std::is_const<T>::value) and (not std::is_reference<T>::value));
+        static constexpr bool value = ((! std::is_const<T>::value) && (! std::is_reference<T>::value));
     };
     static_assert(static_and<_is_valid_type, Ele_t ...>::value, "not all types in Ele_t are valid type");
 public:
@@ -43,6 +43,9 @@ public:
     };
 
 public:
+#ifdef _MSC_VER
+#undef max
+#endif
     static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 public:
     variant():

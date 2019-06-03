@@ -4,7 +4,7 @@ except ImportError:
     import subprocess
     import sys
     subprocess.run([sys.executable, "-m", "pip", "install",
-                    "git+https://github.com/francissuen/mars.git@master"])
+                    "git+ssh://git@github.com/francissuen/mars.git@master"])
     from mars import dependency
 
 fsCMake = {
