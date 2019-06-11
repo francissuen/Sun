@@ -85,7 +85,7 @@ else()
   set(bin_regex ${FS_PKG_BIN_SHARED_SUFFIX_REGEX})
 endif()
 
-fs_gen_fs_pkg_sh(Sun
+fs_gen_fs_pkg_py(Sun
   ${CMAKE_CURRENT_SOURCE_DIR}/src
   ${CMAKE_CURRENT_SOURCE_DIR}/bin "${bin_regex}")
 
