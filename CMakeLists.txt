@@ -80,15 +80,13 @@ fs_gen_fs_proj(srcs)
 
 set(bin_regex)
 if(FS_SUN_STATIC_LIB)
-  set(bin_regex ".*\\.${bin_suffix}$")
-elseif(MSVC_VERSION)
-  set(bin_regex "\\(.*\\.dll$\\)\\|\\(.*\\.lib$\\)")
+  set(bin_regex ${FS_PKG_BIN_STATIC_SUFFIX_REGEX})
 else()
-  set(bin_regex ".*\\.${bin_suffix}$")
+  set(bin_regex ${FS_PKG_BIN_SHARED_SUFFIX_REGEX})
 endif()
 
 fs_gen_fs_pkg_sh(Sun
-  ${CMAKE_CURRENT_SOURCE_DIR}/src ".*\\.h"
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
   ${CMAKE_CURRENT_SOURCE_DIR}/bin "${bin_regex}")
 
 add_subdirectory(test)

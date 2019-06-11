@@ -7,16 +7,13 @@ except ImportError:
                     "git+ssh://git@github.com/francissuen/mars.git@master"])
     from mars import dependency
 
-fsCMake = {
-    "name": "fsCMake",
-    "ver": "v0.0.0",
-    "addr": """\
-https://github.com/francissuen/fsCMake/releases/download/{0}/fsCMake.tar.xz"""}
-
-fsCMake["addr"] = fsCMake["addr"].format(fsCMake["ver"])
-
+    
 deps = dependency.Dependency()
 
+fsCMake = {
+    "src_path": """\
+https://github.com/francissuen/fsCMake/releases/download/{0}/fsCMake.tar.xz"""}
+fsCMake["src_path"] = fsCMake["src_path"].format("v0.1.0-alpha")
 deps.add(dependency.DepInfo(fsCMake))
 
 deps.fix()

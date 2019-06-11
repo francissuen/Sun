@@ -24,3 +24,6 @@ fsCMake.tar.xz
 build.sh
 README.html
 .vscode/
+Sun/
+fs_pkg.py
+build.py
