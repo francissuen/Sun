@@ -134,7 +134,7 @@ private:
     std::mutex _pkgBufferMtx;
     std::condition_variable _threadFuncCV;
     std::queue<_package_> _pkgBuffer;
-    const std::function<void(param_t ...)> _func;
+    const std::function<ret_t(param_t ...)> _func;
     std::atomic_bool _quit;
     std::condition_variable _emptyCV;
 };
