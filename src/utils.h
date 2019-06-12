@@ -11,6 +11,12 @@
 
 FS_SUN_NS_BEGIN
 
+#ifdef _MSC_VER
+#ifdef max
+#undef max
+#endif
+#endif
+
 template<typename _0_t, typename _1_t>
 _0_t & max(const _0_t & _0, const _1_t & _1)
 {
