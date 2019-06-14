@@ -11,160 +11,166 @@
 
 FS_SUN_NS_BEGIN
 
-#ifdef _MSC_VER
-#ifdef max
-#undef max
-#endif
-#endif
-
-template<typename _0_t, typename _1_t>
-_0_t & max(const _0_t & _0, const _1_t & _1)
+template<typename T0, typename T1>
+T0 & Max(const T0 & t0, const T1 & t1)
 {
-    return _0 > _1? _0 : _1;
+    return t0 > t1? t0 : t1;
 }
 
-template<typename _0_t, typename _1_t, typename _2_t, typename ... other_t>
-_0_t & max(const _0_t & _0, const _1_t & _1, const _2_t & _2, other_t & ... other)
+template<typename T0, typename T1, typename T2, typename ... Tn>
+T0 & Max(const T0 & t0, const T1 & t1, const T2 & t2, Tn & ... tn)
 {
-    _0_t & _x = max(other...);
-    return _0 > _x? _0 : _x;
+    T0 & x = Max(tn...);
+    return t0 > x? t0 : x;
 }
 
-template<typename T, T ... _n>
-struct static_max;
+template<typename T, T ... n>
+struct StaticMax;
 
-template<typename T, T _0, T _1>
-struct static_max<T, _0, _1>
+template<typename T, T t0, T t1>
+struct StaticMax<T, t0, t1>
 {
-    static constexpr T value = _0 > _1? _0 : _1;
+    static constexpr T value = t0 > t1? t0 : t1;
 };
 
-template<typename T, T _0, T _1, T _2, T ... _n>
-struct static_max<T, _0, _1, _2, _n ...>
+template<typename T, T t0, T t1, T t2, T ... tn>
+struct StaticMax<T, t0, t1, t2, tn ...>
 {
-    static constexpr T _x = static_max<T, _1, _2, _n ...>::value;
-    static constexpr T value = _0 > _x? _0 : _x;
+    static constexpr T x = StaticMax<T, t1, t2, tn ...>::value;
+    static constexpr T value = t0 > x? t0 : x;
 };
 
 /** index sequence */
 template <std::size_t ...>
-struct index_sequence
+struct IndexSequence
 {};
 template <std::size_t n, std::size_t ... s>
-struct make_index_sequence : make_index_sequence<n-1, n-1, s...>
+struct MakeIndexSequence : MakeIndexSequence<n-1, n-1, s...>
 {};
 
 template <std::size_t ... s>
-struct make_index_sequence<0, s...>
+struct MakeIndexSequence<0, s...>
 {
-    using type = index_sequence<s...>;
+    using type = IndexSequence<s...>;
 };
 template <typename ... T>
-using index_sequence_for = make_index_sequence<sizeof...(T)>;
+using IndexSequenceFor = MakeIndexSequence<sizeof...(T)>;
 
-template <typename func_t, typename tuple_t, std::size_t ... idx>
-typename std::remove_reference<func_t>::type::result_type
-_apply(func_t && f, tuple_t && t, index_sequence<idx...>)
+template <typename TFunc, typename TTuple, std::size_t ... idx>
+typename std::remove_reference<TFunc>::type::result_type
+Apply(TFunc && f, TTuple && t, IndexSequence<idx...>)
 {
-    return std::forward<func_t>(f)(std::get<idx>(std::forward<tuple_t>(t))...);
+    return std::forward<TFunc>(f)(std::get<idx>(std::forward<TTuple>(t))...);
 }
-template <typename func_t, typename tuple_t>
-typename std::remove_reference<func_t>::type::result_type
-apply(func_t && f, tuple_t && t)
+template <typename TFunc, typename TTuple>
+typename std::remove_reference<TFunc>::type::result_type
+Apply(TFunc && f, TTuple && t)
 {
-    return _apply(std::forward<func_t>(f), std::forward<tuple_t>(t),
-                  typename make_index_sequence<
-                  std::tuple_size<tuple_t>::value>::type{});
+    return Apply(std::forward<TFunc>(f), std::forward<TTuple>(t),
+                  typename MakeIndexSequence<
+                  std::tuple_size<TTuple>::value>::type{});
 }
 
-template <typename func_t, typename tuple_t>
-void apply2promise(func_t && f, tuple_t && t,
+template <typename TFunc, typename TTuple>
+void Apply2Promise(TFunc && f, TTuple && t,
                    std::promise<typename
                    std::enable_if<std::is_void<
                    typename std::remove_reference<
-                   func_t>::type::result_type>::value, typename std::remove_reference<
-                   func_t>::type::result_type>::type> & promise)
+                   TFunc>::type::result_type>::value, typename std::remove_reference<
+                   TFunc>::type::result_type>::type> & promise)
 {
-    apply(std::forward<func_t>(f), std::forward<tuple_t>(t));
+    Apply(std::forward<TFunc>(f), std::forward<TTuple>(t));
     promise.set_value();
 }
 
-template <typename func_t, typename tuple_t>
-void apply2promise(func_t && f, tuple_t && t,
+template <typename TFunc, typename TTuple>
+void Apply2Promise(TFunc && f, TTuple && t,
                    std::promise<typename
                    std::enable_if<! (std::is_void<typename std::remove_reference<
-                                     func_t>::type::result_type>::value),
+                                     TFunc>::type::result_type>::value),
                    typename std::remove_reference<
-                   func_t>::type::result_type>::type> & promise)
+                   TFunc>::type::result_type>::type> & promise)
 {
-    promise.set_value(apply(std::forward<func_t>(f), std::forward<tuple_t>(t)));
+    promise.set_value(Apply(std::forward<TFunc>(f), std::forward<TTuple>(t)));
 }
 
-/*****************/
-/** index_of_seq */
-/*****************/
-template<typename T, typename ... SEQ>
-struct _index_of_seq;
 
-template<typename T, typename First, typename ... Other>
-struct _index_of_seq<T, First, Other...>
-{
-    static constexpr std::size_t value = std::is_same<T, First>::value? sizeof...(Other) :
-    _index_of_seq<T, Other...>::value;
-};
-template<typename T>
-struct _index_of_seq<T>
-{
-    static constexpr std::size_t value = std::numeric_limits<std::size_t>::max();
-};
-
+/******************/
+/** IndexOf<>In<> */
+/******************/
 /**
- *  \brief get index_of_seq of T in SEQ
+ * \brief find IndexOf<T>::In<Ts...>
  */
-template<typename T, typename ... SEQ>
-struct index_of_seq
+template<typename T, typename TIndex = std::uint8_t>
+struct IndexOf
 {
-    static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
-    static constexpr std::size_t _other_count = _index_of_seq<T, SEQ...>::value;
-    static constexpr std::size_t value = _other_count != npos? sizeof...(SEQ) - _other_count - 1 : npos;
+private:
+    static constexpr TIndex invalid_count = std::numeric_limits<TIndex>::max();
+    template<typename ... Ts>
+    struct WalkUntilFound
+    {
+        static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one.");
+    };
+    
+    template<typename TLast>
+    struct WalkUntilFound<TLast>
+    {
+        static constexpr TIndex count_of_left_step = std::is_same<T, TLast>::value?
+        0 : invalid_count;
+    };
+
+    template<typename T0, typename T1, typename ... Tn>
+    struct WalkUntilFound<T0, T1, Tn...>
+    {
+        static constexpr TIndex count_of_left_step = std::is_same<T, T0>::value?
+        sizeof...(Tn) + 1 : WalkUntilFound<T1, Tn...>::count_of_left_setp;
+    };
+    
+public:
+    static constexpr TIndex npos = std::numeric_limits<TIndex>::max();
+    template<typename ... Ts>
+    struct In
+    {
+        static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one.");
+        static constexpr TIndex value = WalkUntilFound<Ts...>::count_of_left_step != invalid_count?
+        sizeof...(Ts) - WalkUntilFound<Ts...>::count_of_left_step : npos;
+    };
 };
-
-template<typename T, typename ... SEQ>
-constexpr std::size_t index_of_seq<T, SEQ ...>::npos;
-
-template<typename T, typename ... SEQ>
-constexpr std::size_t index_of_seq<T, SEQ ...>::_other_count;
-
-
-template<typename T, typename ... SEQ>
-constexpr std::size_t index_of_seq<T, SEQ ...>::value;
-
 
 /****************/
 /** type of seq */
 /****************/
-template<std::size_t index, std::size_t cur_index, typename ... SEQ>
-struct _type_of_seq;
-
-template<std::size_t index, std::size_t cur_index, typename _0_t, typename _1_t, typename ... _n_t>
-struct _type_of_seq<index, cur_index, _0_t, _1_t, _n_t ...>
+template<std::size_t index>
+struct TypeIn
 {
-    using type = typename std::conditional<index == cur_index,
-                                           _0_t,
-                                           typename _type_of_seq<
-                                               index, cur_index+1, _1_t, _n_t ...>::type>::type;
-};
+private:
+    template<std::size_t cur_index, typename ... Ts>
+    struct WalkUntilFound
+    {
+        static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one");        
+    };
 
-template<std::size_t index, std::size_t cur_index, typename last_t>
-struct _type_of_seq<index, cur_index, last_t>
-{
-    using type = typename std::enable_if<index == cur_index, last_t>::type;
-};
+    template<std::size_t cur_index, typename TLast>
+    struct WalkUntilFound<cur_index, TLast>
+    {
+        static_assert(index == cur_index, "No specified position type found.");
+        using type = TLast;
+    };
 
-template<std::size_t index, typename ... SEQ>
-struct type_of_seq
-{
-    using type = typename _type_of_seq<index, (std::size_t)0u, SEQ...>::type;
+    template<std::size_t cur_index, typename T0, typename T1, typename ... Tn>
+    struct WalkUntilFound<cur_index, T0, T1, Tn...>
+    {
+        using type = typename std::conditional<index == cur_index, T0,
+                                               typename WalkUntilFound<cur_index + 1,
+                                                                       T1, Tn...>::type>::type;
+    };
+public:
+    template<typename ... Ts>
+    struct Of
+    {
+        static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one");
+        using type = typename WalkUntilFound<0u, Ts...>::type;
+    };
 };
 
 /***********************/
@@ -174,52 +180,42 @@ struct type_of_seq
  * \brief invoke functor_t<T> with args for each T in Ts.
  * \note fonctor's ctor accepts zero argument, and will be finally bound by stack size.
  */
-template<template<typename> class functor_t>
-struct invoke
+template<template<typename> class TFunctor>
+struct Invoke
 {
-    template<typename ... args_t>
-    struct with
+    template<typename ... TArgs>
+    struct With
     {
-        template<typename last_t>
-        static void _for_each(args_t ... args)
+        template <typename TLast>
+        static void ForEach(TArgs ... args)
         {
-            functor_t<last_t> func;
-            func(args ...);
-        }
+            TFunctor<TLast> func;
+            func(args...);
+        };
 
-        template<typename _0_t, typename _1_t, typename ... _n_t>
-        static void _for_each(args_t ... args)
+        template<typename T0, typename T1, typename ... Tn>
+        static void ForEach(TArgs ... args)
         {
-            functor_t<_0_t> func;
-            func(args ...);
-            _for_each<_1_t, _n_t ...>(args ...);
-        }
-
-        template<typename _0_t, typename ... _n_t>
-        static void for_each(args_t ... args)
-        {
-            _for_each<_0_t, _n_t ...>(args ...);
+            TFunctor<T0> func;
+            func(args...);
+            ForEach<T1, Tn ...>(args...);
         }
     };
 };
-
-/***************/
-/** static_and */
-/***************/
 /** 
- * \brief value = (type_t<SET>::value &&)...
+ * \brief value = (type_t<Ts>::value &&)...
  */
-template<template<typename> class type_t, typename ... SET>
-struct static_and;
-template<template<typename> class type_t, typename _0_t, typename _1_t, typename ... _n_t>
-struct static_and<type_t, _0_t, _1_t, _n_t ...>
+template<template<typename> class TValue, typename ... Ts>
+struct StaticAnd;
+template<template<typename> class TValue, typename T0, typename T1, typename ... Tn>
+struct StaticAnd<TValue, T0, T1, Tn ...>
 {
-    static constexpr bool value = type_t<_0_t>::value && static_and<type_t, _1_t, _n_t ...>::value;
+    static constexpr bool value = TValue<T0>::value && StaticAnd<TValue, T1, Tn ...>::value;
 };
-template<template<typename> class type_t, typename last_t>
-struct static_and<type_t, last_t>
+template<template<typename> class TValue, typename TLast>
+struct StaticAnd<TValue, TLast>
 {
-    static constexpr bool value = type_t<last_t>::value;
+    static constexpr bool value = TValue<TLast>::value;
 };
 
 /**************/
@@ -228,14 +224,14 @@ struct static_and<type_t, last_t>
 template<typename ... T>
 struct is_one_of;
 
-template<typename T, typename _0_t, typename _1_t, typename ... _n_t>
-struct is_one_of<T, _0_t, _1_t, _n_t ...>
+template<typename T, typename T0, typename T1, typename ... Tn>
+struct is_one_of<T, T0, T1, Tn ...>
 {
-    static constexpr bool value = std::is_same<T, _0_t>::value? true : is_one_of<T, _1_t, _n_t ...>::value;
+    static constexpr bool value = std::is_same<T, T0>::value? true : is_one_of<T, T1, Tn ...>::value;
 };
-template<typename T, typename last_t>
-struct is_one_of<T, last_t>
+template<typename T, typename TLast>
+struct is_one_of<T, TLast>
 {
-    static constexpr bool value = std::is_same<T, last_t>::value;
+    static constexpr bool value = std::is_same<T, TLast>::value;
 };
 FS_SUN_NS_END
