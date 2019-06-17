@@ -12,52 +12,52 @@
 
 FS_SUN_NS_BEGIN
 
-using factory_order_num_t = std::size_t;
+using FactoryOrderNumber = std::size_t;
 
-template<typename base_t, typename ... ctor_args_t>
-class factory
+template<typename TBase, typename ... TCtorArgs>
+class Factory
 {
 public:
-    using order_num_t = factory_order_num_t;
-    using goods_base_t = base_t;
-    using ctor_t = std::function<std::unique_ptr<goods_base_t>(ctor_args_t ...)>;
+    using OrderNumber = FactoryOrderNumber;
+    using GoodsBase = TBase;
+    using Ctor = std::function<std::unique_ptr<GoodsBase>(TCtorArgs ...)>;
     
-    template<typename ... goods_t>
-    class with
+    template<typename ... TGoods>
+    class With
     {
     public:
-        operator factory<base_t, ctor_args_t ...>()
+        operator Factory<GoodsBase, TCtorArgs ...>()
         {
-            factory<base_t, ctor_args_t ...> f;
-            f.template construct<goods_t ...>();
+            Factory<GoodsBase, TCtorArgs ...> f;
+            f.template Construct<TGoods ...>();
             return f;
         }
 
         template<typename T>
-        static constexpr order_num_t order_num_of()
+        static constexpr OrderNumber OrderNumberOf()
         {
-            return index_of_seq<T, goods_t ...>::value;
+            return IndexOf<T>::template In<TGoods...>::value;
         }
     };
 
 private:
-    template<typename T, typename ... goods_t>
-    struct _construct
+    template<typename T, typename ... TGoods>
+    struct ConstructOne
     {
-        operator std::pair<const order_num_t, ctor_t>()
+        operator std::pair<const OrderNumber, Ctor>()
         {
             /** non-odr-used version */
-            static constexpr order_num_t order_num = index_of_seq<T, goods_t ...>::value;
-            return {order_num, [](ctor_args_t ... args) -> std::unique_ptr<base_t>{
-                    return std::unique_ptr<base_t>(new T(args ...));}};
+            static constexpr OrderNumber order_num = index_of_seq<T, TGoods ...>::value;
+            return {order_num, [](TCtorArgs ... args) -> std::unique_ptr<GoodsBase>{
+                    return std::unique_ptr<GoodsBase>(new T(args ...));}};
         }
     };
     
 public:
-    std::unique_ptr<goods_base_t> create(const order_num_t order_num, ctor_args_t ... args) const
+    std::unique_ptr<GoodsBase> Create(const OrderNumber order_num, TCtorArgs ... args) const
     {
-        const auto & itr = _ctors.find(order_num);
-        if(itr != _ctors.end())
+        const auto & itr = ctors_.find(order_num);
+        if(itr != ctors_.end())
             return itr->second(args ...);
         else
         {
@@ -67,14 +67,14 @@ public:
     }
 
 private:
-    template <typename ... goods_t>
-    void construct()
+    template <typename ... TGoods>
+    void Construct()
     {
-        _ctors = std::unordered_map<order_num_t, ctor_t>{_construct<goods_t, goods_t ... >() ...};
+        ctors_ = std::unordered_map<OrderNumber, Ctor>{ConstructOne<TGoods, TGoods ... >() ...};
     }
 
 private:
-    std::unordered_map<order_num_t, ctor_t> _ctors;
+    std::unordered_map<OrderNumber, Ctor> ctors_;
 };
 
 FS_SUN_NS_END

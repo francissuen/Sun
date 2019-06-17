@@ -6,17 +6,17 @@
 #include <ctime>
 #include <chrono>
 #include <cstring>
-#define _FS_SUN_TIMEBUFFER_MAX_LEN_ 128
+#define FS_SUN_TIME_BUFFER_MAX_LEN 128
 
-using namespace fs::Sun;
-std::string time::localtime() const
+using namespace fs::sun;
+std::string Time::LocalTime() const
 {
-    std::string ret(_FS_SUN_TIMEBUFFER_MAX_LEN_,'\0');
+    std::string ret(FS_SUN_TIME_BUFFER_MAX_LEN,'\0');
     char * buffer = &(ret.front());
     time_t rawTime;
     std::time(&rawTime);
 #ifdef _MSC_VER
-    ::ctime_s(buffer, _FS_SUN_TIMEBUFFER_MAX_LEN_, &rawTime);
+    ::ctime_s(buffer, FS_SUN_TIME_BUFFER_MAX_LEN, &rawTime);
 #else
     ::ctime_r(&rawTime, buffer);
 #endif
@@ -24,7 +24,7 @@ std::string time::localtime() const
     return ret;
 }
 
-std::uint64_t time::timestamp()const
+std::uint64_t Time::Timestamp()const
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();

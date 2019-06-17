@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(Sun)
+project(sun)
 
 include(fsCMake/CMakeLists.txt)
 
@@ -19,18 +19,18 @@ configure_file(${PROJECT_SOURCE_DIR}/config.h.in ${PROJECT_SOURCE_DIR}/src/confi
 
 set(srcs)
 fs_add_class(ns src srcs)
-fs_add_class(common src srcs)
 fs_add_class(logger src srcs)
 fs_add_class(time src srcs)
 fs_add_class(string src srcs)
-# fs_add_class(vector src srcs)
-fs_add_class(concurrency src srcs)
 fs_add_class(filesystem src srcs)
-fs_add_class(callback src srcs)
+fs_add_class(event src srcs)
 fs_add_class(async src srcs)
-fs_add_class(args src srcs)
-# fs_add_class(file src srcs)
-fs_add_class(Sun src srcs)
+fs_add_class(json src srcs)
+fs_add_class(range_viewer src srcs)
+fs_add_class(singlteton src srcs)
+fs_add_class(variant src srcs)
+fs_add_class(utils src srcs)
+fs_add_class(debug src srcs)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(bin_suffix)

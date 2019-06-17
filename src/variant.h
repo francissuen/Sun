@@ -15,29 +15,31 @@ FS_SUN_NS_BEGIN
 /**
  *  \brief A safe union, and need no RTTI
  */
-template<typename ... Ele_t>
-class variant
+template<typename ... Ts>
+class Variant
 {
 private:
     template<typename T>
-    struct _is_valid_type
+    struct IsValidType
     {
-        static constexpr bool value = ((! std::is_const<T>::value) && (! std::is_reference<T>::value));
+        static constexpr bool value = ((! std::is_const<T>::value)
+                                       && (! std::is_reference<T>::value));
     };
-    static_assert(static_and<_is_valid_type, Ele_t ...>::value, "not all types in Ele_t are valid type");
-public:
-    typedef typename std::aligned_storage<static_max<std::size_t, sizeof(Ele_t)...>::value,
-                                          static_max<std::size_t, alignof(Ele_t)...>::value>::type data_t;
+    static_assert(StaticAnd<IsValidType, Ts ...>::value, "not all types in Ts are valid type");
+
+    typedef typename std::aligned_storage<StaticMax<std::size_t, sizeof(Ts)...>::value,
+                                          StaticMax<std::size_t, alignof(Ts)...>::value
+                                          >::type RawData;
 
     template<typename T>
-    struct _store_dtor
+    struct StoreDtor
     {
         void operator()() const
         {
             if(std::is_class<T>::value)
-                _dtors.insert(std::make_pair(index_of_seq<T, Ele_t ...>::value, [](void* ptr)
+                dtors_.insert(std::make_pair(IndexOf<T>::In<Ts ...>::value, [](void* ptr)
                                              {
-                                                 ((T*)ptr)->~T();
+                                                 (reinterpret_cast<T*>(ptr))->~T();
                                              }));
         }
     };
@@ -48,98 +50,97 @@ public:
 #endif
     static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 public:
-    variant():
-        _idx(npos)
+    Variant():
+        idx_(npos)
     {
-        invoke<_store_dtor>::template with<>::template for_each<Ele_t ...>();        
+        Invoke<StoreDtor>::For<Ts...>::With();
     }
 
     
 public:
-    template<typename T, typename ... Args>
-    T & emplace(Args && ... args)
+    template<typename T, typename ... TArgs>
+    T & Emplace(TArgs && ... args)
     {
-        static_assert(is_one_of<T, Ele_t ...>::value, "T is not one of Ele_t");
-        _idx = index_of_seq<T, Ele_t ...>::value;
-        new (&_data) T(std::forward<Args>(args) ...);
-        return reinterpret_cast<T&>(_data);
+        static_assert(Is<T>::In<Ts ...>::value, "T is not one of Ts");
+        idx_ = IndexOf<T>::In<T, Ts ...>::value;
+        new (&raw_data_) T(std::forward<TArgs>(args) ...);
+        return reinterpret_cast<T&>(raw_data_);
     }
 
     template<typename T>
     void operator=(T && t)
     {
-        static_assert(is_one_of<T, Ele_t ...>::value, "T is not one of Ele_t");
-        _call_dtor();
-        new (&_data) T(std::forward<T>(t));
-        static constexpr std::size_t idx = index_of_seq<T, Ele_t ...>::value;
-        static_assert(idx != index_of_seq<T, Ele_t ...>::npos,
-                      "_idx is index_of_seq::npos");
-        _idx = idx;
+        static_assert(Is<T>::In<Ts ...>::value, "T is not one of Ts");
+        CallDtor();
+        new (&raw_data_) T(std::forward<T>(t));
+        static constexpr std::size_t idx = IndexOf<T>::In<Ts ...>::value;
+        static_assert(idx != IndexOf<T>::In<Ts ...>::npos,
+                      "idx is npos");
+        idx_ = idx;
     }
 
-    std::size_t index() const
+    std::size_t Index() const
     {
-        return _idx;
+        return idx_;
     }
     
     template<typename T>
-    bool is() const
+    bool Is() const
     {
-        static_assert(is_one_of<T, Ele_t ...>::value, "T is not one of Ele_t");
-        static constexpr std::size_t idx = index_of_seq<T, Ele_t ...>::value;
-        return _idx == idx;
+        static_assert(Is<T>::In<Ts ...>::value, "T is not one of Ts");
+        static constexpr std::size_t idx = IndexOf<T>::In<Ts ...>::value;
+        return idx_ == idx;
     }
 
     /**
      *  \warining No guarantee for the right value.
      */
     template<typename T>
-    T & raw_get() noexcept
+    T & RawGet() noexcept
     {
-        static_assert(is_one_of<T, Ele_t ...>::value, "T is not one of Ele_t");
-        return reinterpret_cast<T&>(_data);
+        static_assert(Is<T>::In<Ts ...>::value, "T is not one of Ts");
+        return reinterpret_cast<T&>(raw_data_);
     }
 
     /**
      *  \warining No guarantee for the right value.
      */
     template<typename T>
-    const T & raw_get() const noexcept
+    const T & RawGet() const noexcept
     {
-        return const_cast<variant*>(this)->raw_get<T>();
+        return const_cast<Variant*>(this)->RawGet<T>();
     }
 
     template<typename T>
-    T & get()
+    T & Get()
     {
-        static constexpr std::size_t idx = index_of_seq<T, Ele_t ...>::value;
-        if(idx != index_of_seq<T, Ele_t ...>::npos)
-            return raw_get<T>();
+        if(Is<T>())
+            return RawGet<T>();
         else
             throw std::bad_cast();
     }
     
     template<typename T>
-    const T & get() const
+    const T & Get() const
     {
-        return const_cast<variant*>(this)->get<T>();
+        return const_cast<Variant*>(this)->Get<T>();
     }
 
 private:
-    inline void _call_dtor()
+    inline void CallDtor()
     {
-        const auto dtor = _dtors.find(_idx);
-        if(dtor != _dtors.end())
-            dtor->second(&_data);
+        const auto dtor = dtors_.find(idx_);
+        if(dtor != dtors_.end())
+            dtor->second(&raw_data_);
     }
     
 private:
-    data_t _data;
-    std::size_t _idx;
-    static std::unordered_map<std::size_t, std::function<void(void*)>> _dtors;
+    RawData raw_data_;
+    std::size_t idx_;
+    static std::unordered_map<std::size_t, std::function<void(void*)>> dtors_;
 };
 
-template<typename ... Ele_t>
-std::unordered_map<std::size_t, std::function<void(void*)>> variant<Ele_t ...>::_dtors;
+template<typename ... Ts>
+std::unordered_map<std::size_t, std::function<void(void*)>> Variant<Ts ...>::dtors_;
 
 FS_SUN_NS_END

@@ -8,94 +8,94 @@
 #include <memory>
 #include "debug.h"
 
-FS_SUN_NS_BEGIN
+FS_SUN_NSBEGIN_
 
 template<typename T>
-class range_viewer
+class RangeViewer
 {
 public:
-    range_viewer(){}
+    RangeViewer(){}
     
-    range_viewer(const std::size_t size):
-        _data(new T[size]{}, std::default_delete<T[]>{}),
-        _max_size(size),
-        _begin(0),
-        _end(size)
+    RangeViewer(const std::size_t size):
+        data_(new T[size]{}, std::default_delete<T[]>{}),
+        max_size_(size),
+        begin_(0),
+        end_(size)
     {}
 
 public:
-    range_viewer sub_viewer(const std::ptrdiff_t begin_offset, const std::size_t new_size)
+    RangeViewer SubViewer(const std::ptrdiff_t begin_offset, const std::size_t new_size)
     {
-        range_viewer ret(*this);
-        ret.advance_begin(begin_offset);
-        ret.set_end(ret._begin + new_size);
+        RangeViewer ret(*this);
+        ret.advancebegin_(begin_offset);
+        ret.setend_(ret.begin_ + new_size);
         return ret;
     }
     
-    range_viewer sub_viewer(const std::size_t begin_offset)
+    RangeViewer SubViewer(const std::size_t begin_offset)
     {
-        range_viewer ret(*this);
-        ret.advance_begin(begin_offset);
+        RangeViewer ret(*this);
+        ret.advancebegin_(begin_offset);
         return ret;
     }
 
-    std::size_t size() const
+    std::size_t Size() const
     {
-        return _end - _begin;
+        return end_ - begin_;
     }
 
     template<typename U>
-    const U & get(std::size_t index = 0) const
+    const U & Get(std::size_t index = 0) const
     {
-        FS_SUN_ASSERT(_begin + index * sizeof(U) < _end);
-        return *(reinterpret_cast<U*>(_data.get() + _begin) + index);
+        FS_SUN_ASSERT(begin_ + index * sizeof(U) < end_);
+        return *(reinterpret_cast<U*>(data_.get() + begin_) + index);
     }
 
     template<typename U>
-    void set(const U & value, std::size_t index = 0) const
+    void Set(const U & value, std::size_t index = 0) const
     {
-        FS_SUN_ASSERT(_begin + index * sizeof(U) < _end);
-        *(reinterpret_cast<U*>(_data.get() + _begin) + index) = value;
+        FS_SUN_ASSERT(begin_ + index * sizeof(U) < end_);
+        *(reinterpret_cast<U*>(data_.get() + begin_) + index) = value;
     }
     
-    std::shared_ptr<T> data()
+    std::shared_ptr<T> Data()
     {
-        return std::shared_ptr<T>(_data, _data.get() + _begin);
+        return std::shared_ptr<T>(data_, data_.get() + begin_);
     }
     
-    const std::shared_ptr<T> & data() const
+    const std::shared_ptr<T> & Data() const
     {
-        return const_cast<range_viewer*>(this)->data();
+        return const_cast<RangeViewer*>(this)->Data();
     }
 
-    void set_begin(const std::size_t new_begin)
+    void SetBegin(const std::size_t newbegin)
     {
-        _begin = new_begin;
-        FS_SUN_ASSERT(_begin <= _end);
+        begin_ = newbegin;
+        FS_SUN_ASSERT(begin_ <= end_);
     }
-    void advance_begin(const std::ptrdiff_t n)
+    void AdvanceBegin(const std::ptrdiff_t n)
     {
-        _begin += n;
-        FS_SUN_ASSERT(_begin <= _end);
+        begin_ += n;
+        FS_SUN_ASSERT(begin_ <= end_);
     }
     
-    void set_end(const std::size_t new_end)
+    void SetEnd(const std::size_t newend)
     {
-        _end = new_end;
-        FS_SUN_ASSERT(_begin <= _end && _end <= _max_size);
+        end_ = newend_;
+        FS_SUN_ASSERT(begin_ <= end_ && end_ <= max_size_);
     }
 
-    void advance_end(const std::ptrdiff_t n)
+    void AdvanceEnd(const std::ptrdiff_t n)
     {
-        _end += n;
-        FS_SUN_ASSERT(_begin <= _end && _end <= _max_size);
+        end_ += n;
+        FS_SUN_ASSERT(begin_ <= end_ && end_ <= max_size_);
     }
     
 private:
-    std::shared_ptr<T> _data;
-    std::size_t _max_size;
-    std::size_t _begin;
-    std::size_t _end;
+    std::shared_ptr<T> data_;
+    std::size_t max_size_;
+    std::size_t begin_;
+    std::size_t end_;
 };
 
-FS_SUN_NS_END
+FS_SUN_NSEND_

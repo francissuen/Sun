@@ -4,23 +4,23 @@
 
 #include "logger.h"
 #include "time.h"
-using namespace fs::Sun;
+using namespace fs::sun;
 
-#define _FS_SUN_LOGGER_DEFAULT_TAG_ "Sun"
+#define FS_SUN_LOGGER_DEFAULT_TAG "sun"
 
-logger::log<logger::term_file> fs::Sun::cout(_FS_SUN_LOGGER_DEFAULT_TAG_);
+Logger::Log<Logger::TermFile> fs::sun::cout(FS_SUN_LOGGER_DEFAULT_TA_);
 
 /** ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS */
-logger::term_file::term_file():
+Logger::TermFile::TermFile():
 #ifdef _MSC_VER
-    _color{FOREGROUND_INTENSITY | FOREGROUND_RED,
+    color_{FOREGROUND_INTENSITY | FOREGROUND_RED,
            FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE,
            FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN,
            FOREGROUND_INTENSITY | FOREGROUND_GREEN,
            FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE,
            FOREGROUND_INTENSITY}
 #else
-    _color{"\033[91m",
+    color_{"\033[91m",
            "\033[95m",
            "\033[93m",
            "\033[92m",
@@ -29,33 +29,33 @@ logger::term_file::term_file():
 #endif
 {
 #ifdef _MSC_VER
-    _hConsole = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    console_ = ::GetStdHandle(STD_OUTPUT_HANDLE);
     ::memset(&_preConsoleAttrib, 0, sizeof(CONSOLE_SCREEN_BUFFER_INFO));
-    ::GetConsoleScreenBufferInfo(_hConsole, &_preConsoleAttrib);
+    ::GetConsoleScreenBufferInfo(console_, &_preConsoleAttrib);
 #endif
 }
 
-logger::term_file::~term_file()
+Logger::TermFile::~TermFile()
 {
 #ifdef _MSC_VER
-    ::SetConsoleTextAttribute(_hConsole, _preConsoleAttrib.wAttributes);
+    ::SetConsoleTextAttribute(console_, _preConsoleAttrib.wAttributes);
 #else
     std::cout << "\033[0m";
 #endif
 }
 
-void logger::term_file::log(const std::string & tag, const std::string & msg, const severity s) const
+void Logger::TermFile::Log(const std::string & tag, const std::string & msg, const Severity s) const
 {
-    #ifdef _MSC_VER
-    ::SetConsoleTextAttribute(_hConsole, _color[s]);
-    #else
-    std::cout << _color[s];
-    #endif
-    std::cout << _format(tag, msg);
+#ifdef _MSC_VER
+    ::SetConsoleTextAttribute(console_, color_[s]);
+#else
+    std::cout << color_[s];
+#endif
+    std::cout << Format(tag, msg);
     std::cout.flush();
 }
 
-std::string logger::term_file::_format(const std::string & tag, const std::string & msg) const
+std::string Logger::TermFile::Format(const std::string & tag, const std::string & msg) const
 {
     return time::instance().localtime() + "@tag: " + tag + ", @msg: " + msg + "\n";
 }

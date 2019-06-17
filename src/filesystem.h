@@ -10,10 +10,10 @@
 #include <string>
 FS_SUN_NS_BEGIN
 
-FS_SUN_CLASS filesystem: public singleton<filesystem>
+FS_SUN_CLASS Filesystem: public Singleton<Filesystem>
 {
 private:
-    filesystem();
+    Filesystem();
 public:
 
     /**
@@ -22,20 +22,20 @@ public:
      * 
      * \note If \b suffixes is empty, then all the files in \b dir will be returned.
      */
-    std::vector<std::string> get_files_in_dir(const char* dir,
-                                              const std::unordered_set<std::string> & suffixes,
-                                              const bool recursively = false)const;
+    std::vector<std::string> GetFilesInDir(const char* dir,
+                                           const std::unordered_set<std::string> & suffixes,
+                                           const bool recursively = false)const;
     
-    inline const std::string& get_workingdir()const{ return _workingDir; }
+    inline const std::string& GetWorkingDir()const{ return working_dir_; }
 
     /**
      * \param szPath If szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
      * else it's a relative path.
      */
-    std::string get_absolute_path(const char* szPath)const;
+    std::string GetAbsolutePath(const char* szPath)const;
 private:
-    std::string _workingDir;
-    const char _directorySeparator;
+    std::string working_dir_;
+    const char dir_separator_;
 };
 	
 FS_SUN_NS_END

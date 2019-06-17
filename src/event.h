@@ -9,25 +9,25 @@
 
 FS_SUN_NS_BEGIN
 
-template<typename event_t, typename callback_t, typename callback_tag_t = std::uintptr_t>
-class event
+template<typename TEvent, typename TCallback, typename TCallbackTag = std::uintptr_t>
+class Event
 {
 public:
-    void add(const event_t & ev, const callback_tag_t & cb_tag, const callback_t & cb)
+    void Add(const TEvent & ev, const TCallbackTag & cb_tag, const TCallback & cb)
     {
-        const auto & itr = _callbacks.find(ev);
-        if(itr != _callbacks.end())
+        const auto & itr = callbacks_.find(ev);
+        if(itr != callbacks_.end())
         {
             itr->second.insert(std::make_pair(cb_tag, cb));
         }
         else
-            _callbacks.insert(std::make_pair(ev, {cb_tag, cb}));
+            callbacks_.insert(std::make_pair(ev, {cb_tag, cb}));
     }
     
-    void remove(const event_t & ev, const callback_tag_t & cb_tag)
+    void Remove(const TEvent & ev, const TCallbackTag & cb_tag)
     {
-        const auto & itr = _callbacks.find(ev);
-        if(itr != _callbacks.end())
+        const auto & itr = callbacks_.find(ev);
+        if(itr != callbacks_.end())
         {
             auto & cbs = itr->second;
             const auto & cb_itr = cbs.find(cb_tag);
@@ -36,11 +36,11 @@ public:
         }
     }
 
-    template<typename ... args_t>
-    void trigger(const event_t & ev, args_t ... args)
+    template<typename ... TArgs>
+    void Trigger(const TEvent & ev, TArgs ... args)
     {
-        const auto & itr = _callbacks.find(ev);
-        if(itr != _callbacks.end())
+        const auto & itr = callbacks_.find(ev);
+        if(itr != callbacks_.end())
         {
             for(const auto & cb : itr->second)
             {
@@ -51,7 +51,7 @@ public:
 
     
 private:
-    std::unordered_map<event_t, std::unordered_map<callback_tag_t, callback_t>> _callbacks;
+    std::unordered_map<TEvent, std::unordered_map<TCallbackTag, TCallback>> callbacks_;
 };
 
 FS_SUN_NS_END

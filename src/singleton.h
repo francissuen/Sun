@@ -9,23 +9,23 @@
 FS_SUN_NS_BEGIN
 
 template <typename T>
-class singleton
+class Singleton
 {
 public:
-    static T & instance()
+    static T & Instance()
     {
         static T instance;
         return instance;
     }
-    singleton(const singleton &) = delete;
-    singleton & operator=(const singleton &) = delete;
+    Singleton(const Singleton &) = delete;
+    Singleton & operator=(const Singleton &) = delete;
 protected:
-    singleton() = default;
-    ~singleton() = default;
+    Singleton() = default;
+    ~Singleton() = default;
 };
 
 template <typename T>
-T & get_singleton()
+T & GetSingleton()
 {
     static T instance;
     return instance;

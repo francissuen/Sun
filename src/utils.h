@@ -51,7 +51,7 @@ struct MakeIndexSequence : MakeIndexSequence<n-1, n-1, s...>
 template <std::size_t ... s>
 struct MakeIndexSequence<0, s...>
 {
-    using type = IndexSequence<s...>;
+    using Type = IndexSequence<s...>;
 };
 template <typename ... T>
 using IndexSequenceFor = MakeIndexSequence<sizeof...(T)>;
@@ -67,8 +67,8 @@ typename std::remove_reference<TFunc>::type::result_type
 Apply(TFunc && f, TTuple && t)
 {
     return Apply(std::forward<TFunc>(f), std::forward<TTuple>(t),
-                  typename MakeIndexSequence<
-                  std::tuple_size<TTuple>::value>::type{});
+                 typename MakeIndexSequence<
+                 std::tuple_size<TTuple>::value>::Type{});
 }
 
 template <typename TFunc, typename TTuple>
@@ -136,12 +136,14 @@ public:
         sizeof...(Ts) - WalkUntilFound<Ts...>::count_of_left_step : npos;
     };
 };
-
-/****************/
-/** type of seq */
-/****************/
+/*******************/
+/** TypeOf<>::In<> */
+/*******************/
+/**
+ * \brief find TypeOf<index>::In<Ts...>
+ */
 template<std::size_t index>
-struct TypeIn
+struct TypeOf
 {
 private:
     template<std::size_t cur_index, typename ... Ts>
@@ -154,51 +156,53 @@ private:
     struct WalkUntilFound<cur_index, TLast>
     {
         static_assert(index == cur_index, "No specified position type found.");
-        using type = TLast;
+        using Type = TLast;
     };
 
     template<std::size_t cur_index, typename T0, typename T1, typename ... Tn>
     struct WalkUntilFound<cur_index, T0, T1, Tn...>
     {
-        using type = typename std::conditional<index == cur_index, T0,
+        using Type = typename std::conditional<index == cur_index, T0,
                                                typename WalkUntilFound<cur_index + 1,
-                                                                       T1, Tn...>::type>::type;
+                                                                       T1, Tn...>::Type>::type;
     };
 public:
     template<typename ... Ts>
-    struct Of
+    struct In
     {
         static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one");
-        using type = typename WalkUntilFound<0u, Ts...>::type;
+        using Type = typename WalkUntilFound<0u, Ts...>::Type;
     };
 };
 
-/***********************/
-/** for_each for types */
-/***********************/
 /**
- * \brief invoke functor_t<T> with args for each T in Ts.
- * \note fonctor's ctor accepts zero argument, and will be finally bound by stack size.
+ * \brief Invoke<functor_t<T>>::For<Ts...>::With(args...)
  */
 template<template<typename> class TFunctor>
 struct Invoke
 {
-    template<typename ... TArgs>
-    struct With
+    template<typename ... Ts>
+    struct For;
+
+    template<typename TLast>
+    struct For<TLast>
     {
-        template <typename TLast>
-        static void ForEach(TArgs ... args)
+        template<typename ... TArgs>
+        static void With(TArgs ... args)
         {
             TFunctor<TLast> func;
             func(args...);
-        };
+        }
+    };
 
-        template<typename T0, typename T1, typename ... Tn>
-        static void ForEach(TArgs ... args)
+    template<typename T0, typename T1, typename ... Tn>
+    struct For<T0, T1, Tn...>
+    {
+        template<typename ... TArgs>
+        static void With(TArgs ... args)
         {
-            TFunctor<T0> func;
-            func(args...);
-            ForEach<T1, Tn ...>(args...);
+            For<T0>::With(args...);
+            For<T1, Tn...>::With(args...);
         }
     };
 };
@@ -218,20 +222,25 @@ struct StaticAnd<TValue, TLast>
     static constexpr bool value = TValue<TLast>::value;
 };
 
-/**************/
-/** is_one_of */
-/**************/
-template<typename ... T>
-struct is_one_of;
 
-template<typename T, typename T0, typename T1, typename ... Tn>
-struct is_one_of<T, T0, T1, Tn ...>
+/**
+ * \brief Is<T>::In<Ts...>::value
+ */
+template<typename T>
+struct Is
 {
-    static constexpr bool value = std::is_same<T, T0>::value? true : is_one_of<T, T1, Tn ...>::value;
+    template<typename ... Ts>
+    struct In;
+    template<typename TLast>
+    struct In<TLast>
+    {
+        static constexpr bool value = std::is_same<T, TLast>::value;
+    };
+    template<typename T0, typename T1, typename ... Tn>
+    struct In<T0, T1, Tn...>
+    {
+        static constexpr bool value = std::is_same<T, T0>::value? true : In<T1, Tn ...>::value;
+    };
 };
-template<typename T, typename TLast>
-struct is_one_of<T, TLast>
-{
-    static constexpr bool value = std::is_same<T, TLast>::value;
-};
+
 FS_SUN_NS_END

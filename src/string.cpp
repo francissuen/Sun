@@ -10,7 +10,7 @@
 FS_SUN_NS_BEGIN
 namespace string
 {
-    std::vector<std::string> extract_blocks(
+    std::vector<std::string> ExtractBlocks(
         const std::string & src,
         const std::vector<std::pair<std::string, std::string>>& pairedDelimiters)
     {
@@ -37,7 +37,7 @@ namespace string
         return ret;
     }
 
-    std::vector<std::string> split(const std::string & src, const char* delimeter)
+    std::vector<std::string> Split(const std::string & src, const char* delimeter)
     {
         FS_SUN_ASSERT(delimeter != nullptr);
         std::vector<std::string> ret;
@@ -60,7 +60,7 @@ namespace string
         return ret;
     }
 
-    std::string file_extension(const std::string & src)
+    std::string FileExtension(const std::string & src)
     {
         const size_t pos = src.find_last_of('.');
         if(pos == std::string::npos)

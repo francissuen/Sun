@@ -14,10 +14,10 @@
 
 FS_SUN_NS_BEGIN
 
-FS_SUN_CLASS logger
+FS_SUN_CLASS Logger
 {
 public:
-enum severity : std::uint8_t
+enum Severity : std::uint8_t
 {
     S_FATAL = 0,
     S_ERROR,
@@ -28,63 +28,63 @@ enum severity : std::uint8_t
     S_MAX
 };
 
-FS_SUN_CLASS term_file          /** terminal file */
+FS_SUN_CLASS TermFile          /** terminal file */
 {
 public:
-term_file();
-~term_file();
+TermFile();
+~TermFile();
 public:
-void log(const std::string & tag, const std::string & msg, const severity s) const;
+void Log(const std::string & tag, const std::string & msg, const Severity s) const;
 private:
-std::string _format(const std::string & tag, const std::string & msg) const;
+std::string Format(const std::string & tag, const std::string & msg) const;
 private:
 #ifdef _MSC_VER
-const WORD _color[severity::S_MAX];
-HANDLE _hConsole;
+const WORD color_[Severity::S_MAX];
+HANDLE console_;
 CONSOLE_SCREEN_BUFFER_INFO _preConsoleAttrib;
 #else
-const std::string _color[severity::S_MAX];
+const std::string color_[Severity::S_MAX];
 #endif
 };
 
 template <typename file_t>
-class log
+class Log
 {
 public:
-    log(const char* default_tag):
-        _async(std::bind(&log::_log, this,
+    Log(const char* default_tag):
+        async_(std::bind(&Log::_log, this,
                          std::placeholders::_1,
                          std::placeholders::_2,
                          std::placeholders::_3)),
-        _default_tag(default_tag)
+        default_tag_(default_tag)
     {}
     
 public:
-    void operator()(std::string msg, const severity s)
+    void operator()(std::string msg, const Severity s)
     {
-        _async(_default_tag, std::move(msg), s);
+        async_(default_tag_, std::move(msg), s);
     }
-    void operator()(std::string tag, std::string msg, const severity s)
+    void operator()(std::string tag, std::string msg, const Severity s)
     {
-        _async(std::move(tag), std::move(msg), s);
+        async_(std::move(tag), std::move(msg), s);
     }
-    void flush()
+    void Flush()
     {
-        _async.wait_for_empty();
-    }
-private:
-    void _log(const std::string & tag, const std::string & msg, const severity s)
-    {
-        _file.log(tag, msg, s);
+        async_.wait_for_empty();
     }
 private:
-    file_t _file;
-    async<void, const std::string & , const std::string &, const severity> _async;
-    std::string _default_tag;
+    void Log(const std::string & tag, const std::string & msg, const Severity s)
+    {
+        file_.Log(tag, msg, s);
+    }
+private:
+    file_t file_;
+    async<void(const std::string & , const std::string &, const Severity)> async_;
+    std::string default_tag_;
 };
 };
 
-extern logger::log<logger::term_file> cout;
+extern Logger::log<Logger::TermFile> cout;
 
 #define FS_SUN_DEBUG_LOG        /**TODO */
 

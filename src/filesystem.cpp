@@ -12,34 +12,34 @@
 #include <windows.h>
 #endif
 
-using namespace fs::Sun;
+using namespace fs::sun;
 
-#define _FS_SUN_FILESYSTEM_MAX_PATH 128
+#define FS_SUN_FILESYSTEM_MAX_PATH 128
 
-filesystem::filesystem():
+Filesystem::Filesystem():
 #ifdef _MSC_VER
-    _directorySeparator('\\')
+    dir_separator_('\\')
 #else
-    _directorySeparator('/')
+    dir_separator_('/')
 #endif
 {
-    char path[_FS_SUN_FILESYSTEM_MAX_PATH] = {'\0'};
+    char path[FS_SUN_FILESYSTEM_MAX_PATH] = {'\0'};
 #ifdef _MSC_VER
-    GetModuleFileName(NULL, path, _FS_SUN_FILESYSTEM_MAX_PATH);
+    GetModuleFileName(NULL, path, FS_SUN_FILESYSTEM_MAX_PATH);
 #elif __GNUC__
-    FS_SUN_ASSERT(::readlink("/proc/self/exe", path, _FS_SUN_FILESYSTEM_MAX_PATH) != -1);
+    FS_SUN_ASSERT(::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) != -1);
 #endif
-    _workingDir = path;
-    const auto lastSepIdx = _workingDir.find_last_of(_directorySeparator);
+    working_dir_ = path;
+    const auto lastSepIdx = working_dir_.find_last_of(dir_separator_);
     if( lastSepIdx != std::string::npos)
     {
-        _workingDir = _workingDir.substr(0, lastSepIdx);
+        working_dir_ = working_dir_.substr(0, lastSepIdx);
     }
     else
         FS_SUN_ASSERT(false);
 }
 
-std::vector<std::string> filesystem::get_files_in_dir(
+std::vector<std::string> Filesystem::GetFilesInDir(
     const char* dir,
     const std::unordered_set<std::string> & suffixes,
     const bool recursively)const
@@ -50,7 +50,7 @@ std::vector<std::string> filesystem::get_files_in_dir(
     HANDLE hFind  = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATA ffd;
     const std::string strDir(dir);
-    std::string path = strDir + _directorySeparator + '*';
+    std::string path = strDir + dir_separator_ + '*';
     hFind = FindFirstFile(path.c_str(), &ffd);
     if(hFind == INVALID_HANDLE_VALUE)
         return files;
@@ -67,19 +67,19 @@ std::vector<std::string> filesystem::get_files_in_dir(
                 {
                     const std::string suf(file.substr(idx));
                     if(suffixes.find(suf) != suffixes.end())
-                        files.push_back(strDir + _directorySeparator + file);
+                        files.push_back(strDir + dir_separator_ + file);
                 }
             }
             else
-                files.push_back(strDir + _directorySeparator + file);
+                files.push_back(strDir + dir_separator_ + file);
         }
         else
         {
             if(recursively && file != "." && file != "..")
             {
-                const std::vector<std::string> subDirFiles = get_files_in_dir(strDir.c_str(),
-                                                                              suffixes,
-                                                                              recursively);
+                const std::vector<std::string> subDirFiles = GetFilesInDir(strDir.c_str(),
+                                                                           suffixes,
+                                                                           recursively);
                 files.insert(files.end(), subDirFiles.begin(), subDirFiles.end());
             }
         }
@@ -90,7 +90,7 @@ std::vector<std::string> filesystem::get_files_in_dir(
     return files;
 }
 
-std::string filesystem::get_absolute_path(const char* szPath)const
+std::string Filesystem::GetAbsolutePath(const char* szPath)const
 {
     FS_SUN_ASSERT(szPath != nullptr);
 #ifdef _MSC_VER
@@ -100,5 +100,5 @@ std::string filesystem::get_absolute_path(const char* szPath)const
 #endif
             return std::string(szPath);
         else//relative path
-            return _workingDir + _directorySeparator + szPath;
+            return working_dir_ + dir_separator_ + szPath;
 }
