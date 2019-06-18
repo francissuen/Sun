@@ -8,7 +8,7 @@
 #include <memory>
 #include "debug.h"
 
-FS_SUN_NSBEGIN_
+FS_SUN_NS_BEGIN
 
 template<typename T>
 class RangeViewer
@@ -68,9 +68,9 @@ public:
         return const_cast<RangeViewer*>(this)->Data();
     }
 
-    void SetBegin(const std::size_t newbegin)
+    void SetBegin(const std::size_t new_begin)
     {
-        begin_ = newbegin;
+        begin_ = new_begin;
         FS_SUN_ASSERT(begin_ <= end_);
     }
     void AdvanceBegin(const std::ptrdiff_t n)
@@ -79,9 +79,9 @@ public:
         FS_SUN_ASSERT(begin_ <= end_);
     }
     
-    void SetEnd(const std::size_t newend)
+    void SetEnd(const std::size_t new_end)
     {
-        end_ = newend_;
+        end_ = new_end;
         FS_SUN_ASSERT(begin_ <= end_ && end_ <= max_size_);
     }
 
@@ -98,4 +98,4 @@ private:
     std::size_t end_;
 };
 
-FS_SUN_NSEND_
+FS_SUN_NS_END
