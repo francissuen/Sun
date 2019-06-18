@@ -7,7 +7,6 @@
 #include <string>
 #include "config.h"
 #include "async.h"
-
 #ifdef _MSC_VER
 #include<Windows.h>
 #endif
@@ -34,7 +33,7 @@ public:
 TermFile();
 ~TermFile();
 public:
-void Log(const std::string & tag, const std::string & msg, const Severity s) const;
+void LogRoutine(const std::string & tag, const std::string & msg, const Severity s) const;
 private:
 std::string Format(const std::string & tag, const std::string & msg) const;
 private:
@@ -52,12 +51,13 @@ class Log
 {
 public:
     Log(const char* default_tag):
-        async_(std::bind(&Log::_log, this,
+        async_{std::bind(&file_t::LogRoutine, &file_,
                          std::placeholders::_1,
                          std::placeholders::_2,
-                         std::placeholders::_3)),
-        default_tag_(default_tag)
-    {}
+                         std::placeholders::_3)},
+        default_tag_{default_tag}
+    {
+    }
     
 public:
     void operator()(std::string msg, const Severity s)
@@ -70,21 +70,21 @@ public:
     }
     void Flush()
     {
-        async_.wait_for_empty();
+        async_.WaitForEmpty();
     }
 private:
-    void Log(const std::string & tag, const std::string & msg, const Severity s)
-    {
-        file_.Log(tag, msg, s);
-    }
+    /** void LogRoutine(const std::string & tag, const std::string & msg, const Severity s) */
+    /** { */
+    /**     file_.Log(tag, msg, s); */
+    /** } */
 private:
     file_t file_;
-    async<void(const std::string & , const std::string &, const Severity)> async_;
+    fs::sun::Async<void(const std::string & , const std::string &, const Severity)> async_;
     std::string default_tag_;
 };
 };
 
-extern Logger::log<Logger::TermFile> cout;
+extern Logger::Log<Logger::TermFile> cout;
 
 #define FS_SUN_DEBUG_LOG        /**TODO */
 

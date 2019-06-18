@@ -123,7 +123,7 @@ private:
     struct WalkUntilFound<T0, T1, Tn...>
     {
         static constexpr TIndex count_of_left_step = std::is_same<T, T0>::value?
-        sizeof...(Tn) + 1 : WalkUntilFound<T1, Tn...>::count_of_left_setp;
+        sizeof...(Tn) + 1 : WalkUntilFound<T1, Tn...>::count_of_left_step;
     };
     
 public:
@@ -224,22 +224,15 @@ struct StaticAnd<TValue, TLast>
 
 
 /**
- * \brief Is<T>::In<Ts...>::value
+ * \brief IsType<T>::In<Ts...>::value
  */
-template<typename T>
-struct Is
+template<typename T, typename TIndex = std::uint8_t>
+struct IsType
 {
     template<typename ... Ts>
-    struct In;
-    template<typename TLast>
-    struct In<TLast>
+    struct In
     {
-        static constexpr bool value = std::is_same<T, TLast>::value;
-    };
-    template<typename T0, typename T1, typename ... Tn>
-    struct In<T0, T1, Tn...>
-    {
-        static constexpr bool value = std::is_same<T, T0>::value? true : In<T1, Tn ...>::value;
+        static constexpr bool value = IndexOf<T>::template In<Ts...>::value != IndexOf<T>::npos;
     };
 };
 

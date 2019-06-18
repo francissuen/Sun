@@ -8,9 +8,9 @@
 
 FS_SUN_NS_BEGIN
 
-FS_SUN_CLASS Time : public Singleton<time>
+FS_SUN_CLASS Time : public Singleton<Time>
 {
-    friend class Singleton<time>;
+    friend class Singleton<Time>;
 private:
     Time() = default;
 public:

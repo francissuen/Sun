@@ -47,7 +47,7 @@ private:
         operator std::pair<const OrderNumber, Ctor>()
         {
             /** non-odr-used version */
-            static constexpr OrderNumber order_num = index_of_seq<T, TGoods ...>::value;
+            static constexpr OrderNumber order_num = IndexOf<T>::In<TGoods ...>::value;
             return {order_num, [](TCtorArgs ... args) -> std::unique_ptr<GoodsBase>{
                     return std::unique_ptr<GoodsBase>(new T(args ...));}};
         }
@@ -61,7 +61,8 @@ public:
             return itr->second(args ...);
         else
         {
-            cout("No corresponding ctor found @order_num: " + std::to_string(order_num), logger::S_ERROR);
+            cout("No corresponding ctor found @order_num: " + std::to_string(order_num),
+                 Logger::S_ERROR);
             return nullptr;
         }
     }

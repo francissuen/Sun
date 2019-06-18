@@ -35,31 +35,31 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(bin_suffix)
 if(FS_SUN_STATIC_LIB)
-  add_library(Sun
+  add_library(sun
     ${srcs})
   set(bin_suffix ${FS_BIN_STATIC_SUFFIX})
 else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFS_SUN_SHARED_LIB=1")
-  add_library(Sun SHARED
+  add_library(sun SHARED
     ${srcs})
   set(bin_suffix ${FS_BIN_SHARED_SUFFIX})
-  target_compile_definitions(Sun PRIVATE FS_SUN_SHARED_LIB)
+  target_compile_definitions(sun PRIVATE FS_SUN_SHARED_LIB)
 endif()
 
-set(lib_name "Sun${FS_BIN_NAME_SUFFIX}")
+set(lib_name "sun${FS_BIN_NAME_SUFFIX}")
 
-set_target_properties(Sun
+set_target_properties(sun
   PROPERTIES
   OUTPUT_NAME_DEBUG ${lib_name}d
   OUTPUT_NAME_RELEASE ${lib_name}
   )
 
-# get_target_property(get_name Sun OUTPUT_NAME_DEBUG)
+# get_target_property(get_name sun OUTPUT_NAME_DEBUG)
 
-# set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/Sun")
+# set(CMAKE_INSTALL_PREFIX "C:/Program\ Files/sun")
 
 
-# install(TARGETS Sun ARCHIVE DESTINATION .)
+# install(TARGETS sun ARCHIVE DESTINATION .)
 
 # set(headers)
 # foreach(src IN LISTS srcs)
@@ -75,8 +75,8 @@ set_target_properties(Sun
 fs_gen_fs_proj(srcs)
 
 # set(pkg_libs
-#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/Sun.lib
-#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/Sund.lib)
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/sun.lib
+#   ${CMAKE_CURRENT_SOURCE_DIR}/bin/sund.lib)
 
 set(bin_regex)
 if(FS_SUN_STATIC_LIB)
@@ -85,7 +85,7 @@ else()
   set(bin_regex ${FS_PKG_BIN_SHARED_SUFFIX_REGEX})
 endif()
 
-fs_gen_fs_pkg_py(Sun
+fs_gen_fs_pkg_py(sun
   ${CMAKE_CURRENT_SOURCE_DIR}/src
   ${CMAKE_CURRENT_SOURCE_DIR}/bin "${bin_regex}")
 

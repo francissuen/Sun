@@ -41,7 +41,6 @@ private:
                   std::true_type,
                   StaticAnd<TArgsValidator, TArgs ...>>::type::value,
                   "TArgs only accepts const reference or non-reference type");
-
 public:
     Async(const typename std::function<TRet(TArgs ...)> & func,
           const std::uint8_t threadCount = 1):
@@ -110,7 +109,7 @@ private:
                 Package pkg(std::move(pkg_buffer_.front()));
                 pkg_buffer_.pop();
                 lck.unlock();
-                apply2promise(func_, std::move(pkg.params), pkg.ret);
+                Apply2Promise(func_, std::move(pkg.params), pkg.ret);
                 lck.lock();
             }
             else
@@ -127,7 +126,7 @@ private:
     std::mutex pkg_buffer_mtx_;
     std::condition_variable threadfunc_cv_;
     std::queue<Package> pkg_buffer_;
-    const std::function<TRet(TArgs ...)> func_;
+    std::function<TRet(TArgs ...)> func_;
     std::atomic_bool quit_;
     std::condition_variable empty_cv_;
 };

@@ -8,7 +8,7 @@ using namespace fs::sun;
 
 #define FS_SUN_LOGGER_DEFAULT_TAG "sun"
 
-Logger::Log<Logger::TermFile> fs::sun::cout(FS_SUN_LOGGER_DEFAULT_TA_);
+Logger::Log<Logger::TermFile> fs::sun::cout(FS_SUN_LOGGER_DEFAULT_TAG);
 
 /** ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS */
 Logger::TermFile::TermFile():
@@ -44,7 +44,8 @@ Logger::TermFile::~TermFile()
 #endif
 }
 
-void Logger::TermFile::Log(const std::string & tag, const std::string & msg, const Severity s) const
+void Logger::TermFile::LogRoutine(const std::string & tag,
+                                  const std::string & msg, const Severity s) const
 {
 #ifdef _MSC_VER
     ::SetConsoleTextAttribute(console_, color_[s]);
@@ -57,5 +58,5 @@ void Logger::TermFile::Log(const std::string & tag, const std::string & msg, con
 
 std::string Logger::TermFile::Format(const std::string & tag, const std::string & msg) const
 {
-    return time::instance().localtime() + "@tag: " + tag + ", @msg: " + msg + "\n";
+    return Time::Instance().LocalTime() + "@tag: " + tag + ", @msg: " + msg + "\n";
 }
