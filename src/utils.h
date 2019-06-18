@@ -136,6 +136,12 @@ public:
         sizeof...(Ts) - WalkUntilFound<Ts...>::count_of_left_step : npos;
     };
 };
+
+
+template<typename T, typename TIndex>
+template<typename ... Ts>
+constexpr TIndex IndexOf<T, TIndex>::In<Ts...>::value;
+
 /*******************/
 /** TypeOf<>::In<> */
 /*******************/

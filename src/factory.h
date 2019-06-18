@@ -47,7 +47,7 @@ private:
         operator std::pair<const OrderNumber, Ctor>()
         {
             /** non-odr-used version */
-            static constexpr OrderNumber order_num = IndexOf<T>::In<TGoods ...>::value;
+            static constexpr OrderNumber order_num = IndexOf<T>::template In<TGoods ...>::value;
             return {order_num, [](TCtorArgs ... args) -> std::unique_ptr<GoodsBase>{
                     return std::unique_ptr<GoodsBase>(new T(args ...));}};
         }

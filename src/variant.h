@@ -37,7 +37,7 @@ private:
         void operator()() const
         {
             if(std::is_class<T>::value)
-                dtors_.insert(std::make_pair(IndexOf<T>::In<Ts ...>::value, [](void* ptr)
+                dtors_.insert(std::make_pair(IndexOf<T>::template In<Ts ...>::value, [](void* ptr)
                                              {
                                                  (reinterpret_cast<T*>(ptr))->~T();
                                              }));
@@ -53,7 +53,7 @@ public:
     Variant():
         idx_(npos)
     {
-        Invoke<StoreDtor>::For<Ts...>::With();
+        Invoke<StoreDtor>::template For<Ts...>::With();
     }
 
     
@@ -61,8 +61,8 @@ public:
     template<typename T, typename ... TArgs>
     T & Emplace(TArgs && ... args)
     {
-        static_assert(IsType<T>::In<Ts ...>::value, "T is not one of Ts");
-        idx_ = IndexOf<T>::In<T, Ts ...>::value;
+        static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
+        idx_ = IndexOf<T>::template In<T, Ts ...>::value;
         new (&raw_data_) T(std::forward<TArgs>(args) ...);
         return reinterpret_cast<T&>(raw_data_);
     }
@@ -70,10 +70,10 @@ public:
     template<typename T>
     void operator=(T && t)
     {
-        static_assert(IsType<T>::In<Ts ...>::value, "T is not one of Ts");
+        static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
         CallDtor();
         new (&raw_data_) T(std::forward<T>(t));
-        static constexpr std::size_t idx = IndexOf<T>::In<Ts ...>::value;
+        static constexpr std::size_t idx = IndexOf<T>::template In<Ts ...>::value;
         static_assert(idx != IndexOf<T>::npos,
                       "idx is npos");
         idx_ = idx;
@@ -87,8 +87,8 @@ public:
     template<typename T>
     bool Is() const
     {
-        static_assert(IsType<T>::In<Ts ...>::value, "T is not one of Ts");
-        static constexpr std::size_t idx = IndexOf<T>::In<Ts ...>::value;
+        static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
+        static constexpr std::size_t idx = IndexOf<T>::template In<Ts ...>::value;
         return idx_ == idx;
     }
 
@@ -98,7 +98,7 @@ public:
     template<typename T>
     T & RawGet() noexcept
     {
-        static_assert(IsType<T>::In<Ts ...>::value, "T is not one of Ts");
+        static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
         return reinterpret_cast<T&>(raw_data_);
     }
 
