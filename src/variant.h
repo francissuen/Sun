@@ -51,9 +51,15 @@ public:
     static constexpr std::size_t npos = std::numeric_limits<std::size_t>::max();
 public:
     Variant():
+        raw_data_{},
         idx_(npos)
     {
         Invoke<StoreDtor>::template For<Ts...>::With();
+    }
+
+    ~Variant()
+    {
+        CallDtor();
     }
 
     
@@ -62,13 +68,14 @@ public:
     T & Emplace(TArgs && ... args)
     {
         static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
-        idx_ = IndexOf<T>::template In<T, Ts ...>::value;
+        idx_ = IndexOf<T>::template In<Ts ...>::value;
+        CallDtor();
         new (&raw_data_) T(std::forward<TArgs>(args) ...);
         return reinterpret_cast<T&>(raw_data_);
     }
 
     template<typename T>
-    void operator=(T && t)
+    Variant& operator=(T && t)
     {
         static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
         CallDtor();
@@ -77,6 +84,7 @@ public:
         static_assert(idx != IndexOf<T>::npos,
                       "idx is npos");
         idx_ = idx;
+        return *this;
     }
 
     std::size_t Index() const

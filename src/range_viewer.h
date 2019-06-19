@@ -27,15 +27,15 @@ public:
     RangeViewer SubViewer(const std::ptrdiff_t begin_offset, const std::size_t new_size)
     {
         RangeViewer ret(*this);
-        ret.advancebegin_(begin_offset);
-        ret.setend_(ret.begin_ + new_size);
+        ret.AdvanceBegin(begin_offset);
+        ret.SetEnd(ret.begin_ + new_size);
         return ret;
     }
     
     RangeViewer SubViewer(const std::size_t begin_offset)
     {
         RangeViewer ret(*this);
-        ret.advancebegin_(begin_offset);
+        ret.AdvanceBegin(begin_offset);
         return ret;
     }
 

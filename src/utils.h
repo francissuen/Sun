@@ -133,7 +133,7 @@ public:
     {
         static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one.");
         static constexpr TIndex value = WalkUntilFound<Ts...>::count_of_left_step != invalid_count?
-        sizeof...(Ts) - WalkUntilFound<Ts...>::count_of_left_step : npos;
+        sizeof...(Ts) - WalkUntilFound<Ts...>::count_of_left_step - 1: npos;
     };
 };
 

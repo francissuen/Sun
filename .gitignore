@@ -13,7 +13,7 @@ test/Win32/
 bin/
 
 _*_
-Sun.tar*
+sun.tar*
 fs_pkg.sh
 fs_proj.xml
 
@@ -24,6 +24,6 @@ fsCMake.tar.xz
 build.sh
 README.html
 .vscode/
-Sun/
+sun/
 fs_pkg.py
 build.py
