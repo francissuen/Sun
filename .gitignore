@@ -19,8 +19,8 @@ fs_proj.xml
 
 docs/html
 
-fsCMake/
-fsCMake.tar.xz
+cmake_utility/
+cmake_utility.tar.xz
 build.sh
 README.html
 .vscode/

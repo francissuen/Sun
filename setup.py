@@ -10,10 +10,12 @@ except ImportError:
     
 deps = dependency.Dependency()
 
-fsCMake = {
+cmake_utility = {
     "src_path": """\
-https://github.com/francissuen/fsCMake/releases/download/{0}/fsCMake.tar.xz"""}
-fsCMake["src_path"] = fsCMake["src_path"].format("v0.1.0-alpha")
-deps.add(dependency.DepInfo(fsCMake))
+https://github.com/francissuen/fsCMake/releases/download/{0}/\
+cmake_utility.tar.xz\
+"""}
+cmake_utility["src_path"] = cmake_utility["src_path"].format("v0.1.0-alpha")
+deps.add(dependency.DepInfo(cmake_utility))
 
 deps.fix()

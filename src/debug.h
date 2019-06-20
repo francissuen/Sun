@@ -14,7 +14,7 @@
 #endif
 
 #ifdef NDEBUG
-#define FS_SUN_ASSERT(condition) ((void)0) 
+#define FS_SUN_ASSERT(condition) ((void)0)
 #else
 #define FS_SUN_ASSERT(condition)                                        \
     if(!(condition))                                                    \
@@ -28,8 +28,6 @@
         msg += "**************** END OF FS_SUN_ASSERT FAILED ****************\n"; \
         fs::sun::cout("FS_SUN_ASSERT", msg, fs::sun::Logger::S_FATAL);  \
         fs::sun::cout.Flush();                                          \
-    }                                                                   \
-    if(!(condition))                                                    \
-        assert(false)                                                   \
-
+        assert(false);                                                  \
+    }
 #endif
