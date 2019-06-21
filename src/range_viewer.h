@@ -58,14 +58,9 @@ public:
         *(reinterpret_cast<U*>(data_.get() + begin_) + index) = value;
     }
     
-    std::shared_ptr<T> Data()
+    std::shared_ptr<T> Data() const
     {
         return std::shared_ptr<T>(data_, data_.get() + begin_);
-    }
-    
-    const std::shared_ptr<T> & Data() const
-    {
-        return const_cast<RangeViewer*>(this)->Data();
     }
 
     void SetBegin(const std::size_t new_begin)
