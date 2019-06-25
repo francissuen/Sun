@@ -9,6 +9,12 @@
 #include <tuple>
 #include <future>
 
+#ifdef _MSC_VER
+#ifdef max
+#undef max
+#endif
+#endif
+
 FS_SUN_NS_BEGIN
 
 template<typename T0, typename T1>
