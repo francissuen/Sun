@@ -12,7 +12,7 @@ deps = dependency.Dependency()
 
 cmake_utility = {
     "src_path": """\
-https://github.com/francisjsun/fsCMake/releases/download/{0}/\
+https://github.com/francisjsun/cmake_utility/releases/download/{0}/\
 cmake_utility.tar.xz\
 """}
 cmake_utility["src_path"] = cmake_utility["src_path"].format("v0.1.0-alpha")
