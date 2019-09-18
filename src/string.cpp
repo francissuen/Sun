@@ -12,13 +12,13 @@ namespace string
 {
     std::vector<std::string> ExtractBlocks(
         const std::string & src,
-        const std::vector<std::pair<std::string, std::string>>& pairedDelimiters)
+        const std::vector<std::pair<std::string, std::string>>& bounding_delimiters)
     {
         std::vector<std::string> ret;
 
-        for(const auto pd : pairedDelimiters)
+        for(const auto bd : bounding_delimiters)
         {
-            const std::string & first = pd.first;
+            const std::string & first = bd.first;
             const size_t startPos = src.find(first, 0);
             const size_t dlmtrLen = first.size();
 
@@ -26,7 +26,7 @@ namespace string
             {
                 const size_t blockStartPos = startPos + dlmtrLen;
 
-                const size_t endPos = src.find(pd.second, blockStartPos);
+                const size_t endPos = src.find(bd.second, blockStartPos);
                 if (endPos != std::string::npos)
                 {
                     ret.push_back(src.substr(blockStartPos, endPos - blockStartPos));

@@ -15,14 +15,13 @@ FS_SUN_NS_BEGIN
 namespace string
 {
 /**
- * \brief Extract string blocks which are all between of each \b pairedDelimiters.
+ * \brief Extract blocks which are bounded by \b bounding_delimiters.
  * 
- * \return String blocks are always returned and mapped by key std::pair<>::first of
- * pairedDelimiter.
+ * \return Returned value is in the same order as \b bounding_delimiters.
  */
     std::vector<std::string> ExtractBlocks(
         const std::string & src,
-        const std::vector<std::pair<std::string, std::string>>& pairedDelimiters);
+        const std::vector<std::pair<std::string, std::string>>& bounding_delimiters);
     
     std::vector<std::string> Split(const std::string & src, const char* delimiter);
     
@@ -54,6 +53,27 @@ namespace string
                                         std::forward<string_1>(str1)),
                       str2, strn ...);
     }
+
+    template<typename T>
+    T ToNumber(const std::string & str);
+
+#define FS_SUN_STRING_DEFINE_TO_NUMBER(ret_type, suffix_of_stox)        \
+    template<>                                                          \
+    ret_type ToNumber(const std::string & str)                          \
+    {                                                                   \
+        return std::sto##suffix_of_stox(str);                           \
+    }
+
+    FS_SUN_STRING_DEFINE_TO_NUMBER(int, i)
+    FS_SUN_STRING_DEFINE_TO_NUMBER(long, l)
+    FS_SUN_STRING_DEFINE_TO_NUMBER(long long, ll)
+    FS_SUN_STRING_DEFINE_TO_NUMBER(unsigned long, ul)
+    FS_SUN_STRING_DEFINE_TO_NUMBER(unsigned long long, ull)
+    FS_SUN_STRING_DEFINE_TO_NUMBER(float, f)
+    FS_SUN_STRING_DEFINE_TO_NUMBER(double, d)
+    FS_SUN_STRING_DEFINE_TO_NUMBER(long double, ld)
+
+#undef FS_SUN_STRING_DEFINE_TO_NUMBER
 }
 
 FS_SUN_NS_END
