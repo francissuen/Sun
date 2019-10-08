@@ -59,7 +59,7 @@ namespace string
 
 #define FS_SUN_STRING_DEFINE_TO_NUMBER(ret_type, suffix_of_stox)        \
     template<>                                                          \
-    ret_type ToNumber(const std::string & str)                          \
+    inline ret_type ToNumber(const std::string & str)                   \
     {                                                                   \
         return std::sto##suffix_of_stox(str);                           \
     }
