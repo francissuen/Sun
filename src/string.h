@@ -74,11 +74,15 @@ namespace string
     FS_SUN_STRING_DEFINE_TO_NUMBER(long double, ld)
 
 #undef FS_SUN_STRING_DEFINE_TO_NUMBER
+
+    std::string to_string(const bool value);
+    
+    template<typename T>
+    std::string ToString(const T value)
+    {
+        using std::to_string;
+        to_string(value);
+    }
 }
 
 FS_SUN_NS_END
-
-namespace std
-{
-    std::string to_string(const bool value);
-}

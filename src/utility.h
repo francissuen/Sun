@@ -30,6 +30,13 @@ T0 & Max(const T0 & t0, const T1 & t1, const T2 & t2, Tn & ... tn)
     return t0 > x? t0 : x;
 }
 
+template<typename T>
+void Swap(T & a, T & b)
+{
+    using std::swap;
+    swap(a, b);
+}
+
 template<typename T, T ... n>
 struct StaticMax;
 
