@@ -9,14 +9,17 @@
 #include <type_traits>
 #include <limits>
 #include "string.h"
+#include <unordered_map>
+#include "debug.h"
 
 FS_SUN_NS_BEGIN
 
 /**
  * \brief conform to Standard ECMA-404
  */
-namespace json
+class Json
 {
+private:
 /** 6 structural tokens */
     static constexpr char token_lsb = u8"["[0];
     static constexpr char token_lcb = u8"{"[0];
@@ -24,10 +27,15 @@ namespace json
     static constexpr char token_rcb = u8"}"[0];
     static constexpr char token_col = u8":"[0];
     static constexpr char token_com = u8","[0];
+    
 /** 3 literal name tokens */
     static constexpr char const * token_true = u8"true";
+    static constexpr char token_t = u8"t"[0];
     static constexpr char const * token_false = u8"false";
+    static constexpr char token_f = u8"f"[0];
     static constexpr char const * token_null =  u8"null";
+    static constexpr char token_n = u8"n"[0];
+    
 /** insignificant whitespace */
     static constexpr char token_space = u8" "[0];
     static constexpr char token_tab =  u8"\t"[0];
@@ -37,60 +45,164 @@ namespace json
     /** quote token */
     static constexpr char token_quote = u8"\""[0];
 
-    struct SeekingResult
+public:
+    Json(const char* const  input, const std::size_t size):
+        input_(input),
+        size_(size)
+    {}
+
+public:
+    bool Initialize()
     {
-        const char* input_{nullptr};
-        const std::size_t size_{0u};
-    };
+        /** seek lcb */
+        SeekToken<token_lcb>();
+        if(size_ != 0u)
+        {
+            /** seek left quote of name*/
+            SeekToken<token_quote>();
+            if(size_ != 0u)
+            {
+                std::string name = ReadStringAtLeftQuote();
+                SeekToken<token_col>();
+                if(size_ != 0)
+                {
+                    /** seek value begin */
+                    SeekSignificantCharacter();
+                    if(size_ != 0u)
+                    {
+                        const char cur_char = *input_;
+                        if(cur_char == token_quote) /** a string value */
+                        {
+                            variables_.insert(std::make_pair(std::move(name),
+                                                             ReadStringAtLeftQuote()));
+                        }
+                        else
+                        {
+                            variables_.insert(std::make_pair(std::move(name),
+                                                             ReadNonStringTypeValue()));
+                        }
+                    }
+                }
+                else
+                    return false;
+
+                
+            }
+            else
+                return false;
+        }
+    }
+
+private:
+    const char* input_;
+    std::size_t size_;
+    std::unordered_map<std::string, std::string> variables_;
     
-/** seek significant character */
-    /** static constexpr std::size_t invalid_position = std::numeric_limits<std::size_t>::max(); */
-    SeekingResult SeekSignificantCharacter(const char* input, const std::size_t size)
+private:
+    /** Seek token */
+    template<char token>
+    void SeekToken()
+    {
+        std::size_t i = 0u;
+        for(; i < size_; i++)
+        {
+            if(*input_ == token)
+                break;
+
+            input_++;
+        }
+        
+        size_ -= i;
+    }
+
+    void Advance(const std::size_t offset)
+    {
+        if(offset < size_)
+        {
+            input_ += offset;
+            size_ -= offset;
+        }
+        else
+            FS_SUN_ASSERT(false);
+    }
+    
+    /** seek significant character */
+    void SeekSignificantCharacter()
     {
         char current_char{};
-        for(std::size_t i = 0; i < size; i++)
+        std::size_t i = 0u;
+        for(; i < size_; i++)
         {
-            current_char = *input;
-            if(current_char != token_tab &&
+            current_char = *input_;
+            if(current_char != token_space &&
+               current_char != token_tab &&
                current_char != token_lf &&
                current_char != token_cr)
-                return {input, size - i};
+                break;
             
-            input++;
+            input_++;
         }
-        return {};
+
+        size_ -= i;
     }
-    
-    SeekingResult SeekStringDelimiter(const char* input, const std::size_t size)
+
+    std::string ReadNonStringTypeValue()
     {
-        char current_char{};
-        for(std::size_t i = 0; i < size; i++)
+        if(size_ != 0u)
         {
-            current_char = *input;
-            if(current_char == token_tab ||
-               current_char == token_lf ||
-               current_char == token_cr ||
-               current_char == token_col)
-                return {input, size - i};
+            const char* const begin = input_;
             
-            input++;
+            char current_char{};
+            std::size_t i = 0u;
+            for(; i < size_; i++)
+            {
+                current_char = *input_;
+                if(current_char == token_space ||
+                   current_char == token_tab ||
+                   current_char == token_lf ||
+                   current_char == token_cr ||
+                   current_char == token_com||
+                   current_char == token_rcb)
+                    break;
+
+                input_++;
+            }
+
+            size_ -= i;
+
+            if(size_ != 0u)
+            {
+                return {begin, input_ + 1}; /**TODO */
+            }
+            else
+                return {};
+            
         }
-        return {};
+        else
+            return {};
     }
-    
-    SeekingResult SeekValueRightDelimiter(const char* const input, const std::size_t size)
+
+    std::string ReadStringAtLeftQuote()
     {
-        char current_char{};
-        for(std::size_t i = 0; i < size; i++)
+        FS_SUN_ASSERT(*input_ == token_quote);
+        if(size_ != 0u)
         {
-            current_char = input[i];
-            if(current_char == token_tab ||
-               current_char == token_lf ||
-               current_char == token_cr ||
-               current_char == token_rcb)
-                return {input, size - i};
+            Advance(1u);
+            const char* const begin = input_;
+            if(size_ != 0u)
+            {
+                /** seek right quote */
+                SeekToken<token_quote>();
+                if(size_ != 0u)
+                {
+                    return {begin, input_};
+                }
+                else
+                    return {};
+            }
         }
-        return {};
+        else
+            return {};
     }
 
     std::string GetName(const char* const input, const std::size_t size)
