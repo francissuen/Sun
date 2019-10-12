@@ -7,6 +7,8 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <unordered_map>
+#include <map>
 
 #include "ns.h"
 
@@ -76,13 +78,48 @@ namespace string
 #undef FS_SUN_STRING_DEFINE_TO_NUMBER
 
     std::string to_string(const bool value);
-    
+        
     template<typename T>
-    std::string ToString(const T value)
+    std::string ToString(const T & value)
     {
         using std::to_string;
-        to_string(value);
+        return to_string(value);
     }
+
+    template<>
+    inline std::string ToString(const std::string & value)
+    {
+        return value;
+    }
+
+    template<typename TOrderedOrUnorderedMap>
+    std::string to_string(const TOrderedOrUnorderedMap & map)
+    {
+        std::string ret;
+        ret += "{";
+        for(const auto & pair : map)
+        {
+            ret += ("@key: " + ToString(pair.first) + ", @value: " + ToString(pair.second) + "; ");
+        }
+        if(ret.back() == ' ')
+            ret.erase(ret.end() - 2, ret.end());
+        ret += "}";
+        return ret;
+    }
+
+    template<typename TKey, typename TValue>
+    std::string ToString(const std::unordered_map<TKey, TValue> & value)
+    {
+        return to_string(value);
+    }
+
+    template<typename TKey, typename TValue>
+    std::string ToString(const std::map<TKey, TValue> & value)
+    {
+        return to_string(value);
+    }
+
+
 }
 
 FS_SUN_NS_END

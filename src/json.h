@@ -11,6 +11,7 @@
 #include "string.h"
 #include <unordered_map>
 #include "debug.h"
+#include <cstring>
 
 FS_SUN_NS_BEGIN
 
@@ -51,6 +52,12 @@ public:
         size_(size)
     {}
 
+    Json(const char* const  sz_input):
+        input_(sz_input),
+        size_(strlen(sz_input))
+    {}
+
+
 public:
     bool Initialize()
     {
@@ -58,39 +65,67 @@ public:
         SeekToken<token_lcb>();
         if(size_ != 0u)
         {
-            /** seek left quote of name*/
-            SeekToken<token_quote>();
-            if(size_ != 0u)
+            while(true)
             {
-                std::string name = ReadStringAtLeftQuote();
-                SeekToken<token_col>();
-                if(size_ != 0)
+                /** seek left quote of name*/
+                SeekToken<token_quote>();
+                if(size_ != 0u)
                 {
-                    /** seek value begin */
-                    SeekSignificantCharacter();
+                    std::string name = ReadStringAtLeftQuote();
+                    SeekToken<token_col>();
                     if(size_ != 0u)
                     {
-                        const char cur_char = *input_;
-                        if(cur_char == token_quote) /** a string value */
+                        Advance(1u); /** walk over the col */
+                        if(size_ != 0u)
                         {
-                            variables_.insert(std::make_pair(std::move(name),
-                                                             ReadStringAtLeftQuote()));
+                            /** seek value begin */
+                            SeekSignificantCharacter();
+                            if(size_ != 0u)
+                            {
+                                char cur_char = *input_;
+                                if(cur_char == token_quote) /** a string value */
+                                {
+                                    variables_.insert(std::make_pair(std::move(name),
+                                                                     ReadStringAtLeftQuote()));
+                                    if(size_ != 0u)
+                                        Advance(1u); /** walk pass the right quote */
+                                    else
+                                        return false;
+                                }
+                                else
+                                {
+                                    variables_.insert(std::make_pair(std::move(name),
+                                                                     ReadNonStringTypeValue()));
+                                }
+
+                                /** seek comma or left curly brace */
+                                SeekSignificantCharacter();
+                                if(size_ != 0u)
+                                {
+                                    cur_char = *input_;
+                                    if(cur_char == token_rcb)
+                                        return true;
+                                }
+                                else
+                                    return false;
+                            }
                         }
                         else
-                        {
-                            variables_.insert(std::make_pair(std::move(name),
-                                                             ReadNonStringTypeValue()));
-                        }
+                            return false;
                     }
+                    else
+                        return false;
                 }
-                else
-                    return false;
-
                 
             }
-            else
-                return false;
         }
+        else
+            return false;
+    }
+
+    const std::unordered_map<std::string, std::string> & GetVariables() const
+    {
+        return variables_;
     }
 
 private:
@@ -172,7 +207,7 @@ private:
 
             if(size_ != 0u)
             {
-                return {begin, input_ + 1}; /**TODO */
+                return {begin, input_ + 1u};
             }
             else
                 return {};
@@ -200,67 +235,64 @@ private:
                 else
                     return {};
             }
+            else
+                return {};
         }
         else
             return {};
     }
+};
 
-    std::string GetName(const char* const input, const std::size_t size)
-    {
-        const SeekingResult ret = SeekStringDelimiter(input, size);
-        return std::string(ret.input_, SeekStringDelimiter(ret.input_, ret.size_).size_);
-    }
+/**     template<typename T> */
+/**     typename std::enable_if<std::is_class<T>::value, T>::type */
+/**     GetValue(const char* const input, const std::size_t size) */
+/**     { */
+/**         return T::ParseFromJson(input, size); */
+/**     } */
 
-    template<typename T>
-    typename std::enable_if<std::is_class<T>::value, T>::type
-    GetValue(const char* const input, const std::size_t size)
-    {
-        return T::ParseFromJson(input, size);
-    }
+/**     template<typename T> */
+/**     typename std::enable_if<std::is_arithmetic<T>::value, T>::type */
+/**     GetValue(const char* const input, const std::size_t size) */
+/**     { */
+/**         const std::size_t begin = SeekSignificantCharacter(input, size); */
+/**         return fs::sun::string::ToNumber<T>( */
+/**             std::string(input + begin, input + SeekValueRightDelimiter(input + begin, */
+/**                                                                        size - begin))); */
+/**     } */
 
-    template<typename T>
-    typename std::enable_if<std::is_arithmetic<T>::value, T>::type
-    GetValue(const char* const input, const std::size_t size)
-    {
-        const std::size_t begin = SeekSignificantCharacter(input, size);
-        return fs::sun::string::ToNumber<T>(
-            std::string(input + begin, input + SeekValueRightDelimiter(input + begin,
-                                                                       size - begin)));
-    }
+/** #define FS_SUN_JSON_REGISTER_OBJECT_BEGIN(class_name)                   \ */
+/**     static class_name ParseFromJson(const char* const input, const std::size_t size) \ */
+/**     {                                                                   \ */
+/**     class_name obj; */
 
-#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN(class_name)                   \
-    static class_name ParseFromJson(const char* const input, const std::size_t size) \
-    {                                                                   \
-    class_name obj;
-
-#define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name, ...)           \
-    obj.name = json::GetValue<__VA_ARGS__>(input, size);
+/** #define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name, ...)           \ */
+/**     obj.name = json::GetValue<__VA_ARGS__>(input, size); */
     
-#define FS_SUN_JSON_REGISTER_OBJECT_END()       \
-    return obj; }
+/** #define FS_SUN_JSON_REGISTER_OBJECT_END()       \ */
+/**     return obj; } */
 
-    struct Test
-    {
-        int a;
-        FS_SUN_JSON_REGISTER_OBJECT_BEGIN(Test)
-        FS_SUN_JSON_REGISTER_OBJECT_MEMBER(a, int)
-        FS_SUN_JSON_REGISTER_OBJECT_END()
-    };
+/**     struct Test */
+/**     { */
+/**         int a; */
+/**         FS_SUN_JSON_REGISTER_OBJECT_BEGIN(Test) */
+/**         FS_SUN_JSON_REGISTER_OBJECT_MEMBER(a, int) */
+/**         FS_SUN_JSON_REGISTER_OBJECT_END() */
+/**     }; */
     
-    struct Test2
-    {
-        int a;
-        Test b;
-        FS_SUN_JSON_REGISTER_OBJECT_BEGIN(Test2)
-        FS_SUN_JSON_REGISTER_OBJECT_MEMBER(a, int)
-        FS_SUN_JSON_REGISTER_OBJECT_MEMBER(b, Test)
-        FS_SUN_JSON_REGISTER_OBJECT_END()
-    };
+/**     struct Test2 */
+/**     { */
+/**         int a; */
+/**         Test b; */
+/**         FS_SUN_JSON_REGISTER_OBJECT_BEGIN(Test2) */
+/**         FS_SUN_JSON_REGISTER_OBJECT_MEMBER(a, int) */
+/**         FS_SUN_JSON_REGISTER_OBJECT_MEMBER(b, Test) */
+/**         FS_SUN_JSON_REGISTER_OBJECT_END() */
+/**     }; */
 
-    void foo(int a)
-    {
-        Test t = Test::ParseFromJson(nullptr, 0);
-    }
+/**     void foo(int a) */
+/**     { */
+/**         Test t = Test::ParseFromJson(nullptr, 0); */
+/**     } */
 
-}
+/** } */
 FS_SUN_NS_END

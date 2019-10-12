@@ -29,7 +29,7 @@ public:
     inline const std::string& GetWorkingDir()const{ return working_dir_; }
 
     /**
-     * \param szPath If szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's a absolute path, 
+     * \param szPath If szPath[0] == '/'(linux) or szPath[1] == ':'(win), then it's an absolute path, 
      * else it's a relative path.
      */
     std::string GetAbsolutePath(const char* szPath)const;
