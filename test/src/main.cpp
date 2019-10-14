@@ -5,6 +5,8 @@
 #include "src/json.h"
 #include <fstream>
 #include <sstream>
+#include "src/variant.h"
+
 
 using namespace fs::sun;
 
@@ -22,6 +24,35 @@ struct stTest
     const int a;
 };
 
+struct TestJson
+{
+    std::string name;
+    std::string gender;
+    std::uint8_t age;
+    bool ready;
+    int numbers[10];
+
+    FS_SUN_JSON_REGISTER_OBJECT_BEGIN(TestJson)
+    FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name)
+    FS_SUN_JSON_REGISTER_OBJECT_MEMBER(gender)
+    FS_SUN_JSON_REGISTER_OBJECT_MEMBER(age)
+    FS_SUN_JSON_REGISTER_OBJECT_MEMBER(ready)
+    FS_SUN_JSON_REGISTER_OBJECT_MEMBER(numbers)
+    FS_SUN_JSON_REGISTER_OBJECT_END()
+
+    std::string ToString() const
+    {
+        std::string ret{"@name: "};
+        ret += name + ", @gender: " + gender + ", @age: " + string::ToString(age) +
+        ", @ready: " + string::ToString(ready) + ", @numbers: ";
+        for(std::size_t i = 0u; i < 10u; i++)
+        {
+            ret += string::ToString(numbers[i]) + ", ";
+        }
+        return ret;
+    }
+};
+
 int main(int argc, char ** argv)
 {
     cout("hello world!", Logger::S_VERBOSE);
@@ -37,15 +68,18 @@ int main(int argc, char ** argv)
 
     const Factory<A, int> f = Factory<A, int>::With<B, C>();
     std::unique_ptr<A> a = f.Create(Factory<A, int>::With<B, C>::OrderNumberOf<B>(), 1);
-    
-    constexpr char const * test_json =
-    "{"
-    "\"name\":\"fs\","
-    "\"gender\":\"male\""
-    "}";
-    
+
+    Variant<int, bool, std::string> v;
+    v = 1;
+    /** cout(string::ToString(v.Get<int>()), Logger::S_INFO); */
+    v = true;
+    /** cout(string::ToString(v.Get<bool>()), Logger::S_INFO); */
+    v = std::string("1");
+    /** cout(string::ToString(v.Get<std::string>()), Logger::S_INFO); */
+         
     if(argc > 1)
     {
+        cout(argv[1], Logger::S_INFO);
         std::ifstream json_file(argv[1]);
         std::string json_data;
         if(json_file.is_open())
@@ -53,19 +87,14 @@ int main(int argc, char ** argv)
             std::stringstream json_stream;
             json_file >> json_stream.rdbuf();
             json_data = json_stream.str();
-        }
 
-        Json j(json_data.c_str());
-        if(j.Initialize())
-        {
-            cout(string::ToString(j.GetVariables()), Logger::S_INFO);
+            TestJson tj;
+            tj.ParseFromJson(json_data.c_str(), json_data.size());
+            cout(tj.ToString().c_str(), Logger::S_INFO);
         }
-        else
-            cout("json initialize failed.", Logger::S_ERROR);
-
     }
 
     cout.Flush();
-    
+
     return 0;
 }

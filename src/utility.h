@@ -117,39 +117,37 @@ void Apply2Promise(TFunc && f, TTuple && t,
 template<typename T, typename TIndex = std::uint8_t>
 struct IndexOf
 {
-private:
-    static constexpr TIndex invalid_count = std::numeric_limits<TIndex>::max();
-    template<typename ... Ts>
-    struct WalkUntilFound
-    {
-        static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one.");
-    };
+    static constexpr TIndex npos = std::numeric_limits<TIndex>::max();
     
-    template<typename TLast>
-    struct WalkUntilFound<TLast>
+private:
+    
+    template<TIndex current_index, typename ... Ts>
+    struct SeekIndex;
+    
+    template<TIndex current_index, typename TLast>
+    struct SeekIndex<current_index, TLast>
     {
-        static constexpr TIndex count_of_left_step = std::is_same<T, TLast>::value?
-        0 : invalid_count;
+        static constexpr TIndex index = std::is_same<T, TLast>::value?
+        current_index : npos;
     };
 
-    template<typename T0, typename T1, typename ... Tn>
-    struct WalkUntilFound<T0, T1, Tn...>
+    template<TIndex current_index, typename T0, typename T1, typename ... Tn>
+    struct SeekIndex<current_index, T0, T1, Tn...>
     {
-        static constexpr TIndex count_of_left_step = std::is_same<T, T0>::value?
-        sizeof...(Tn) + 1 : WalkUntilFound<T1, Tn...>::count_of_left_step;
+        static constexpr TIndex index = std::is_same<T, T0>::value?
+        current_index : SeekIndex<current_index + 1u, T1, Tn...>::index;
     };
     
 public:
-    static constexpr TIndex npos = std::numeric_limits<TIndex>::max();
+
     template<typename ... Ts>
     struct In
     {
         static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one.");
-        static constexpr TIndex value = WalkUntilFound<Ts...>::count_of_left_step != invalid_count?
-        sizeof...(Ts) - WalkUntilFound<Ts...>::count_of_left_step - 1: npos;
+        static_assert(sizeof...(Ts) < npos, "too many Ts... for type TIndex");
+        static constexpr TIndex value = SeekIndex<0u, Ts...>::index;
     };
 };
-
 
 template<typename T, typename TIndex>
 template<typename ... Ts>
@@ -166,40 +164,41 @@ struct TypeOf
 {
 private:
     template<std::size_t cur_index, typename ... Ts>
-    struct WalkUntilFound
+    struct SeekType
     {
         static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one");        
     };
 
     template<std::size_t cur_index, typename TLast>
-    struct WalkUntilFound<cur_index, TLast>
+    struct SeekType<cur_index, TLast>
     {
         static_assert(index == cur_index, "No specified position type found.");
         using Type = TLast;
     };
 
     template<std::size_t cur_index, typename T0, typename T1, typename ... Tn>
-    struct WalkUntilFound<cur_index, T0, T1, Tn...>
+    struct SeekType<cur_index, T0, T1, Tn...>
     {
         using Type = typename std::conditional<index == cur_index, T0,
-                                               typename WalkUntilFound<cur_index + 1,
-                                                                       T1, Tn...>::Type>::type;
+                                               typename SeekType<cur_index + 1,
+                                                                 T1, Tn...>::Type>::type;
     };
 public:
     template<typename ... Ts>
     struct In
     {
         static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one");
-        using Type = typename WalkUntilFound<0u, Ts...>::Type;
+        using Type = typename SeekType<0u, Ts...>::Type;
     };
 };
 
 /**
- * \brief Invoke<functor_t<T>>::For<Ts...>::With(args...)
+ * \brief Invoke<TFunctor>::For<Ts...>::With(args...)
  */
 template<template<typename> class TFunctor>
 struct Invoke
 {
+    /** for each */
     template<typename ... Ts>
     struct For;
 
@@ -210,21 +209,23 @@ struct Invoke
         static void With(TArgs ... args)
         {
             TFunctor<TLast> func;
-            func(args...);
+            func(std::forward<TArgs>(args)...);
         }
     };
 
-    template<typename T0, typename T1, typename ... Tn>
-    struct For<T0, T1, Tn...>
+    template<typename T0, typename T1, typename ... TOthers>
+    struct For<T0, T1, TOthers...>
     {
         template<typename ... TArgs>
         static void With(TArgs ... args)
         {
-            For<T0>::With(args...);
-            For<T1, Tn...>::With(args...);
+            For<T0>::With(std::forward<TArgs>(args)...);
+            For<T1, TOthers...>::With(std::forward<TArgs>(args)...);
         }
     };
+
 };
+
 /** 
  * \brief value = (type_t<Ts>::value &&)...
  */
@@ -253,6 +254,18 @@ struct IsType
     {
         static constexpr bool value = IndexOf<T>::template In<Ts...>::value != IndexOf<T>::npos;
     };
+};
+
+template<typename T, std::size_t N>
+constexpr std::size_t CountOfArray(T (&) [N])
+{
+    return N;
+}
+
+template<typename T>
+struct remove_cvref
+{
+    using type = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
 };
 
 FS_SUN_NS_END

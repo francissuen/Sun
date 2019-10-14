@@ -1,4 +1,7 @@
 {
     "name": "fs",
-    "gender": "male"
+    "gender": "male",
+    "age": 10,
+    "ready": true,
+    "numbers": [1, 2, 3, 4, 5]
 }

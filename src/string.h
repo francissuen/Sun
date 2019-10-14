@@ -26,7 +26,7 @@ namespace string
         const std::vector<std::pair<std::string, std::string>>& bounding_delimiters);
     
     std::vector<std::string> Split(const std::string & src, const char* delimiter);
-    
+
     std::string FileExtension(const std::string & src);
 
     template<typename string_0, typename string_1>
@@ -57,7 +57,11 @@ namespace string
     }
 
     template<typename T>
-    T ToNumber(const std::string & str);
+    T ToNumber(const std::string & str)
+    {
+        /** fallback to int */
+        return std::stoi(str);
+    }
 
 #define FS_SUN_STRING_DEFINE_TO_NUMBER(ret_type, suffix_of_stox)        \
     template<>                                                          \
@@ -65,7 +69,7 @@ namespace string
     {                                                                   \
         return std::sto##suffix_of_stox(str);                           \
     }
-
+    
     FS_SUN_STRING_DEFINE_TO_NUMBER(int, i)
     FS_SUN_STRING_DEFINE_TO_NUMBER(long, l)
     FS_SUN_STRING_DEFINE_TO_NUMBER(long long, ll)
