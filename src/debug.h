@@ -32,17 +32,21 @@
     }
 #endif
 
-#define FS_SUN_LOG(message, severity)                           \
-    std::string msg{message};                                   \
-    msg = msg + "\n@FILE: " + __FILE__;                         \
-    msg = msg + ", @LINE: "  + std::to_string(__LINE__) + "\n"; \
-    msg = msg + "@FUNCTION: " + FS_SUN_FUNC_NAME;               \
-    fs::sun::cout(msg, severity);
+#define FS_SUN_LOG(message, severity)                                   \
+    {                                                                   \
+        std::string msg{message};                                       \
+        msg = msg + "\n@FILE: " + __FILE__;                             \
+        msg = msg + ", @LINE: "  + std::to_string(__LINE__) + "\n";     \
+        msg = msg + "@FUNCTION: " + FS_SUN_FUNC_NAME;                   \
+        fs::sun::cout(msg, severity);                                   \
+    }
 
-#define FS_SUN_LOG_INFO(message)                                \
-    std::string msg{message};                                   \
-    msg = msg + "\n@FILE: " + __FILE__;                         \
-    msg = msg + ", @LINE: "  + std::to_string(__LINE__) + "\n"; \
-    msg = msg + "@FUNCTION: " + FS_SUN_FUNC_NAME;               \
-    fs::sun::cout(msg, fs::sun::Logger::S_INFO);
+#define FS_SUN_LOG_INFO(message)                                        \
+    {                                                                   \
+        std::string msg{message};                                       \
+        msg = msg + "\n@FILE: " + __FILE__;                             \
+        msg = msg + ", @LINE: "  + std::to_string(__LINE__) + "\n";     \
+        msg = msg + "@FUNCTION: " + FS_SUN_FUNC_NAME;                   \
+        fs::sun::cout(msg, fs::sun::Logger::S_INFO);                    \
+    }
 

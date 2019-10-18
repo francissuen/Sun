@@ -70,12 +70,12 @@ int main(int argc, char ** argv)
     std::unique_ptr<A> a = f.Create(Factory<A, int>::With<B, C>::OrderNumberOf<B>(), 1);
 
     Variant<int, bool, std::string> v;
-    v = 1;
+    /** v = 1; */
     /** cout(string::ToString(v.Get<int>()), Logger::S_INFO); */
-    v = true;
+    /** v = true; */
     /** cout(string::ToString(v.Get<bool>()), Logger::S_INFO); */
     v = std::string("1");
-    /** cout(string::ToString(v.Get<std::string>()), Logger::S_INFO); */
+    cout(v.ToString(), Logger::S_INFO);
          
     if(argc > 1)
     {

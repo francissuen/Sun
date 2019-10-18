@@ -206,7 +206,7 @@ struct Invoke
     struct For<TLast>
     {
         template<typename ... TArgs>
-        static void With(TArgs ... args)
+        static void With(TArgs && ... args)
         {
             TFunctor<TLast> func;
             func(std::forward<TArgs>(args)...);
@@ -217,7 +217,7 @@ struct Invoke
     struct For<T0, T1, TOthers...>
     {
         template<typename ... TArgs>
-        static void With(TArgs ... args)
+        static void With(TArgs && ... args)
         {
             For<T0>::With(std::forward<TArgs>(args)...);
             For<T1, TOthers...>::With(std::forward<TArgs>(args)...);

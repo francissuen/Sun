@@ -9,9 +9,11 @@
 #include "utility.h"
 #include <unordered_map>
 #include <typeinfo>
+#include "string.h"
+#include <cstring>
 
 #include "debug.h"
-#include "string.h"
+
 
 FS_SUN_NS_BEGIN
 
@@ -43,6 +45,22 @@ namespace variant
         void operator()(Variant<Ts...> * dst, Variant<Ts...> && src);
     };
 
+
+    template<typename T>
+    struct CopyAssignmentOperator
+    {
+        template<typename ... Ts>
+        void operator()(Variant<Ts...> * dst, const Variant<Ts...> & src);
+    };
+
+    template<typename T>
+    struct MoveAssignmentOperator
+    {
+        template<typename ... Ts>
+        void operator()(Variant<Ts...> * dst, Variant<Ts...> && src);
+    };
+
+
     template<typename T>
     struct Dtor
     {
@@ -54,7 +72,14 @@ namespace variant
     struct Swap
     {
         template<typename ... Ts>
-        void operator()(Variant<Ts...> & a, Variant<Ts...> & b);
+        void operator()(Variant<Ts...> * a, Variant<Ts...> & b);
+    };
+
+    template<typename T>
+    struct ToString
+    {
+        template<typename ... Ts>
+        void operator()(const Variant<Ts...> * src, std::string & ret);
     };
 }
 /**
@@ -72,7 +97,19 @@ class Variant
     friend struct variant::MoveCtor;
 
     template<typename T>
+    friend struct variant::CopyAssignmentOperator;
+
+    template<typename T>
+    friend struct variant::MoveAssignmentOperator;
+
+    template<typename T>
     friend struct variant::Dtor;
+
+    template<typename T>
+    friend struct variant::Swap;
+
+    template<typename T>
+    friend struct variant::ToString;
     
 private:
     template<typename T>
@@ -96,26 +133,26 @@ public:
 
     Variant(const Variant & other)
     {
-        CallSpecialMemberFunction<variant::CopyCtor>(other);
+        CallMemberFunction<variant::CopyCtor>(std::forward<Variant>(other));
     }
-    
+
+
     Variant(Variant && other)
     {
-        CallSpecialMemberFunction<variant::MoveCtor>(std::move(other));
+        CallMemberFunction<variant::MoveCtor>(std::forward<Variant>(other));
     }
 
     template<typename T>
     Variant(T && other):
         index_(IndexOf<typename remove_cvref<T>::type>::template In<Ts...>::value)
     {
-        static_assert(IsType<T>:: template In<Ts...>::value, "Invalid type T.");
-        new(&(raw_data_))T(std::forward<T>(other));
-        FS_SUN_LOG_INFO(fs::sun::string::ToString(index_));
+        static_assert(IsType<typename remove_cvref<T>::type>:: template In<Ts...>::value, "Invalid type T.");
+        new (&(raw_data_)) typename remove_cvref<T>::type (std::forward<T>(other));
     }
 
     ~Variant()
     {
-        CallSpecialMemberFunction<variant::Dtor>();
+        CallMemberFunction<variant::Dtor>();
     }
 
     
@@ -125,7 +162,10 @@ public:
     {
         using std::swap;
 
-        swap(a.raw_data_, b.raw_data_);
+        /** swap(a.raw_data_, b.raw_data_);*/
+        RawData tmp;
+        std::memcpy(&tmp, &a.raw_data_, sizeof(a.raw_data_));
+        std::memcpy(&a.raw_data_, &b.raw_data_, sizeof(a.raw_data_));
         swap(a.index_, b.index_);
     }
 
@@ -134,7 +174,7 @@ public:
     {
         static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
         index_ = IndexOf<T>::template In<Ts ...>::value;
-        CallSpecialMemberFunction<variant::Dtor>();
+        CallMemberFunction<variant::Dtor>();
         
         new (&raw_data_) T(std::forward<TArgs>(args) ...);
         return reinterpret_cast<T&>(raw_data_);
@@ -142,9 +182,11 @@ public:
 
     Variant& operator=(Variant other)
     {
-        using std::swap;
+        /** using std::swap; */
         
-        swap(*this, other);
+        /** swap(*this, other); */
+
+        Invoke<variant::CopyAssignmentOperator>::template For<Ts...>::With(this, other);
         
         return *this;
     }
@@ -155,10 +197,21 @@ public:
         static_assert(IsType<typename remove_cvref<T>::type>::template In<Ts...>::value,
                       "T is not one of Ts");
         using std::swap;
+        
+        {
+            Variant tmp(std::forward<T>(other));
 
-        Variant tmp(std::forward<T>(other));
-        swap(*this, tmp);
-        FS_SUN_LOG_INFO(fs::sun::string::ToString(tmp.index_));
+            /** Invoke<variant::Swap>::template For<Ts...>::With(this, tmp); */
+            FS_SUN_LOG_INFO("this: " + ToString() + ", tmp: " + tmp.ToString());
+            FS_SUN_LOG_INFO("tmp index: " + string::ToString(tmp.index_));
+            swap(*this, tmp);
+            FS_SUN_LOG_INFO("this: " + ToString() + ", tmp: " + tmp.ToString());
+            FS_SUN_LOG_INFO("tmp index: " + string::ToString(tmp.index_));
+            FS_SUN_LOG_INFO("this index_: " + string::ToString(index_));
+        }
+
+        FS_SUN_LOG_INFO("this: " + ToString() + ", index_: " + string::ToString(index_));
+
         return *this;
     }
 
@@ -202,19 +255,43 @@ public:
         else
             throw std::bad_cast();
     }
+
+    template<typename T>
+    T && Get() &&
+    {
+        if(Is<T>())
+            return RawGet<T>();
+        else
+            throw std::bad_cast();
+    }
+
     
     template<typename T>
     const T & Get() const
     {
         return const_cast<Variant*>(this)->Get<T>();
     }
+
+    std::string ToString() const
+    {
+        std::string ret;
+        CallMemberFunction<variant::ToString>(ret);
+        return ret;
+    }
     
 private:
     template<template<typename> class TFunctor, typename ... TArgs>
-    void CallSpecialMemberFunction(TArgs ... args)
+    void CallMemberFunction(TArgs && ... args)
     {
         Invoke<TFunctor>::template For<Ts ...>::With(this, std::forward<TArgs>(args)...);
     }
+
+    template<template<typename> class TFunctor, typename ... TArgs>
+    void CallMemberFunction(TArgs && ... args) const
+    {
+        Invoke<TFunctor>::template For<Ts ...>::With(this, std::forward<TArgs>(args)...);
+    }
+
 private:
     RawData raw_data_{};
     variant::index_t index_{variant::npos};
@@ -228,7 +305,7 @@ namespace variant
     {
         if(src.index_ == IndexOf<T>::template In<Ts...>::value)
         {
-            new(&(dst->raw_data_))T(reinterpret_cast<const T &>(src.raw_data_));
+            new(&(dst->raw_data_))T(src->template Get<T>());
             dst->index_ = src.index_;
         }
     }
@@ -239,8 +316,38 @@ namespace variant
     {
         if(src.index_ == IndexOf<T>::template In<Ts...>::value)
         {
-            new(&(dst->raw_data_))T(reinterpret_cast<T &&>(std::move(src).raw_data_));
+            new(&(dst->raw_data_))T(std::move(src)->template Get<T>());
             dst->index_ = src.index_;
+        }
+    }
+
+    template<typename T>
+    template<typename ... Ts>
+    void CopyAssignmentOperator<T>::operator()(Variant<Ts...> * dst, const Variant<Ts...> & src)
+    {
+        FS_SUN_LOG_INFO(typeid(T).name());
+        if(src.index_ == IndexOf<T>::template In<Ts...>::value)
+        {
+            FS_SUN_LOG_INFO("src.index_: " + fs::sun::string::ToString(src.index_) + ", dst.index_: " +
+                            fs::sun::string::ToString(dst->index_));
+            dst->~Variant<Ts...>();
+            
+            *dst = src.template Get<T>();
+        }
+    }
+
+    template<typename T>
+    template<typename ... Ts>
+    void MoveAssignmentOperator<T>::operator()(Variant<Ts...> * dst, Variant<Ts...> && src)
+    {
+        FS_SUN_LOG_INFO(typeid(T).name());
+        if(src.index_ == IndexOf<T>::template In<Ts...>::value)
+        {
+            FS_SUN_LOG_INFO("src.index_: " + fs::sun::string::ToString(src.index_) + ", dst.index_: " +
+                            fs::sun::string::ToString(dst->index_));
+            dst->~Variant<Ts...>();
+            
+            *dst = std::move(src).template Get<T>();
         }
     }
 
@@ -250,11 +357,34 @@ namespace variant
     {
         if(std::is_class<T>::value && dst->index_ == IndexOf<T>::template In<Ts...>::value)
         {
-            FS_SUN_LOG_INFO(fs::sun::string::ToString(dst->index_) + typeid(T).name());
+            FS_SUN_LOG_INFO("dtor: " + string::ToString(dst->index_));
             reinterpret_cast<T*>(&(dst->raw_data_))->~T();
             dst->index_ = npos;
         }
     }
+
+    template<typename T>
+    template<typename ... Ts>
+    void Swap<T>::operator()(Variant<Ts...> * a, Variant<Ts...> & b)
+    {
+        if(a->index_ == IndexOf<T>::template In<Ts...>::value)
+        {
+            T tmp = a->template Get<T>();
+            Invoke<CopyAssignmentOperator>::template For<Ts...>::With(a, b);
+            b = tmp;
+        }
+    }
+
+    template<typename T>
+    template<typename ... Ts>
+    void ToString<T>::operator()(const Variant<Ts...> * src, std::string & ret)
+    {
+        if(src->index_ == IndexOf<T>::template In<Ts...>::value)
+        {
+            ret = string::ToString(src->template Get<T>());
+        }
+    }
+
 }
 
 FS_SUN_NS_END
