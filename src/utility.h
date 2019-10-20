@@ -193,17 +193,16 @@ public:
 };
 
 /**
- * \brief Invoke<TFunctor>::For<Ts...>::With(args...)
+ * \brief Invoke<TFunctor>::SequentiallyFor<Ts...>::With(args...)
  */
 template<template<typename> class TFunctor>
 struct Invoke
 {
-    /** for each */
     template<typename ... Ts>
-    struct For;
+    struct SequentiallyFor;
 
     template<typename TLast>
-    struct For<TLast>
+    struct SequentiallyFor<TLast>
     {
         template<typename ... TArgs>
         static void With(TArgs && ... args)
@@ -214,15 +213,22 @@ struct Invoke
     };
 
     template<typename T0, typename T1, typename ... TOthers>
-    struct For<T0, T1, TOthers...>
+    struct SequentiallyFor<T0, T1, TOthers...>
     {
         template<typename ... TArgs>
         static void With(TArgs && ... args)
         {
-            For<T0>::With(std::forward<TArgs>(args)...);
-            For<T1, TOthers...>::With(std::forward<TArgs>(args)...);
+            SequentiallyFor<T0>::With(std::forward<TArgs>(args)...);
+            SequentiallyFor<T1, TOthers...>::With(std::forward<TArgs>(args)...);
         }
     };
+
+    template<typename ... Ts>
+    struct OnlyWhenFor
+    {
+        
+    };
+    
 
 };
 

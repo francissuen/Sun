@@ -127,7 +127,7 @@ public:
 
     Variant(Variant && other)
     {
-        CallMemberFunction<variant::MoveCtor>(other);
+        CallMemberFunction<variant::MoveCtor>(std::move(other));
     }
 
     template<typename T>
@@ -152,7 +152,7 @@ public:
             Invoke<variant::Swap>::template For<Ts...>::With(a, b);
         else
         {
-            Invoke<variant::MoveCtor>::template For<Ts...>::With(&a, b);
+            Invoke<variant::MoveCtor>::template For<Ts...>::With(&a, std::move(b));
             b.~Variant<Ts...>();
             
         }
@@ -303,8 +303,6 @@ namespace variant
         {
             new(&(dst->raw_data_))T(std::move(src).template Get<T>());
             dst->index_ = src.index_;
-
-            src.index_ = npos;
         }
     }
 
@@ -328,8 +326,11 @@ namespace variant
         {
             Variant<Ts...> tmp(std::move(a));
 
+            /** a = b */
             a.~Variant<Ts...>();
             Invoke<MoveCtor>::template For<Ts...>::With(&a, std::move(b));
+
+            /** b = tmp */
             b.~Variant<Ts...>();
             Invoke<MoveCtor>::template For<Ts...>::With(&b, std::move(tmp));
         }

@@ -109,12 +109,12 @@ int main(int argc, char ** argv)
 
 
     Variant<int, bool, std::string> v;
-    /** v = 1; */
-    /** cout(string::ToString(v.Get<int>()), Logger::S_INFO); */
-    /** v = true; */
-    /** cout(string::ToString(v.Get<bool>()), Logger::S_INFO); */
-    v = std::string("1");
-    cout(v.ToString(), Logger::S_INFO);
+    v = 1;
+    cout(string::ToString(v.Get<int>()), Logger::S_INFO);
+    v = true;
+    cout(string::ToString(v.Get<bool>()), Logger::S_INFO);
+    /** v = std::string("1"); */
+    /** cout(v.ToString(), Logger::S_INFO); */
          
     if(argc > 1)
     {
