@@ -24,6 +24,35 @@ struct stTest
     const int a;
 };
 
+
+struct MyString
+{
+    MyString(const char* sz_str):
+        data_(sz_str)
+    {}
+
+    MyString(const MyString & other):
+        data_(other.data_)
+    {
+        cout("MyString cpyctor", Logger::S_INFO);
+    }
+        
+    MyString(MyString && other):
+        data_(std::move(other.data_))
+    {
+        cout("MyString mvctor", Logger::S_INFO);
+    }
+
+
+    friend std::string to_string(const MyString & str)
+    {
+        return str.data_;
+    }
+
+    std::string data_;
+};
+
+
 struct TestJson
 {
     std::string name;
@@ -68,6 +97,16 @@ int main(int argc, char ** argv)
 
     const Factory<A, int> f = Factory<A, int>::With<B, C>();
     std::unique_ptr<A> a = f.Create(Factory<A, int>::With<B, C>::OrderNumberOf<B>(), 1);
+
+    std::string *str_test = new std::string("123");
+
+    typedef std::aligned_storage<sizeof(std::string), alignof(std::string)>::type my_string_t;
+    my_string_t str_test_2;
+    std::memcpy(&str_test_2, str_test, sizeof(std::string));
+    cout((std::string&)str_test_2, Logger::S_INFO);
+    std::memset(str_test, 0, sizeof(std::string));
+    /** cout(str_test, Logger::S_INFO); */
+
 
     Variant<int, bool, std::string> v;
     /** v = 1; */
