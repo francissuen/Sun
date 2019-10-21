@@ -8,10 +8,10 @@
 #include <cstdint>
 #include <type_traits>
 #include <limits>
-#include "string.h"
 #include <unordered_map>
 #include "debug.h"
 #include <cstring>
+#include "variant.h"
 
 FS_SUN_NS_BEGIN
 
@@ -21,12 +21,7 @@ FS_SUN_NS_BEGIN
 class Json
 {
 public:
-    struct RawValue
-    {
-        const char* begin_;
-        std::size_t size_;
-        std::string Refine() const;
-    };
+    using Value = std::vector<Variant<std::string, std::unique_ptr<Json>>>;
 private:
 /** 6 structural tokens */
     static constexpr char token_lsb = u8"["[0];
@@ -52,6 +47,7 @@ private:
     
     /** quote token */
     static constexpr char token_quote = u8"\""[0];
+    static constexpr char token_backslash = u8"\\"[0];
 
 public:
     template<typename T>
@@ -122,12 +118,12 @@ public:
 public:
     bool Initialize();
 
-    const std::unordered_map<std::string, RawValue> & GetVariables() const;
+    const std::unordered_map<std::string, Value> & GetValues() const;
 
 private:
     const char* input_;
     std::size_t size_;
-    std::unordered_map<std::string, RawValue> raw_variables_;
+    std::unordered_map<std::string, Value> values_;
     
 private:
     /** Seek token */
@@ -146,7 +142,15 @@ private:
         size_ -= i;
     }
 
-    void Advance(const std::size_t offset);
+    template<char token>
+    void AdvanceCurrentToken()
+    {
+        FS_SUN_ASSERT(token == *input_);
+        input_ += 1u;
+        size_ -= 1u;
+    }
+
+    /** void Advance(const std::size_t offset); */
     
     /** seek significant character */
     /** void SeekSignificantCharacter(); */
@@ -154,8 +158,10 @@ private:
     /** std::string ReadNonStringTypeValue(); */
 
     std::string ReadString();
+    std::unique_ptr<Json> ReadObject();
+    Value ReadArray();
     /** std::string ReadArray(); */
-    RawValue ReadValue();
+    Value ReadValue();
 };
 
 

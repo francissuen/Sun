@@ -199,10 +199,10 @@ template<template<typename> class TFunctor>
 struct Invoke
 {
     template<typename ... Ts>
-    struct SequentiallyFor;
+    struct ForTypeIn;
 
     template<typename TLast>
-    struct SequentiallyFor<TLast>
+    struct ForTypeIn<TLast>
     {
         template<typename ... TArgs>
         static void With(TArgs && ... args)
@@ -210,26 +210,45 @@ struct Invoke
             TFunctor<TLast> func;
             func(std::forward<TArgs>(args)...);
         }
+        
+        template<typename TIndex, typename ... TArgs>
+        static void With2Internal(const TIndex target_index, const TIndex current_index, TArgs && ... args)
+        {
+            if(target_index == current_index)
+            {
+                TFunctor<TLast> func;
+                func(std::forward<TArgs>(args)...);
+            }
+        }
+
     };
 
     template<typename T0, typename T1, typename ... TOthers>
-    struct SequentiallyFor<T0, T1, TOthers...>
+    struct ForTypeIn<T0, T1, TOthers...>
     {
         template<typename ... TArgs>
         static void With(TArgs && ... args)
         {
-            SequentiallyFor<T0>::With(std::forward<TArgs>(args)...);
-            SequentiallyFor<T1, TOthers...>::With(std::forward<TArgs>(args)...);
+            ForTypeIn<T0>::With(std::forward<TArgs>(args)...);
+            ForTypeIn<T1, TOthers...>::With(std::forward<TArgs>(args)...);
+        }
+        
+        template<typename TIndex, typename ... TArgs>
+        static void With2Internal(const TIndex target_index, const TIndex current_index, TArgs && ... args)
+        {
+            if(target_index == current_index)
+                ForTypeIn<T0>::With(std::forward<TArgs>(args)...);
+            else
+                ForTypeIn<T1, TOthers...>::template With2Internal<TIndex, TArgs...>(
+                    target_index, current_index + 1u, std::forward<TArgs>(args)...);
+        }
+
+        template<typename TIndex, typename ... TArgs>
+        static void With2(const TIndex target_index, TArgs && ... args)
+        {
+            With2Internal<TIndex, TArgs...>(target_index, 0u, std::forward<TArgs>(args)...);
         }
     };
-
-    template<typename ... Ts>
-    struct OnlyWhenFor
-    {
-        
-    };
-    
-
 };
 
 /** 

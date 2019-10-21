@@ -77,6 +77,8 @@ bool Json::Initialize()
 {
     /** seek lcb */
     SeekToken<token_lcb>();
+    AdvanceCurrentToken<token_lcb>();
+    
     while(size_ != 0u)
     {
         /** seek left quote of name*/
@@ -85,7 +87,7 @@ bool Json::Initialize()
         {
             std::string name = ReadString();
             SeekToken<token_col>();
-            raw_variables_.insert(std::make_pair(std::move(name), ReadValue()));
+            values_.insert(std::make_pair(std::move(name), ReadValue()));
             if(*input_ == token_rcb)
                 return true;
         }
@@ -99,83 +101,28 @@ const std::unordered_map<std::string, Json::RawValue> & Json::GetVariables() con
     return raw_variables_;
 }
 
-void Json::Advance(const std::size_t offset)
-{
-    if(offset < size_)
-    {
-        input_ += offset;
-        size_ -= offset;
-    }
-    else
-        FS_SUN_ASSERT(false);
-}
-
-/** seek significant character */
-/** void Json::SeekSignificantCharacter() */
-/** { */
-/**     char current_char{}; */
-/**     std::size_t i = 0u; */
-/**     for(; i < size_; i++) */
-/**     { */
-/**         current_char = input_[i]; */
-/**         if(current_char != token_space && */
-/**            current_char != token_tab && */
-/**            current_char != token_lf && */
-/**            current_char != token_cr) */
-/**             break; */
-/**     } */
-
-/**     size_ -= i; */
-/**     input_ += i; */
-/** } */
-
-/** std::string Json::ReadNonStringTypeValue() */
-/** { */
-/**     if(size_ != 0u) */
-/**     { */
-/**         const char* const begin = input_; */
-            
-/**         char current_char{}; */
-/**         std::size_t i = 0u; */
-/**         for(; i < size_; i++) */
-/**         { */
-/**             current_char = input_[i]; */
-/**             if(current_char == token_space || */
-/**                current_char == token_tab || */
-/**                current_char == token_lf || */
-/**                current_char == token_cr || */
-/**                current_char == token_com|| */
-/**                current_char == token_rcb) */
-/**                 break; */
-/**         } */
-
-/**         size_ -= i; */
-/**         input_ += i; */
-
-/**         if(size_ != 0u) */
-/**         { */
-/**             return {begin, input_}; */
-/**         } */
-/**         else */
-/**             return {}; */
-            
-/**     } */
-/**     else */
-/**         return {}; */
-/** } */
-
 
 std::string Json::ReadString()
 {
-    FS_SUN_ASSERT(*input_ == token_quote); /** should be at quote now */
+    /** should be at quote now */
+    AdvanceCurrentToken<token_quote>();
+    
     if(size_ != 0u)
     {
-        Advance(1u);
+
         const char* const begin = input_;
         if(size_ != 0u)
         {
-            /** seek right quote */
-            SeekToken<token_quote>();
+            do
+            {
+                /** seek right quote */
+                SeekToken<token_quote>();
+                /** check the prior character if it's \ */
+                if(*(input_ - 1u) != token_backslash)
+                    break;
+            }
+            while(size_ != 0u);
+            
             if(size_ != 0u)
             {
                 return {begin, input_};
@@ -190,40 +137,22 @@ std::string Json::ReadString()
         return {};
 }
 
-/** std::string Json::ReadArrayFromLeftSquareBrace() */
-/** { */
-/**     FS_SUN_ASSERT(*input_ == token_lsb); */
-/**     if(size_ != 0u) */
-/**     { */
-/**         Advance(1u); */
-/**         const char* const begin = input_; */
-/**         if(size_ != 0u) */
-/**         { */
-/**             /\** seek right quote *\/ */
-/**             SeekToken<token_rsb>(); */
-/**             if(size_ != 0u) */
-/**             { */
-/**                 return {begin, input_}; */
-/**             } */
-/**             else */
-/**                 return {}; */
-/**         } */
-/**         else */
-/**             return {}; */
-/**     } */
-/**     else */
-/**         return {}; */
-/** } */
+std::unique_ptr<Json> Json::ReadObject()
+{
+    Json* ret = new Json(input_, size_);
+    if(ret->Initialize())
+        return std::unique_ptr<Json>(ret);
+    else
+        return nullptr;
+}
 
-Json::RawValue Json::ReadValue()
+Json::Value Json::ReadValue()
 {
     /** should be at token_col now */
-    FS_SUN_ASSERT(*input_ == token_col);
-    RawValue ret;
-    if(size_ != 0)
+    AdvanceCurrentToken<token_col>();
+    if(size_ != 0u)
     {
-        Advance(1u);
-        
+        /** pass the insignificants */
         std::size_t i = 0u;
         for(; i < size_; i++)
         {
@@ -238,22 +167,30 @@ Json::RawValue Json::ReadValue()
         size_ -= i;
         input_ += i;
         
-        ret.begin_ = input_;
-        char cur_char = *input_;
-        if(cur_char == token_lsb) /** array */
+        const char cur_char = *input_;
+        Value ret;
+        if(cur_char == token_quote) /** string */
+        {
+            ret.push_back(ReadString());
+        }
+        else if(cur_char == token_lcb) /** object */
+        {
+            ret.push_back(ReadObject());
+        }
+        else if(cur_char == token_lsb) /** array */
         {
             std::size_t level = 1u;
-            bool in_middle_of_string = false;
+            bool is_among_string = false;
             for(i = 0u; i < size_; i++)
             {
-                cur_char = input_[i];
-                if(cur_char == token_quote && *(input_ - 1) != token_quote)
-                    in_middle_of_string = !in_middle_of_string;
-                if(!in_middle_of_string)
+                const char inner_char = input_[i];
+                if(inner_char == token_quote && *(input_ - 1) != token_backslash)
+                    is_among_string = !is_among_string;
+                if(!is_among_string)
                 {
-                    if(cur_char == token_lsb)
+                    if(inner_char == token_lsb)
                         level += 1u;
-                    else if(cur_char == token_rsb)
+                    else if(inner_char == token_rsb)
                         level -= 1u;
 
                     if(level == 0u)
@@ -261,7 +198,6 @@ Json::RawValue Json::ReadValue()
                 }
             }
         }
-        else if(cur_char == token_lcb) /** object */
         size_ -= i;
         input_ += i;
         

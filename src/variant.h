@@ -28,8 +28,8 @@ namespace variant
 #undef max
 #endif
 #endif
-    using index_t = std::uint8_t;
-    static constexpr index_t npos = std::numeric_limits<index_t>::max();
+    using Index = std::uint8_t;
+    static constexpr Index npos = std::numeric_limits<Index>::max();
     
     template<typename T>
     struct CopyCtor
@@ -45,13 +45,6 @@ namespace variant
         void operator()(Variant<Ts...> * dst, Variant<Ts...> && src);
     };
 
-    /** template<typename T> */
-    /** struct AssignmentOperator */
-    /** { */
-    /**     template<typename ... Ts> */
-    /**     void operator()(Variant<Ts...> * dst, Variant<Ts...> src); */
-    /** }; */
-    
     template<typename T>
     struct Dtor
     {
@@ -79,7 +72,7 @@ namespace variant
 template<typename ... Ts>
 class Variant
 {
-    static_assert(sizeof...(Ts) < variant::npos, "Too many Ts for variant::index_t.");
+    static_assert(sizeof...(Ts) < variant::npos, "Too many Ts for variant::Index.");
     
     template<typename T>
     friend struct variant::CopyCtor;
@@ -87,9 +80,6 @@ class Variant
     template<typename T>
     friend struct variant::MoveCtor;
 
-    /** template<typename T> */
-    /** friend struct variant::AssignmentOperator; */
-    
     template<typename T>
     friend struct variant::Dtor;
 
@@ -121,13 +111,13 @@ public:
 
     Variant(const Variant & other)
     {
-        CallMemberFunction<variant::CopyCtor>(other);
+        Invoke<variant::CopyCtor>::template ForTypeIn<Ts...>::With2(other.index_, this, other);
     }
 
 
     Variant(Variant && other)
     {
-        CallMemberFunction<variant::MoveCtor>(std::move(other));
+        Invoke<variant::MoveCtor>::template ForTypeIn<Ts...>::With2(other.index_, this, std::move(other));
     }
 
     template<typename T>
@@ -140,33 +130,28 @@ public:
 
     ~Variant()
     {
-        CallMemberFunction<variant::Dtor>();
+        Invoke<variant::Dtor>::template ForTypeIn<Ts...>::With2(index_, this);
     }
-
     
 public:
 
     friend void swap(Variant & a, Variant & b)
     {
         if(a.index_ != variant::npos)
-            Invoke<variant::Swap>::template For<Ts...>::With(a, b);
+            Invoke<variant::Swap>::template ForTypeIn<Ts...>::With2(a.index_, a, b);
         else
         {
-            Invoke<variant::MoveCtor>::template For<Ts...>::With(&a, std::move(b));
+            /** a is invalid */
+            /** a(std::move(b)), b.~ */
+            Invoke<variant::MoveCtor>::template ForTypeIn<Ts...>::With2(b.index_, &a, std::move(b));
             b.~Variant<Ts...>();
-            
         }
     }
 
     template<typename T, typename ... TArgs>
     T & Emplace(TArgs && ... args)
     {
-        static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
-        index_ = IndexOf<T>::template In<Ts ...>::value;
-        CallMemberFunction<variant::Dtor>();
-        
-        new (&raw_data_) T(std::forward<TArgs>(args) ...);
-        return reinterpret_cast<T&>(raw_data_);
+        return operator=(T(std::forward<TArgs>(args)...));
     }
 
     Variant& operator=(Variant other)
@@ -189,7 +174,7 @@ public:
         return *this;
     }
 
-    variant::index_t Index() const
+    variant::Index Index() const
     {
         return index_;
     }
@@ -198,7 +183,7 @@ public:
     bool Is() const
     {
         static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
-        static constexpr variant::index_t idx = IndexOf<T>::template In<Ts ...>::value;
+        static constexpr variant::Index idx = IndexOf<T>::template In<Ts ...>::value;
         return index_ == idx;
     }
 
@@ -227,9 +212,10 @@ public:
      *  \warining No guarantee for a correct value.
      */
     template<typename T>
-    const T & RawGet() const && noexcept
+    const T & RawGet() const & noexcept
     {
-        return const_cast<Variant*>(this)->RawGet<T>();
+        static_assert(IsType<T>::template In<Ts ...>::value, "T is not one of Ts");
+        return reinterpret_cast<const T&>(raw_data_);
     }
 
     template<typename T>
@@ -254,32 +240,22 @@ public:
     template<typename T>
     const T & Get() const &
     {
-        return const_cast<Variant*>(this)->Get<T>();
+        if(Is<T>())
+            return RawGet<T>();
+        else
+            throw std::bad_cast();
     }
 
-    std::string ToString() const
+    friend std::string to_string(const Variant & value)
     {
         std::string ret;
-        CallMemberFunction<variant::ToString>(ret);
+        Invoke<variant::ToString>::template ForTypeIn<Ts...>::With2(value.index_, &value, ret);
         return ret;
     }
     
 private:
-    template<template<typename> class TFunctor, typename ... TArgs>
-    void CallMemberFunction(TArgs && ... args)
-    {
-        Invoke<TFunctor>::template For<Ts ...>::With(this, std::forward<TArgs>(args)...);
-    }
-
-    template<template<typename> class TFunctor, typename ... TArgs>
-    void CallMemberFunction(TArgs && ... args) const
-    {
-        Invoke<TFunctor>::template For<Ts ...>::With(this, std::forward<TArgs>(args)...);
-    }
-
-private:
     RawData raw_data_{};
-    variant::index_t index_{variant::npos};
+    variant::Index index_{variant::npos};
 };
 
 namespace variant
@@ -288,62 +264,46 @@ namespace variant
     template<typename ... Ts>
     void CopyCtor<T>::operator()(Variant<Ts...> * dst, const Variant<Ts...> & src)
     {
-        if(src.index_ == IndexOf<T>::template In<Ts...>::value)
-        {
             new(&(dst->raw_data_))T(src.template Get<T>());
             dst->index_ = src.index_;
-        }
     }
 
     template<typename T>
     template<typename ... Ts>
     void MoveCtor<T>::operator()(Variant<Ts...> * dst, Variant<Ts...> && src)
     {
-        if(src.index_ == IndexOf<T>::template In<Ts...>::value)
-        {
             new(&(dst->raw_data_))T(std::move(src).template Get<T>());
             dst->index_ = src.index_;
-        }
     }
 
     template<typename T>
     template<typename ... Ts>
     void Dtor<T>::operator()(Variant<Ts...> *dst)
     {
-        if(std::is_class<T>::value && dst->index_ == IndexOf<T>::template In<Ts...>::value)
-        {
-            FS_SUN_LOG_INFO("dtor: " + string::ToString(dst->index_));
             reinterpret_cast<T*>(&(dst->raw_data_))->~T();
             dst->index_ = npos;
-        }
     }
 
     template<typename T>
     template<typename ... Ts>
     void Swap<T>::operator()(Variant<Ts...> & a, Variant<Ts...> & b)
     {
-        if(a.index_ == IndexOf<T>::template In<Ts...>::value)
-        {
             Variant<Ts...> tmp(std::move(a));
 
             /** a = b */
             a.~Variant<Ts...>();
-            Invoke<MoveCtor>::template For<Ts...>::With(&a, std::move(b));
+            Invoke<MoveCtor>::template ForTypeIn<Ts...>::With2(b.index_, &a, std::move(b));
 
             /** b = tmp */
             b.~Variant<Ts...>();
-            Invoke<MoveCtor>::template For<Ts...>::With(&b, std::move(tmp));
-        }
+            Invoke<MoveCtor>::template ForTypeIn<Ts...>::With2(tmp.index_, &b, std::move(tmp));
     }
 
     template<typename T>
     template<typename ... Ts>
     void ToString<T>::operator()(const Variant<Ts...> * src, std::string & ret)
     {
-        if(src->index_ == IndexOf<T>::template In<Ts...>::value)
-        {
             ret = string::ToString(src->template Get<T>());
-        }
     }
 
 }
