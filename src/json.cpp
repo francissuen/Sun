@@ -6,6 +6,12 @@
 
 using namespace fs::sun;
 
+template<>
+Json::VectorValue::Element Json::VectorAdaptor<Json::VectorValue::Element>(Json::VectorValue && value)
+{
+    return std::unique_ptr<VectorValue>(new VectorValue(std::move(value)));
+}
+
 bool Json::StringToBoolean(const std::string & str)
 {
     if(str.compare("true") == 0)
@@ -18,18 +24,6 @@ bool Json::StringToBoolean(const std::string & str)
         return false;        
     }
 
-}
-
-void Json::UpdateValue(const Value & value, bool & ret, const std::size_t index)
-{
-    FS_SUN_ASSERT(value.size() > index);
-    ret = StringToBoolean(value[index].Get<std::string>());
-}
-
-void Json::UpdateValue(const Value & value, std::string & ret, const std::size_t index)
-{
-    FS_SUN_ASSERT(value.size() > index);
-    ret = value[index].Get<std::string>();
 }
 
 Json::Json(const char* const  input, const std::size_t size):
@@ -56,12 +50,12 @@ bool Json::Initialize()
             SeekToken<token_quote>();
             if(size_ != 0u)
             {
-                std::string name = ReadString();
+                std::string name = ReadString().Get<std::string>();
                 SeekToken<token_col>();
                 AdvanceCurrentToken<token_col>();
                 if(size_ != 0u)
                 {
-                    values_.insert(std::make_pair(std::move(name), ReadValue()));
+                    values_.insert(std::make_pair(std::move(name), ReadValue<Value>()));
 
                     AdvanceUntilSignificant();
                 
@@ -74,10 +68,8 @@ bool Json::Initialize()
                 }
             }
         }
-
-        status_ = Status::BAD;
     }
-    
+
     return status_ == Status::OK;
 }
 
@@ -102,11 +94,17 @@ const std::unordered_map<std::string, Json::Value> & Json::GetValues() const
     return values_;
 }
 
+Json::Status Json::GetStatus() const
+{
+    return status_;
+}
 
-std::string Json::ReadString()
+Json::ScalarValue Json::ReadString()
 {
     /** should be at quote now */
     AdvanceCurrentToken<token_quote>();
+
+    std::string ret;
     
     if(size_ != 0u)
     {
@@ -125,20 +123,16 @@ std::string Json::ReadString()
             
             if(size_ != 0u)
             {
+                ret = {begin, input_};
                 AdvanceCurrentToken<token_quote>();
-                return {begin, input_};
             }
-            else
-                return {};
         }
-        else
-            return {};
     }
-    else
-        return {};
+
+    return ret;
 }
 
-std::unique_ptr<Json> Json::ReadObject()
+Json::ScalarValue Json::ReadObject()
 {
     Json* ret = new Json(input_, size_);
     if(ret->Initialize())
@@ -149,42 +143,18 @@ std::unique_ptr<Json> Json::ReadObject()
         return std::unique_ptr<Json>(ret);
     }
     else
-        return nullptr;
+        return std::unique_ptr<Json>(nullptr);
 }
 
-Json::Value Json::ReadArray()
-{
-    Value ret;
-    AdvanceCurrentToken<token_lsb>();
-
-    if(size_ != 0u)
-    {
-        do
-        {
-            ret.push_back(ReadValue());
-
-            AdvanceUntilSignificant();
-            if(size_ != 0u)
-            {
-                if(*input_ == token_rsb)
-                    break;
-                else
-                    AdvanceCurrentToken<token_com>();
-            }
-        }
-        while(size_ != 0u);
-    }
-
-    return ret;
-}
-
-std::string Json::ReadOthers()
+Json::ScalarValue Json::ReadOthers()
 {
     const char * begin = input_;
     do
     {
         const char cur_char = *input_;
         if(cur_char == token_com ||
+           cur_char == token_rsb ||
+           cur_char == token_rcb ||
            cur_char == token_space ||
            cur_char == token_tab ||
            cur_char == token_lf ||
@@ -196,30 +166,34 @@ std::string Json::ReadOthers()
     }
     while(size_ != 0);
     
-    return {begin, input_};
+    return std::string{begin, input_};
 }
 
-Json::Value Json::ReadValue()
+Json::VectorValue Json::ReadArray()
 {
-    AdvanceUntilSignificant();
-    
-    const char cur_char = *input_;
-    Value ret;
-    if(cur_char == token_quote) /** string */
+    VectorValue ret;
+    AdvanceCurrentToken<token_lsb>();
+
+    if(size_ != 0u)
     {
-        ret = ReadString();
-    }
-    else if(cur_char == token_lcb) /** object */
-    {
-        ret = ReadObject();
-    }
-    else if(cur_char == token_lsb) /** array */
-    {
-        ret = ReadArray();
-    }
-    else                        /** number, ture, false, null */
-    {
-        ret = ReadOthers();
+        do
+        {
+            ret.PushBack(ReadValue<VectorValue::Element>());
+
+            AdvanceUntilSignificant();
+            if(size_ != 0u)
+            {
+                if(*input_ == token_rsb)
+                {
+                    AdvanceCurrentToken<token_rsb>();
+                    break;                    
+                }
+
+                else
+                    AdvanceCurrentToken<token_com>();
+            }
+        }
+        while(size_ != 0u);
     }
 
     return ret;

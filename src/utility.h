@@ -293,4 +293,7 @@ struct remove_cvref
     using type = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
 };
 
+template<typename T>
+struct WhichType;
+
 FS_SUN_NS_END

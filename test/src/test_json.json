@@ -3,5 +3,22 @@
     "gender": "male",
     "age": 10,
     "ready": true,
-    "numbers": [1, 2, 3, 4, 5]
+    "numbers": [1, 2, 3, 4, 5],
+    "my_friend":
+    {
+        "name": "ss",
+        "gender": "female"
+        "my_friend":
+        {
+            "name": "fs",
+            "gender": "male",
+            "age": 10
+        }
+    },
+    "my_2nd_friend":
+    {
+        "name": "fs",
+        "gender": "female",
+        "age": 1
+    }
 }

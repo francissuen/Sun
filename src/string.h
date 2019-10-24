@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include <map>
+#include <memory>
 
 #include "ns.h"
 
@@ -80,30 +81,44 @@ namespace string
     FS_SUN_STRING_DEFINE_TO_NUMBER(long double, ld)
 
 #undef FS_SUN_STRING_DEFINE_TO_NUMBER
-
-    std::string to_string(const bool value);
         
     template<typename T>
     std::string ToString(const T & value)
     {
         using std::to_string;
+        
         return to_string(value);
     }
 
-    template<>
     inline std::string ToString(const std::string & value)
     {
         return value;
     }
 
+    inline std::string ToString(const bool & value)
+    {
+        return value? "true" : "false";
+    }
+
+    template<typename T, typename TDeleter>
+    inline std::string ToString(const std::unique_ptr<T, TDeleter> & value)
+    {
+        if(value != nullptr)
+        {
+            return ToString(*value);
+        }
+        else
+            return "nullptr";
+    }
+
     template<typename TOrderedOrUnorderedMap>
-    std::string to_string(const TOrderedOrUnorderedMap & map)
+    std::string MapToString(const TOrderedOrUnorderedMap & map)
     {
         std::string ret;
         ret += "{";
         for(const auto & pair : map)
         {
-            ret += ("@key: " + ToString(pair.first) + ", @value: " + ToString(pair.second) + "; ");
+            ret += (ToString(pair.first) + " : " + ToString(pair.second) + "; ");
         }
         if(ret.back() == ' ')
             ret.erase(ret.end() - 2, ret.end());
@@ -114,16 +129,30 @@ namespace string
     template<typename TKey, typename TValue>
     std::string ToString(const std::unordered_map<TKey, TValue> & value)
     {
-        return to_string(value);
+        return MapToString(value);
     }
 
     template<typename TKey, typename TValue>
     std::string ToString(const std::map<TKey, TValue> & value)
     {
-        return to_string(value);
+        return MapToString(value);
     }
 
+    template<typename TElement>
+    std::string ToString(const std::vector<TElement> & value)
+    {
+        std::string ret;
+        ret += "[";
+        for(const TElement & ele : value)
+        {
+            ret += (ToString(ele) + ", ");
+        }
+        if(ret.back() == ' ')
+            ret.erase(ret.end() - 2, ret.end());
+        ret += "]";
 
+        return ret;
+    }
 }
 
 FS_SUN_NS_END

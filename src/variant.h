@@ -72,6 +72,7 @@ namespace variant
 template<typename ... Ts>
 class Variant
 {
+    static_assert(sizeof...(Ts) > 1u, "Sizeof...(Ts) should be at least 2");
     static_assert(sizeof...(Ts) < variant::npos, "Too many Ts for variant::Index.");
     
     template<typename T>
@@ -115,7 +116,7 @@ public:
     }
 
 
-    Variant(Variant && other)
+    Variant(Variant && other) noexcept
     {
         Invoke<variant::MoveCtor>::template ForTypeIn<Ts...>::With2(other.index_, this, std::move(other));
     }

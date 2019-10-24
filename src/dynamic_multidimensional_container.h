@@ -8,38 +8,56 @@
 
 FS_SUN_NS_BEGIN
 
-template<typename T, template <typename ...> class TContainer>
-class DynamicMultidimentionalContainer
+/**
+ * \brief Dynamic multidimensional and has flexibility for any T in Ts.
+ */
+template<template <typename ...> class TContainer, typename T, typename TDerived>
+class DynamicMultidimensionalContainer
 {
-public:
-    using Element = Variant<T, DynamicMultidimentionalContainer*>;
+    
+protected:
+    
+    using Element = Variant<T, std::unique_ptr<TDerived>>;
     using Container = TContainer<Element>;
 
-private:
-    Element elements_;
+public:
+
+    friend std::string to_string(const DynamicMultidimensionalContainer & value)
+    {
+        return string::ToString(value.container_);
+    }
+
+protected:
+    
+    Container container_;
 };
 
 template<typename T>
-class DynamicMultidimentionalVector: public DynamicMultidimentionalContainer<T, std::vector>
+class DynamicMultidimensionalVector: public DynamicMultidimensionalContainer<std::vector, T,
+                                                                             DynamicMultidimensionalVector<T>>
 {
 public:
-    using Element = typename DynamicMultidimentionalContainer<T, std::vector>::Element;
+    using Element = typename DynamicMultidimensionalContainer<std::vector, T, DynamicMultidimensionalVector<T>>::
+    Element;
+    using Container = typename DynamicMultidimensionalContainer<std::vector, T, DynamicMultidimensionalVector<T>>::
+    Container;
+    
 public:
-    const Element & operator[](const std::size_t index)
+    const Element & operator[](const std::size_t index) const
     {
-        this->elements_[0];
+        return this->container_[index];
     }
-};
 
-class test
-{
-protected:
-    using myType = int;  
-};
+    std::size_t Size() const
+    {
+        return this->container_.size();
+    }
 
-class d: public test
-{
-    myType a;
+    template <typename TElement>
+    void PushBack(TElement && element)
+    {
+        this->container_.push_back(std::forward<TElement>(element));
+    }
 };
 
 FS_SUN_NS_END

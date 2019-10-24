@@ -71,10 +71,5 @@ namespace string
 
 }
 
-std::string to_string(const bool value)
-{
-    return value? "true" : "false";
-}
-
 FS_SUN_NS_END
 

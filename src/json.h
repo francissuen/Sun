@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include "debug.h"
 #include <cstring>
-#include "variant.h"
+#include "dynamic_multidimensional_container.h"
 
 FS_SUN_NS_BEGIN
 
@@ -20,22 +20,28 @@ FS_SUN_NS_BEGIN
  */
 class Json
 {
-    template<typename T, template <typename ...> class container>
-    struct DynamicMultidimentionalContainer
-    {
-        Variant<T, container<DynamicMultidimentionalContainer*>> data;
-    };
     
 public:
     using ScalarValue = Variant<std::string, std::unique_ptr<Json>>;
-    using Value = Variant<ScalarValue, std::vector<void*>>;
+    using VectorValue = DynamicMultidimensionalVector<ScalarValue>;
+    using Value = Variant<ScalarValue, VectorValue>;
     
     enum struct Status : std::uint8_t
     {
         UNINITIALIZED = 0u,
         OK,
         BAD
-        };    
+        };
+
+    friend std::string to_string(const Json & value)
+    {
+        if(value.status_ == Status::OK)
+        {
+            return string::ToString(value.values_);
+        }
+        else
+            return {};
+    }
     
 private:
     
@@ -67,42 +73,90 @@ private:
 
 public:
     
-    template<typename T>
-    static typename std::enable_if<std::is_class<T>::value>::type
-    UpdateValue(const Value & value, T & ret, const std::size_t index)
+    template<typename TValue, typename TRet>
+    static typename std::enable_if<std::is_class<TRet>::value>::type
+    UpdateValue(const TValue & value, TRet & ret)
     {
-        const auto & j_ptr = value.Get<ScalarValue>().Get<std::unique_ptr<Json>>();
+        const auto & j_ptr = value.template Get<ScalarValue>().template Get<std::unique_ptr<Json>>();
         if(j_ptr != nullptr)
             ret.ParseFromJson(*j_ptr);
     }
 
-    template<typename T>
-    static typename std::enable_if<std::is_arithmetic<T>::value>::type
-    UpdateValue(const Value & value, T & ret, const std::size_t index)
+    template<typename TValue, typename TRet>
+    static void UpdateValue(const TValue & value, TRet* & ret)
     {
-        ret = string::ToNumber<T>(value.Get<ScalarValue>().Get<std::string>());
+        const auto & j_ptr = value.template Get<ScalarValue>().template Get<std::unique_ptr<Json>>();
+        if(j_ptr != nullptr)
+        {
+            ret = new TRet;
+            ret->ParseFromJson(*j_ptr);
+        }
     }
 
-    template<typename T>
-    static typename std::enable_if<std::is_array<T>::value>::type
-    UpdateValue(const Value & value, T & ret)
+    template<typename TValue, typename TRet>
+    static void UpdateValue(const TValue & value, std::unique_ptr<TRet> & ret)
+    {
+        const auto & j_ptr = value.template Get<ScalarValue>().template Get<std::unique_ptr<Json>>();
+        if(j_ptr != nullptr)
+        {
+            ret.reset(new TRet);
+            ret->ParseFromJson(*j_ptr);
+        }
+    }
+
+
+    template<typename TValue, typename TRet>
+    static typename std::enable_if<std::is_arithmetic<TRet>::value>::type
+    UpdateValue(const TValue & value, TRet & ret)
+    {
+        ret = string::ToNumber<TRet>(value.template Get<ScalarValue>().template Get<std::string>());
+    }
+
+    template<typename TValue, typename TRet, std::size_t N>
+    static void UpdateValue(const TValue & value, TRet (&ret) [N])
     {
         static constexpr std::size_t array_size = fs::sun::CountOfArray(ret);
-        const auto & values = value.Get<VectorValue>();
-        const std::size_t value_size = values.size();
+        const auto & vector_value = value.template Get<VectorValue>();
+        const std::size_t value_size = vector_value.Size();
         const std::size_t min_size = array_size >= value_size? value_size : array_size;
 
         for(std::size_t i = 0; i < min_size; i++)
         {
-            UpdateValue(values[i], ret[i], i);
+            UpdateValue(vector_value[i], ret[i]);
         }
     }
 
     static bool StringToBoolean(const std::string & str);
 
-    static void UpdateValue(const Value & value, bool & ret, const std::size_t index);
+    template<typename TValue>
+    static void UpdateValue(const TValue & value, bool & ret)
+    {
+        ret = StringToBoolean(value.template Get<ScalarValue>().template Get<std::string>());
+    }
 
-    static void UpdateValue(const Value & value, std::string & ret, const std::size_t index);
+    template<typename TValue>
+    static void UpdateValue(const TValue & value, std::string & ret)
+    {
+        ret = value.template Get<ScalarValue>().template Get<std::string>();        
+    }
+
+private:
+    template<typename TRet, std::size_t N>
+    static void UpdateValue(const VectorValue::Element & value, TRet (&ret) [N])
+    {
+        static constexpr std::size_t array_size = fs::sun::CountOfArray(ret);
+        const auto & vector_value = value.Get<std::unique_ptr<VectorValue>>();
+        if(vector_value != nullptr)
+        {
+            const std::size_t value_size = vector_value->Size();
+            const std::size_t min_size = array_size >= value_size? value_size : array_size;
+
+            for(std::size_t i = 0; i < min_size; i++)
+            {
+                UpdateValue(vector_value->operator[](i), ret[i]);
+            }
+        }
+    }
 
 public:
     
@@ -115,7 +169,7 @@ public:
     bool Initialize();
 
     const std::unordered_map<std::string, Value> & GetValues() const;
-
+    Status GetStatus() const;
 private:
     
     /** Seek token */
@@ -144,19 +198,46 @@ private:
 
     void AdvanceUntilSignificant();
 
-    /** void Advance(const std::size_t offset); */
-    
-    /** seek significant character */
-    /** void SeekSignificantCharacter(); */
-    
-    /** std::string ReadNonStringTypeValue(); */
+    ScalarValue ReadString();
+    ScalarValue ReadObject();
+    ScalarValue ReadOthers();
 
-    std::string ReadString();
-    std::unique_ptr<Json> ReadObject();
-    Value ReadArray();
-    std::string ReadOthers();
-    Value ReadValue();
+    /** return std::unique_ptr<VectorValue> if TRet == VectorValue::Element */
+    template<typename TRet>
+    static TRet VectorAdaptor(VectorValue && value)
+    {
+        return std::move(value);
+    }
     
+    template<typename TRet>
+    TRet ReadValue()
+    {
+        AdvanceUntilSignificant();
+    
+        const char cur_char = *input_;
+        TRet ret;
+        if(cur_char == token_quote) /** string */
+        {
+            ret = ReadString();
+        }
+        else if(cur_char == token_lcb) /** object */
+        {
+            ret = ReadObject();
+        }
+        else if(cur_char == token_lsb) /** array */
+        {
+            ret = VectorAdaptor<TRet>(ReadArray());
+        }
+        else                        /** number, ture, false, null */
+        {
+            ret = ReadOthers();
+        }
+
+        return ret;    
+    }
+
+    VectorValue ReadArray();
+
 private:
     
     const char* input_;
@@ -165,13 +246,16 @@ private:
     Status status_;
 };
 
-
 #define FS_SUN_JSON_REGISTER_OBJECT_BEGIN(class_name)                   \
     void ParseFromJson(const char* input, const std::size_t size)       \
     {                                                                   \
         fs::sun::Json j(input, size);                                   \
         if(j.Initialize())                                              \
             ParseFromJson(j);                                           \
+        else                                                            \
+        {                                                               \
+            FS_SUN_LOG("Json::Initialize failed", fs::sun::Logger::S_ERROR); \
+        }                                                               \
     }                                                                   \
                                                                         \
     void ParseFromJson(const fs::sun::Json & j)                         \
@@ -181,22 +265,19 @@ private:
             const std::unordered_map<std::string, fs::sun::Json::Value> & values = j.GetValues();
 
 
+
 #define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)             \
     {                                                                   \
-        const auto & itr = values.find(#member_variable);               \
-        if(itr != values.end())                                         \
-        {                                                               \
-            fs::sun::Json::UpdateValue(itr->second, member_variable, 0u); \
-        }                                                               \
+            const auto & itr = values.find(#member_variable);           \
+            if(itr != values.end())                                     \
+            {                                                           \
+            fs::sun::Json::UpdateValue(itr->second, member_variable);   \
+            }                                                           \
     }
     
     
-#define FS_SUN_JSON_REGISTER_OBJECT_END()                               \
-    }                                                                   \
-    else                                                                \
-    {                                                                   \
-        FS_SUN_LOG("Json::Initialize failed", fs::sun::Logger::S_ERROR); \
-    }                                                                   \
-    }
+#define FS_SUN_JSON_REGISTER_OBJECT_END()       \
+            }                                   \
+        }
 
 FS_SUN_NS_END

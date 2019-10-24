@@ -7,22 +7,7 @@
 #include <sstream>
 #include "src/variant.h"
 
-
 using namespace fs::sun;
-
-struct stTest
-{
-    stTest(const int _a):
-        a(_a)
-    {
-        cout("stTest called @a: " + string::ToString(a), Logger::S_INFO);
-    }
-    ~stTest()
-    {
-        cout("~stTest called.", Logger::S_INFO);
-    }
-    const int a;
-};
 
 struct TestJson
 {
@@ -30,7 +15,10 @@ struct TestJson
     std::string gender;
     std::uint8_t age;
     bool ready;
-    int numbers[10];
+    int numbers[10]{};
+
+    TestJson* my_friend{nullptr};
+    std::unique_ptr<TestJson> my_2nd_friend{nullptr};
 
     FS_SUN_JSON_REGISTER_OBJECT_BEGIN(TestJson)
     FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name)
@@ -38,17 +26,24 @@ struct TestJson
     FS_SUN_JSON_REGISTER_OBJECT_MEMBER(age)
     FS_SUN_JSON_REGISTER_OBJECT_MEMBER(ready)
     FS_SUN_JSON_REGISTER_OBJECT_MEMBER(numbers)
+    FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_friend)
+    FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_2nd_friend)
     FS_SUN_JSON_REGISTER_OBJECT_END()
 
-    std::string ToString() const
+    friend std::string to_string(const TestJson & tj)
     {
         std::string ret{"@name: "};
-        ret += name + ", @gender: " + gender + ", @age: " + string::ToString(age) +
-        ", @ready: " + string::ToString(ready) + ", @numbers: ";
+        ret += tj.name + ", @gender: " + tj.gender + ", @age: " + string::ToString(tj.age) +
+        ", @ready: " + string::ToString(tj.ready) + ", @numbers: ";
         for(std::size_t i = 0u; i < 10u; i++)
         {
-            ret += string::ToString(numbers[i]) + ", ";
+            ret += string::ToString(tj.numbers[i]) + ", ";
         }
+        
+        if(tj.my_friend != nullptr)
+            ret += ("my_friend" + to_string(*(tj.my_friend)));
+        if(tj.my_2nd_friend != nullptr)
+            ret += ("my_2nd_friend" + to_string(*(tj.my_2nd_friend)));
         return ret;
     }
 };
@@ -75,7 +70,7 @@ int main(int argc, char ** argv)
     v = false;
     cout(string::ToString(v.Get<bool>()), Logger::S_INFO);
     v = std::string("a");
-    cout(v.ToString(), Logger::S_INFO);
+    cout(string::ToString(v), Logger::S_INFO);
          
     if(argc > 1)
     {
@@ -90,7 +85,7 @@ int main(int argc, char ** argv)
 
             TestJson tj;
             tj.ParseFromJson(json_data.c_str(), json_data.size());
-            cout(tj.ToString().c_str(), Logger::S_INFO);
+            cout(string::ToString(tj), Logger::S_INFO);
         }
     }
 
