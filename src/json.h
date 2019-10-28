@@ -115,10 +115,9 @@ public:
     template<typename TValue, typename TRet, std::size_t N>
     static void UpdateValue(const TValue & value, TRet (&ret) [N])
     {
-        static constexpr std::size_t array_size = fs::sun::CountOfArray(ret);
         const auto & vector_value = value.template Get<VectorValue>();
         const std::size_t value_size = vector_value.Size();
-        const std::size_t min_size = array_size >= value_size? value_size : array_size;
+        const std::size_t min_size = N >= value_size? value_size : N;
 
         for(std::size_t i = 0; i < min_size; i++)
         {
@@ -144,12 +143,11 @@ private:
     template<typename TRet, std::size_t N>
     static void UpdateValue(const VectorValue::Element & value, TRet (&ret) [N])
     {
-        static constexpr std::size_t array_size = fs::sun::CountOfArray(ret);
         const auto & vector_value = value.Get<std::unique_ptr<VectorValue>>();
         if(vector_value != nullptr)
         {
             const std::size_t value_size = vector_value->Size();
-            const std::size_t min_size = array_size >= value_size? value_size : array_size;
+            const std::size_t min_size = N >= value_size? value_size : N;
 
             for(std::size_t i = 0; i < min_size; i++)
             {
