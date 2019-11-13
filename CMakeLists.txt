@@ -29,6 +29,7 @@ fs_add_class(range_viewer src srcs)
 fs_add_class(singlteton src srcs)
 fs_add_class(utility src srcs)
 fs_add_class(debug src srcs)
+fs_add_class(deep_ptr src srcs)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(bin_suffix)
