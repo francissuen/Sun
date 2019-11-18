@@ -27,7 +27,7 @@ class DeepPtr {
   }
 
   friend bool operator!=(std::nullptr_t, const DeepPtr &lhs) {
-    return nullptr != rhs.ptr_;
+    return nullptr != lhs.ptr_;
   }
 
  public:
@@ -47,6 +47,8 @@ class DeepPtr {
   DeepPtr &operator=(DeepPtr &&rhs) { swap(*this, rhs); }
 
   const T &operator*() const { return *ptr_; }
+
+  std::unique_ptr<T> operator->() const { return ptr_; }
 
  private:
   std::unique_ptr<T> ptr_{nullptr};
