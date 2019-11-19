@@ -15,11 +15,11 @@ FS_SUN_NS_BEGIN
 template <template <typename...> class TContainer, typename T,
           typename TDerived>
 class DynamicMultidimensionalContainer {
- protected:
+protected:
   using Element = Variant<T, DeepPtr<TDerived>>;
   using Container = TContainer<Element>;
 
- public:
+public:
   friend std::string to_string(const DynamicMultidimensionalContainer &value) {
     return string::ToString(value.container_);
   }
@@ -30,10 +30,10 @@ class DynamicMultidimensionalContainer {
     swap(a.container_, b.container_);
   }
 
- public:
+public:
   const Container &GetContainer() const { return container_; }
 
- protected:
+protected:
   Container container_;
 };
 
@@ -41,21 +41,20 @@ template <typename T>
 class DynamicMultidimensionalVector
     : public DynamicMultidimensionalContainer<
           std::vector, T, DynamicMultidimensionalVector<T>> {
- public:
+public:
   using Element = typename DynamicMultidimensionalContainer<
       std::vector, T, DynamicMultidimensionalVector<T>>::Element;
   using Container = typename DynamicMultidimensionalContainer<
       std::vector, T, DynamicMultidimensionalVector<T>>::Container;
 
- public:
+public:
   const Element &operator[](const std::size_t index) const {
     return this->container_[index];
   }
 
   std::size_t Size() const { return this->container_.size(); }
 
-  template <typename TElement>
-  void PushBack(TElement &&element) {
+  template <typename TElement> void PushBack(TElement &&element) {
     this->container_.push_back(std::forward<TElement>(element));
   }
 };

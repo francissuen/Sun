@@ -10,8 +10,7 @@
 
 FS_SUN_NS_BEGIN
 
-template <typename T>
-class DeepPtr {
+template <typename T> class DeepPtr {
   friend void swap(DeepPtr &a, DeepPtr &b) {
     using std::swap;
     swap(a.ptr_, b.ptr_);
@@ -30,7 +29,7 @@ class DeepPtr {
     return nullptr != lhs.ptr_;
   }
 
- public:
+public:
   template <typename... TArgs>
   DeepPtr(TArgs &&... args) : ptr_{new T{std::forward<TArgs>(args)...}} {}
 
@@ -38,7 +37,7 @@ class DeepPtr {
 
   DeepPtr(DeepPtr &&ptr) : ptr_{std::move(ptr.ptr_)} {}
 
- public:
+public:
   DeepPtr &operator=(const DeepPtr &rhs) {
     DeepPtr temp(rhs);
     swap(*this, temp);
@@ -48,9 +47,10 @@ class DeepPtr {
 
   const T &operator*() const { return *ptr_; }
 
-  std::unique_ptr<T> operator->() const { return ptr_; }
+  const std::unique_ptr<T> &operator->() const { return ptr_; }
+  std::unique_ptr<T> &operator->() { return ptr_; }
 
- private:
+private:
   std::unique_ptr<T> ptr_{nullptr};
 };
 

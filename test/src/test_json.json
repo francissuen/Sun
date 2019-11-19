@@ -32,5 +32,10 @@
             2,
             3
         ]
+    },
+    "dic_floats": {
+        "1st_float": -1.0,
+        "2nd_float": 0.0,
+        "3rd_float": 1.0
     }
 }

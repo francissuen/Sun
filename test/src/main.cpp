@@ -19,6 +19,8 @@ struct TestJson {
   TestJson *my_friend{nullptr};
   std::unique_ptr<TestJson> my_2nd_friend{nullptr};
   Json misc;
+  Json::Dictionary<float> dic_floats{};
+
   FS_SUN_JSON_REGISTER_OBJECT_BEGIN(TestJson)
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name)
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(gender)
@@ -28,6 +30,7 @@ struct TestJson {
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_friend)
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_2nd_friend)
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(misc)
+  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(dic_floats)
   FS_SUN_JSON_REGISTER_OBJECT_END()
 
   friend std::string to_string(const TestJson &tj) {
@@ -45,6 +48,8 @@ struct TestJson {
       ret += (", @my_2nd_friend " + to_string(*(tj.my_2nd_friend)));
 
     ret += (", @misc: " + string::ToString(tj.misc));
+
+    ret += ", @dic_floats: " + string::ToString(tj.dic_floats);
     return ret;
   }
 };

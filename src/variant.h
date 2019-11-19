@@ -4,19 +4,20 @@
 
 #pragma once
 
-#include "ns.h"
-#include "string.h"
-#include "utility.h"
 #include <cstring>
 #include <type_traits>
 #include <typeinfo>
 #include <unordered_map>
 
 #include "debug.h"
+#include "ns.h"
+#include "string.h"
+#include "utility.h"
 
 FS_SUN_NS_BEGIN
 
-template <typename... Ts> class Variant;
+template <typename... Ts>
+class Variant;
 
 namespace variant {
 
@@ -28,50 +29,63 @@ namespace variant {
 using Index = std::uint8_t;
 static constexpr Index npos = std::numeric_limits<Index>::max();
 
-template <typename T> struct CopyCtor {
+template <typename T>
+struct CopyCtor {
   template <typename... Ts>
   void operator()(Variant<Ts...> *dst, const Variant<Ts...> &src);
 };
 
-template <typename T> struct MoveCtor {
+template <typename T>
+struct MoveCtor {
   template <typename... Ts>
   void operator()(Variant<Ts...> *dst, Variant<Ts...> &&src);
 };
 
-template <typename T> struct Dtor {
-  template <typename... Ts> void operator()(Variant<Ts...> *dst);
+template <typename T>
+struct Dtor {
+  template <typename... Ts>
+  void operator()(Variant<Ts...> *dst);
 };
 
-template <typename T> struct Swap {
+template <typename T>
+struct Swap {
   template <typename... Ts>
   void operator()(Variant<Ts...> &a, Variant<Ts...> &b);
 };
 
-template <typename T> struct ToString {
+template <typename T>
+struct ToString {
   template <typename... Ts>
   void operator()(const Variant<Ts...> *src, std::string &ret);
 };
-} // namespace variant
+}  // namespace variant
 /**
  *  \brief A safe union, and needs no RTTI
  */
-template <typename... Ts> class Variant {
+template <typename... Ts>
+class Variant {
   static_assert(sizeof...(Ts) > 1u, "Sizeof...(Ts) should be at least 2");
   static_assert(sizeof...(Ts) < variant::npos,
                 "Too many Ts for variant::Index.");
 
-  template <typename T> friend struct variant::CopyCtor;
+  template <typename T>
+  friend struct variant::CopyCtor;
 
-  template <typename T> friend struct variant::MoveCtor;
+  template <typename T>
+  friend struct variant::MoveCtor;
 
-  template <typename T> friend struct variant::Dtor;
+  template <typename T>
+  friend struct variant::Dtor;
 
-  template <typename T> friend struct variant::Swap;
+  template <typename T>
+  friend struct variant::Swap;
 
-  template <typename T> friend struct variant::ToString;
+  template <typename T>
+  friend struct variant::ToString;
 
-private:
-  template <typename T> struct IsValidType {
+ private:
+  template <typename T>
+  struct IsValidType {
     static constexpr bool value =
         ((!std::is_const<T>::value) && (!std::is_reference<T>::value));
   };
@@ -83,7 +97,7 @@ private:
       StaticMax<std::size_t, sizeof(Ts)...>::value,
       StaticMax<std::size_t, alignof(Ts)...>::value>::type RawData;
 
-public:
+ public:
   Variant() : raw_data_{}, index_{variant::npos} {}
 
   Variant(const Variant &other) {
@@ -96,7 +110,9 @@ public:
         other.index_, this, std::move(other));
   }
 
-  template <typename T>
+  template <typename T,
+            typename = typename std::enable_if<IsType<typename remove_cvref<
+                T>::type>::template In<Ts...>::value>::type>
   Variant(T &&other)
       : index_(IndexOf<typename remove_cvref<T>::type>::template In<
                Ts...>::value) {
@@ -110,7 +126,7 @@ public:
     Invoke<variant::Dtor>::template ForTypeIn<Ts...>::With2(index_, this);
   }
 
-public:
+ public:
   friend void swap(Variant &a, Variant &b) {
     if (a.index_ != variant::npos)
       Invoke<variant::Swap>::template ForTypeIn<Ts...>::With2(a.index_, a, b);
@@ -123,7 +139,8 @@ public:
     }
   }
 
-  template <typename T, typename... TArgs> T &Emplace(TArgs &&... args) {
+  template <typename T, typename... TArgs>
+  T &Emplace(TArgs &&... args) {
     return operator=(T(std::forward<TArgs>(args)...));
   }
 
@@ -133,7 +150,8 @@ public:
     return *this;
   }
 
-  template <typename T> Variant &operator=(T &&other) {
+  template <typename T>
+  Variant &operator=(T &&other) {
     static_assert(
         IsType<typename remove_cvref<T>::type>::template In<Ts...>::value,
         "T is not one of Ts");
@@ -147,7 +165,8 @@ public:
 
   variant::Index Index() const { return index_; }
 
-  template <typename T> bool Is() const {
+  template <typename T>
+  bool Is() const {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     static constexpr variant::Index idx = IndexOf<T>::template In<Ts...>::value;
     return index_ == idx;
@@ -156,7 +175,8 @@ public:
   /**
    *  \warining No guarantee for a correct value.
    */
-  template <typename T> T &RawGet() & noexcept {
+  template <typename T>
+  T &RawGet() &noexcept {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     return reinterpret_cast<T &>(raw_data_);
   }
@@ -164,7 +184,8 @@ public:
   /**
    *  \warining No guarantee for a correct value.
    */
-  template <typename T> T &&RawGet() && noexcept {
+  template <typename T>
+  T &&RawGet() &&noexcept {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     return std::move(reinterpret_cast<T &>(raw_data_));
   }
@@ -172,26 +193,30 @@ public:
   /**
    *  \warining No guarantee for a correct value.
    */
-  template <typename T> const T &RawGet() const &noexcept {
+  template <typename T>
+  const T &RawGet() const &noexcept {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     return reinterpret_cast<const T &>(raw_data_);
   }
 
-  template <typename T> T &Get() & {
+  template <typename T>
+  T &Get() & {
     if (Is<T>())
       return RawGet<T>();
     else
       throw std::bad_cast();
   }
 
-  template <typename T> T &&Get() && {
+  template <typename T>
+  T &&Get() && {
     if (Is<T>())
       return (std::move(*this)).template RawGet<T>();
     else
       throw std::bad_cast();
   }
 
-  template <typename T> const T &Get() const & {
+  template <typename T>
+  const T &Get() const & {
     if (Is<T>())
       return RawGet<T>();
     else
@@ -205,7 +230,7 @@ public:
     return ret;
   }
 
-private:
+ private:
   RawData raw_data_{};
   variant::Index index_{variant::npos};
 };
@@ -254,6 +279,6 @@ void ToString<T>::operator()(const Variant<Ts...> *src, std::string &ret) {
   ret = string::ToString(src->template Get<T>());
 }
 
-} // namespace variant
+}  // namespace variant
 
 FS_SUN_NS_END

@@ -16,8 +16,8 @@ Json::Deserializer::VectorAdaptor<Json::VectorValue::Element>(
 Json::Deserializer::Deserializer(const char *&input, std::size_t &size)
     : input_{input}, size_(size) {}
 
-std::unordered_map<std::string, Json::Value> Json::Deserializer::Execute() {
-  std::unordered_map<std::string, Json::Value> ret;
+Json::Dictionary<Json::Value> Json::Deserializer::Execute() {
+  Dictionary<Json::Value> ret;
   /** seek lcb */
   SeekToken<token_lcb>();
   AdvanceCurrentToken<token_lcb>();
@@ -64,9 +64,7 @@ void Json::Deserializer::AdvanceUntilSignificant() {
   }
 }
 
-const std::unordered_map<std::string, Json::Value> &Json::GetValues() const {
-  return values_;
-}
+const Json::Dictionary<Json::Value> &Json::GetValues() const { return values_; }
 
 /* Json::Status Json::GetStatus() const
 {
@@ -86,7 +84,8 @@ Json::ScalarValue Json::Deserializer::ReadString() {
         /** seek right quote */
         SeekToken<token_quote>();
         /** check the prior character if it's \ */
-        if (*(input_ - 1u) != token_backslash) break;
+        if (*(input_ - 1u) != token_backslash)
+          break;
       } while (size_ != 0u);
 
       if (size_ != 0u) {
@@ -164,5 +163,4 @@ Json::Json(const char *input, std::size_t size) {
 
 Json::Json(const char *sz_input) : Json(sz_input, strlen(sz_input)) {}
 
-Json::Json(std::unordered_map<std::string, Value> &&values)
-    : values_{std::move(values)} {}
+Json::Json(Dictionary<Value> &&values) : values_{std::move(values)} {}
