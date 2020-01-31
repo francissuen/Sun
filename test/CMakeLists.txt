@@ -1,20 +1,10 @@
-cmake_minimum_required(VERSION 3.0)
+# Copyright (C) 2020 Francis Sun, all rights reserved.
 
-project(test_sun)
-include(../cmake_utility/CMakeLists.txt)
-# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../fsCMake/)
+set(TEST_SUN "test_sun")
 
-add_executable(test_sun
-  src/main.cpp
-  )
+add_executable(${TEST_SUN})
+target_include_directories(${TEST_SUN} PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(${TEST_SUN} ${SUN})
+add_subdirectory(src)
 
-target_link_libraries(test_sun
-  sun
-  )
-
-set_target_properties(test_sun
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin"
-  RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin")
-
-add_dependencies(test_sun sun)
+add_dependencies(${TEST_SUN} ${SUN})

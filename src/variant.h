@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2019, F.S.. All rights reserved.
- */
+/* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #pragma once
 
@@ -133,8 +131,8 @@ class Variant {
     else {
       /** a is invalid */
       /** a(std::move(b)), b.~ */
-      Invoke<variant::MoveCtor>::template ForTypeIn<Ts...>::With2(b.index_, &a,
-                                                                  std::move(b));
+      Invoke<variant::MoveCtor>::template ForTypeIn<Ts...>::With2(
+          b.index_, &a, std::move(b));
       b.~Variant<Ts...>();
     }
   }
@@ -168,7 +166,8 @@ class Variant {
   template <typename T>
   bool Is() const {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
-    static constexpr variant::Index idx = IndexOf<T>::template In<Ts...>::value;
+    static constexpr variant::Index idx =
+        IndexOf<T>::template In<Ts...>::value;
     return index_ == idx;
   }
 
@@ -176,7 +175,7 @@ class Variant {
    *  \warining No guarantee for a correct value.
    */
   template <typename T>
-  T &RawGet() &noexcept {
+      T &RawGet() & noexcept {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     return reinterpret_cast<T &>(raw_data_);
   }
@@ -185,7 +184,7 @@ class Variant {
    *  \warining No guarantee for a correct value.
    */
   template <typename T>
-  T &&RawGet() &&noexcept {
+      T &&RawGet() && noexcept {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     return std::move(reinterpret_cast<T &>(raw_data_));
   }

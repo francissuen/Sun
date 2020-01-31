@@ -1,11 +1,11 @@
-/*
- * Copyright (c) 2019, F.S.. All rights reserved.
- */
+/* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #pragma once
 
-#define FS_SUN_NS_BEGIN                         \
-    namespace fs { namespace sun {              \
+#define FS_SUN_NS_BEGIN \
+  namespace fs {        \
+  namespace sun {
 
-#define FS_SUN_NS_END                           \
-    }}
+#define FS_SUN_NS_END \
+  }                   \
+  }

@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2019, F.S.. All rights reserved.
- */
+/* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #include "json.h"
 
@@ -64,7 +62,9 @@ void Json::Deserializer::AdvanceUntilSignificant() {
   }
 }
 
-const Json::Dictionary<Json::Value> &Json::GetValues() const { return values_; }
+const Json::Dictionary<Json::Value> &Json::GetValues() const {
+  return values_;
+}
 
 /* Json::Status Json::GetStatus() const
 {
@@ -84,8 +84,7 @@ Json::ScalarValue Json::Deserializer::ReadString() {
         /** seek right quote */
         SeekToken<token_quote>();
         /** check the prior character if it's \ */
-        if (*(input_ - 1u) != token_backslash)
-          break;
+        if (*(input_ - 1u) != token_backslash) break;
       } while (size_ != 0u);
 
       if (size_ != 0u) {

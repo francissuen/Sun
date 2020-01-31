@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2019, F.S.. All rights reserved.
- */
+/* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #pragma once
 
@@ -20,7 +18,7 @@ FS_SUN_NS_BEGIN
  * \brief conforms to Standard ECMA-404
  */
 class Json {
-public:
+ public:
   /**
    * \brief scalar type value, number, string, boolen or object
    */
@@ -33,7 +31,8 @@ public:
 
   using Value = Variant<ScalarValue, VectorValue>;
 
-  template <typename T> using Dictionary = std::unordered_map<std::string, T>;
+  template <typename T>
+  using Dictionary = std::unordered_map<std::string, T>;
 
   /*
       enum struct Status : std::uint8_t
@@ -43,21 +42,21 @@ public:
           BAD
       };
    */
-private:
+ private:
   class Deserializer {
-  public:
+   public:
     Deserializer(const char *&input, std::size_t &size);
 
-  public:
+   public:
     Dictionary<Value> Execute();
 
-  private:
+   private:
     /** Seek token */
-    template <char token> void SeekToken() {
+    template <char token>
+    void SeekToken() {
       std::size_t i = 0u;
       for (; i < size_; i++) {
-        if (*input_ == token)
-          break;
+        if (*input_ == token) break;
 
         input_++;
       }
@@ -65,7 +64,8 @@ private:
       size_ -= i;
     }
 
-    template <char token> void AdvanceCurrentToken() {
+    template <char token>
+    void AdvanceCurrentToken() {
       FS_SUN_ASSERT(token == *input_);
       input_ += 1u;
       size_ -= 1u;
@@ -78,11 +78,13 @@ private:
     ScalarValue ReadOthers();
 
     /** return DeepPtr<VectorValue> if TRet == VectorValue::Element */
-    template <typename TRet> static TRet VectorAdaptor(VectorValue &&value) {
+    template <typename TRet>
+    static TRet VectorAdaptor(VectorValue &&value) {
       return std::move(value);
     }
 
-    template <typename TRet> TRet ReadValue() {
+    template <typename TRet>
+    TRet ReadValue() {
       AdvanceUntilSignificant();
 
       const char cur_char = *input_;
@@ -107,17 +109,17 @@ private:
 
     VectorValue ReadArray();
 
-  private:
+   private:
     const char *&input_;
     std::size_t &size_;
   };
 
-public:
+ public:
   friend std::string to_string(const Json &value) {
     return string::ToString(value.values_);
   }
 
-private:
+ private:
   /** 6 structural tokens */
   static constexpr char token_lsb = u8"["[0];
   static constexpr char token_lcb = u8"{"[0];
@@ -144,14 +146,13 @@ private:
   static constexpr char token_quote = u8"\""[0];
   static constexpr char token_backslash = u8"\\"[0];
 
-public:
+ public:
   template <typename TValue, typename TRet>
-  static typename std::enable_if<std::is_class<TRet>::value>::type
-  UpdateValue(const TValue &value, TRet &ret) {
+  static typename std::enable_if<std::is_class<TRet>::value>::type UpdateValue(
+      const TValue &value, TRet &ret) {
     const auto &j_ptr =
         value.template Get<ScalarValue>().template Get<DeepPtr<Json>>();
-    if (j_ptr != nullptr)
-      ret.ParseFromJson(*j_ptr);
+    if (j_ptr != nullptr) ret.ParseFromJson(*j_ptr);
   }
 
   template <typename TValue, typename TRet>
@@ -225,7 +226,7 @@ public:
     }
   }
 
-private:
+ private:
   template <typename TRet, std::size_t N>
   static void UpdateValue(const VectorValue::Element &value, TRet (&ret)[N]) {
     const auto &vector_value = value.Get<DeepPtr<VectorValue>>();
@@ -239,7 +240,7 @@ private:
     }
   }
 
-public:
+ public:
   Json();
   Json(const char *input, std::size_t size);
 
@@ -247,31 +248,31 @@ public:
 
   Json(Dictionary<Value> &&values);
 
-public:
+ public:
   const Dictionary<Value> &GetValues() const;
   /* Status GetStatus() const; */
 
-private:
+ private:
   Dictionary<Value> values_;
   /*     Status status_; */
 };
 
-#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN(class_name)                          \
-  void ParseFromJson(const char *input, const std::size_t size) {              \
-    fs::sun::Json j(input, size);                                              \
-    ParseFromJson(j);                                                          \
-  }                                                                            \
-                                                                               \
-  void ParseFromJson(const fs::sun::Json &j) {                                 \
-    const fs::sun::Json::Dictionary<fs::sun::Json::Value> &values =            \
+#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN(class_name)               \
+  void ParseFromJson(const char *input, const std::size_t size) {   \
+    fs::sun::Json j(input, size);                                   \
+    ParseFromJson(j);                                               \
+  }                                                                 \
+                                                                    \
+  void ParseFromJson(const fs::sun::Json &j) {                      \
+    const fs::sun::Json::Dictionary<fs::sun::Json::Value> &values = \
         j.GetValues();
 
-#define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)                    \
-  {                                                                            \
-    const auto &itr = values.find(#member_variable);                           \
-    if (itr != values.end()) {                                                 \
-      fs::sun::Json::UpdateValue(itr->second, member_variable);                \
-    }                                                                          \
+#define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)     \
+  {                                                             \
+    const auto &itr = values.find(#member_variable);            \
+    if (itr != values.end()) {                                  \
+      fs::sun::Json::UpdateValue(itr->second, member_variable); \
+    }                                                           \
   }
 
 #define FS_SUN_JSON_REGISTER_OBJECT_END() }

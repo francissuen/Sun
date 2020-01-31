@@ -10,12 +10,9 @@ except ImportError:
     
 deps = dependency.Dependency()
 
-cmake_utility = {
+vesta = {
     "src_path": """\
-https://github.com/francisjsun/cmake_utility/releases/download/{0}/\
-cmake_utility.tar.xz\
-"""}
-cmake_utility["src_path"] = cmake_utility["src_path"].format("v0.1.0-alpha")
-deps.add(dependency.DepInfo(cmake_utility))
+https://github.com/francisjsun/vesta.git"""}
+deps.add(dependency.DepInfo(vesta), dependency.fs_git_proj_dep_sln)
 
 deps.fix()

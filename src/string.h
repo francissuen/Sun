@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2019, F.S.. All rights reserved.
- */
+/* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #pragma once
 #include <map>
