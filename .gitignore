@@ -12,3 +12,4 @@ README.html
 compile_commands.json
 *.swp
 sun.tar*
+config.h.in

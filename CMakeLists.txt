@@ -19,9 +19,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
   ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 if(FS_SUN_STATIC_LIB)
-  add_library(${SUN})
+  add_library(${SUN} "")
 else()
-  add_library(${SUN} SHARED)
+  add_library(${SUN} SHARED "")
   target_compile_definitions(${SUN} PRIVATE FS_SUN_SHARED_LIB)
 endif()
 
