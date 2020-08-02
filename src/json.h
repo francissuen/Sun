@@ -211,7 +211,7 @@ class Json {
     ret = *(value.template Get<ScalarValue>().template Get<DeepPtr<Json>>());
   }
 
-  /* dictionary types  */
+  /* dictionary type */
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, Dictionary<TRet> &ret) {
     const auto &j_ptr =
@@ -221,22 +221,21 @@ class Json {
       for (const auto &value : values) {
         TRet tmp_ret{};
         UpdateValue(value.second, tmp_ret);
-        ret.insert(std::make_pair(value.first, tmp_ret));
+        ret.insert(std::make_pair(value.first, std::move(tmp_ret)));
       }
     }
   }
 
- private:
-  template <typename TRet, std::size_t N>
-  static void UpdateValue(const VectorValue::Element &value, TRet (&ret)[N]) {
-    const auto &vector_value = value.Get<DeepPtr<VectorValue>>();
-    if (vector_value != nullptr) {
-      const std::size_t value_size = vector_value->Size();
-      const std::size_t min_size = N >= value_size ? value_size : N;
+  /* std::vector */
+  template <typename TValue, typename TRet>
+  static void UpdateValue(const TValue &value, std::vector<TRet> &ret) {
+    const auto &vector_value = value.template Get<VectorValue>();
+    const std::size_t value_size = vector_value.Size();
 
-      for (std::size_t i = 0; i < min_size; i++) {
-        UpdateValue(vector_value->operator[](i), ret[i]);
-      }
+    for (std::size_t i = 0; i < value_size; i++) {
+      TRet tmp_ret{};
+      UpdateValue(vector_value[i], tmp_ret);
+      ret.push_back(std::move(tmp_ret));
     }
   }
 
@@ -257,7 +256,7 @@ class Json {
   /*     Status status_; */
 };
 
-#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN(class_name)               \
+#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()                         \
   void ParseFromJson(const char *input, const std::size_t size) {   \
     fs::sun::Json j(input, size);                                   \
     ParseFromJson(j);                                               \
@@ -267,12 +266,12 @@ class Json {
     const fs::sun::Json::Dictionary<fs::sun::Json::Value> &values = \
         j.GetValues();
 
-#define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)     \
-  {                                                             \
-    const auto &itr = values.find(#member_variable);            \
-    if (itr != values.end()) {                                  \
-      fs::sun::Json::UpdateValue(itr->second, member_variable); \
-    }                                                           \
+#define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)           \
+  {                                                                   \
+    const auto &itr = values.find(#member_variable);                  \
+    if (itr != values.end()) {                                        \
+      fs::sun::Json::UpdateValue(itr->second, this->member_variable); \
+    }                                                                 \
   }
 
 #define FS_SUN_JSON_REGISTER_OBJECT_END() }
