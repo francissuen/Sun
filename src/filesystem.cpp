@@ -1,15 +1,16 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#include "filesystem.h"
-
-#include "debug.h"
-#include "logger.h"
-#include "string.h"
+#include <cassert>
+#include <cstdio>
 #ifdef __GNUC__
 #include <unistd.h>
 #elif _MSC_VER
 #include <windows.h>
 #endif
+
+#include "filesystem.h"
+#include "logger.h"
+#include "string.h"
 
 using namespace fs::sun;
 
@@ -27,22 +28,21 @@ Filesystem::Filesystem()
 #ifdef _MSC_VER
   GetModuleFileName(NULL, path, FS_SUN_FILESYSTEM_MAX_PATH);
 #elif __GNUC__
-  FS_SUN_ASSERT(
-      ::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) != -1);
+  assert(::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) == -1);
 #endif
   working_dir_ = path;
   const auto lastSepIdx = working_dir_.find_last_of(dir_separator_);
   if (lastSepIdx != std::string::npos) {
     working_dir_ = working_dir_.substr(0, lastSepIdx);
   } else
-    FS_SUN_ASSERT(false);
+    working_dir_ = "NA: no dir_separator found";
 }
 
 std::vector<std::string> Filesystem::GetFilesInDir(
     const char* dir, const std::unordered_set<std::string>& suffixes,
     const bool recursively) const {
-  FS_SUN_ASSERT(dir != nullptr);
   std::vector<std::string> files;
+  assert(dir != nullptr);
 #ifdef _MSC_VER
   HANDLE hFind = INVALID_HANDLE_VALUE;
   WIN32_FIND_DATA ffd;
@@ -77,7 +77,7 @@ std::vector<std::string> Filesystem::GetFilesInDir(
 }
 
 std::string Filesystem::GetAbsolutePath(const char* szPath) const {
-  FS_SUN_ASSERT(szPath != nullptr);
+  assert(szPath != nullptr);
 #ifdef _MSC_VER
   if (szPath[1] == ':')
 #elif __GNUC__

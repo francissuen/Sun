@@ -7,7 +7,6 @@
 #include <typeinfo>
 #include <unordered_map>
 
-#include "debug.h"
 #include "ns.h"
 #include "string.h"
 #include "utility.h"
@@ -129,11 +128,8 @@ class Variant {
     if (a.index_ != variant::npos)
       Invoke<variant::Swap>::template ForTypeIn<Ts...>::With2(a.index_, a, b);
     else {
-      /** a is invalid */
-      /** a(std::move(b)), b.~ */
       Invoke<variant::MoveCtor>::template ForTypeIn<Ts...>::With2(
           b.index_, &a, std::move(b));
-      b.~Variant<Ts...>();
     }
   }
 
@@ -155,7 +151,6 @@ class Variant {
         "T is not one of Ts");
 
     Variant tmp(std::forward<T>(other));
-
     swap(*this, tmp);
 
     return *this;
@@ -262,12 +257,10 @@ void Swap<T>::operator()(Variant<Ts...> &a, Variant<Ts...> &b) {
   Variant<Ts...> tmp(std::move(a));
 
   /** a = b */
-  a.~Variant<Ts...>();
   Invoke<MoveCtor>::template ForTypeIn<Ts...>::With2(b.index_, &a,
                                                      std::move(b));
 
   /** b = tmp */
-  b.~Variant<Ts...>();
   Invoke<MoveCtor>::template ForTypeIn<Ts...>::With2(tmp.index_, &b,
                                                      std::move(tmp));
 }

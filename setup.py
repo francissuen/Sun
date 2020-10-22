@@ -5,7 +5,13 @@ deps = dependency.Dependency()
 
 vesta = {
     "src_path": """\
-https://github.com/francisjsun/vesta.git"""}
-deps.add(dependency.DepInfo(vesta), dependency.fs_git_proj_dep_sln)
+https://github.com/francisjsun/vesta.git@master"""}
+deps.add(dependency.DepInfo(vesta), dependency.fs_trivial_git_proj_dep_sln)
 
-deps.fix()
+
+def main():
+    deps.fix()
+
+
+if __name__ == "__main__":
+    main()

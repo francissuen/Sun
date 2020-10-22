@@ -2,7 +2,7 @@
 
 #pragma once
 #include <iostream>
-#include <string>
+#include "string.h"
 
 #include "async.h"
 #include "config.h"
@@ -55,6 +55,8 @@ class FS_SUN_API Logger {
                            std::placeholders::_2, std::placeholders::_3)},
           default_tag_{default_tag} {}
 
+    ~Log() { Flush(); }
+
    public:
     void operator()(std::string msg, const Severity s) {
       async_(default_tag_, std::move(msg), s);
@@ -74,5 +76,44 @@ class FS_SUN_API Logger {
 };
 
 extern Logger::Log<Logger::TermFile> cout;
+
+#ifdef _MSC_VER
+#define FS_SUN_FUNC_NAME __FUNCSIG__
+#elif defined(__GNUC__)
+#define FS_SUN_FUNC_NAME __PRETTY_FUNCTION__
+#endif
+
+#define FS_SUN_LOG(message, severity)                                     \
+  {                                                                       \
+    std::string msg{fs::sun::string::ToString(message)};                  \
+    msg = msg + "\n@FILE: " + __FILE__;                                   \
+    msg = msg + ", @LINE: " + fs::sun::string::ToString(__LINE__) + "\n"; \
+    msg = msg + "@FUNCTION: " + FS_SUN_FUNC_NAME;                         \
+    fs::sun::cout(msg, severity);                                         \
+  }
+
+#define FS_SUN_INFO(message) \
+  FS_SUN_LOG(message, fs::sun::Logger::Severity::S_INFO)
+
+#define FS_SUN_WARNING(message) \
+  FS_SUN_LOG(message, fs::sun::Logger::Severity::S_WARNING)
+
+#define FS_SUN_ERR(message) \
+  FS_SUN_LOG(message, fs::sun::Logger::Severity::S_ERROR)
+
+#define FS_SUN_LOG_RETURN(condition, serverity, ...) \
+  {                                                  \
+    if (condition) {                                 \
+      FS_SUN_LOG(#condition, serverity)              \
+      return __VA_ARGS__;                            \
+    }                                                \
+  }
+
+#define FS_SUN_ERR_RET(condition, ...) \
+  FS_SUN_LOG_RETURN(condition, fs::sun::Logger::Severity::S_ERROR, __VA_ARGS__)
+
+#define FS_SUN_WARNING_RET(condition, ...)                           \
+  FS_SUN_LOG_RETURN(condition, fs::sun::Logger::Severity::S_WARNING, \
+                    __VA_ARGS__)
 
 FS_SUN_NS_END

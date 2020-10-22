@@ -2,16 +2,16 @@
 
 #pragma once
 
+#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <limits>
 #include <type_traits>
 #include <unordered_map>
 
-#include "debug.h"
-#include "dynamic_multidimensional_container.h"
+#include "deep_ptr.h"
 #include "ns.h"
-
+#include "variant.h"
 FS_SUN_NS_BEGIN
 
 /**
@@ -27,7 +27,7 @@ class Json {
   /**
    * \brief for array or multidimensional array
    */
-  using VectorValue = DynamicMultidimensionalVector<ScalarValue>;
+  using VectorValue = std::vector<ScalarValue>;
 
   using Value = Variant<ScalarValue, VectorValue>;
 
@@ -66,7 +66,7 @@ class Json {
 
     template <char token>
     void AdvanceCurrentToken() {
-      FS_SUN_ASSERT(token == *input_);
+      assert(token == *input_);
       input_ += 1u;
       size_ -= 1u;
     }
@@ -77,35 +77,9 @@ class Json {
     ScalarValue ReadObject();
     ScalarValue ReadOthers();
 
-    /** return DeepPtr<VectorValue> if TRet == VectorValue::Element */
-    template <typename TRet>
-    static TRet VectorAdaptor(VectorValue &&value) {
-      return std::move(value);
-    }
+    ScalarValue ReadScalar();
 
-    template <typename TRet>
-    TRet ReadValue() {
-      AdvanceUntilSignificant();
-
-      const char cur_char = *input_;
-      TRet ret;
-      if (cur_char == token_quote) /** string */
-      {
-        ret = ReadString();
-      } else if (cur_char == token_lcb) /** object */
-      {
-        ret = ReadObject();
-      } else if (cur_char == token_lsb) /** array */
-      {
-        /* if it's read from ReadArray, then a multidimensional array is met */
-        ret = VectorAdaptor<TRet>(ReadArray());
-      } else /** number, ture, false, null */
-      {
-        ret = ReadOthers();
-      }
-
-      return ret;
-    }
+    Value ReadValue();
 
     VectorValue ReadArray();
 
@@ -150,15 +124,13 @@ class Json {
   template <typename TValue, typename TRet>
   static typename std::enable_if<std::is_class<TRet>::value>::type UpdateValue(
       const TValue &value, TRet &ret) {
-    const auto &j_ptr =
-        value.template Get<ScalarValue>().template Get<DeepPtr<Json>>();
+    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
     if (j_ptr != nullptr) ret.ParseFromJson(*j_ptr);
   }
 
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, TRet *&ret) {
-    const auto &j_ptr =
-        value.template Get<ScalarValue>().template Get<DeepPtr<Json>>();
+    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
     if (j_ptr != nullptr) {
       ret = new TRet;
       ret->ParseFromJson(*j_ptr);
@@ -167,8 +139,7 @@ class Json {
 
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, std::unique_ptr<TRet> &ret) {
-    const auto &j_ptr =
-        value.template Get<ScalarValue>().template Get<DeepPtr<Json>>();
+    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
     if (j_ptr != nullptr) {
       ret.reset(new TRet);
       ret->ParseFromJson(*j_ptr);
@@ -179,15 +150,16 @@ class Json {
   static typename std::enable_if<std::is_arithmetic<TRet>::value>::type
   UpdateValue(const TValue &value, TRet &ret) {
     ret = string::ToNumber<TRet>(
-        value.template Get<ScalarValue>().template Get<std::string>());
+        GetScalarValue(value).template Get<std::string>());
   }
 
   template <typename TValue, typename TRet, std::size_t N>
   static void UpdateValue(const TValue &value, TRet (&ret)[N]) {
     const auto &vector_value = value.template Get<VectorValue>();
-    const std::size_t value_size = vector_value.Size();
+    const std::size_t value_size = vector_value.size();
     const std::size_t min_size = N >= value_size ? value_size : N;
 
+    string::ToString(vector_value);
     for (std::size_t i = 0; i < min_size; i++) {
       UpdateValue(vector_value[i], ret[i]);
     }
@@ -197,25 +169,23 @@ class Json {
 
   template <typename TValue>
   static void UpdateValue(const TValue &value, bool &ret) {
-    ret = StringToBoolean(
-        value.template Get<ScalarValue>().template Get<std::string>());
+    ret = StringToBoolean(GetScalarValue(value).template Get<std::string>());
   }
 
   template <typename TValue>
   static void UpdateValue(const TValue &value, std::string &ret) {
-    ret = value.template Get<ScalarValue>().template Get<std::string>();
+    ret = GetScalarValue(value).template Get<std::string>();
   }
 
   template <typename TValue>
   static void UpdateValue(const TValue &value, Json &ret) {
-    ret = *(value.template Get<ScalarValue>().template Get<DeepPtr<Json>>());
+    ret = *(GetScalarValue(value).template Get<DeepPtr<Json>>());
   }
 
   /* dictionary type */
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, Dictionary<TRet> &ret) {
-    const auto &j_ptr =
-        value.template Get<ScalarValue>().template Get<DeepPtr<Json>>();
+    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
     if (j_ptr != nullptr) {
       const auto &values = j_ptr->GetValues();
       for (const auto &value : values) {
@@ -230,13 +200,19 @@ class Json {
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, std::vector<TRet> &ret) {
     const auto &vector_value = value.template Get<VectorValue>();
-    const std::size_t value_size = vector_value.Size();
+    const std::size_t value_size = vector_value.size();
 
     for (std::size_t i = 0; i < value_size; i++) {
       TRet tmp_ret{};
       UpdateValue(vector_value[i], tmp_ret);
       ret.push_back(std::move(tmp_ret));
     }
+  }
+
+ private:
+  template <typename TValue>
+  static const ScalarValue &GetScalarValue(const TValue &value) {
+    return value.template Get<ScalarValue>();
   }
 
  public:
@@ -255,6 +231,9 @@ class Json {
   Dictionary<Value> values_;
   /*     Status status_; */
 };
+
+template <>
+const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value);
 
 #define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()                         \
   void ParseFromJson(const char *input, const std::size_t size) {   \

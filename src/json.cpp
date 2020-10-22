@@ -1,14 +1,13 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #include "json.h"
+#include "logger.h"
 
 using namespace fs::sun;
 
 template <>
-Json::VectorValue::Element
-Json::Deserializer::VectorAdaptor<Json::VectorValue::Element>(
-    Json::VectorValue &&value) {
-  return DeepPtr<Json::VectorValue>(std::move(value));
+const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value) {
+  return value;
 }
 
 Json::Deserializer::Deserializer(const char *&input, std::size_t &size)
@@ -28,7 +27,7 @@ Json::Dictionary<Json::Value> Json::Deserializer::Execute() {
       SeekToken<token_col>();
       AdvanceCurrentToken<token_col>();
       if (size_ != 0u) {
-        ret.insert(std::make_pair(std::move(name), ReadValue<Value>()));
+        ret.insert(std::make_pair(std::move(name), ReadValue()));
 
         AdvanceUntilSignificant();
 
@@ -122,13 +121,27 @@ Json::ScalarValue Json::Deserializer::ReadOthers() {
   return std::string{begin, input_};
 }
 
+Json::ScalarValue Json::Deserializer::ReadScalar() {
+  ScalarValue ret;
+  AdvanceUntilSignificant();
+  const char cur_char = *input_;
+  if (cur_char == token_quote) {  // string
+    ret = ReadString();
+  } else if (cur_char == token_lcb) {  // object
+    ret = ReadObject();
+  } else {  // number, ture, false, null
+    ret = ReadOthers();
+  }
+  return ret;
+}
+
 Json::VectorValue Json::Deserializer::ReadArray() {
   VectorValue ret;
   AdvanceCurrentToken<token_lsb>();
 
   if (size_ != 0u) {
     do {
-      ret.PushBack(ReadValue<VectorValue::Element>());
+      ret.push_back(ReadScalar());
 
       AdvanceUntilSignificant();
       if (*input_ == token_rsb) {
@@ -138,6 +151,19 @@ Json::VectorValue Json::Deserializer::ReadArray() {
         AdvanceCurrentToken<token_com>();
     } while (size_ != 0u);
   }
+
+  return ret;
+}
+
+Json::Value Json::Deserializer::ReadValue() {
+  AdvanceUntilSignificant();
+
+  const char cur_char = *input_;
+  Value ret;
+  if (cur_char == token_lsb)
+    ret = ReadArray();
+  else
+    ret = ReadScalar();
 
   return ret;
 }

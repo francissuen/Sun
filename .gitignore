@@ -13,3 +13,4 @@ compile_commands.json
 *.swp
 sun.tar*
 config.h.in
+moon_project.json

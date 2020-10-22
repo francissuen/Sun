@@ -88,6 +88,10 @@ std::string ToString(const T& value) {
   return to_string(value);
 }
 
+inline std::string ToString(const char* value) {
+  return value != nullptr ? value : "";
+}
+
 inline std::string ToString(const std::string& value) { return value; }
 
 inline std::string ToString(const bool& value) {
@@ -102,12 +106,13 @@ std::string ToString(const std::unique_ptr<T, TDeleter>& value) {
     return "nullptr";
 }
 
+// map
 template <typename TOrderedOrUnorderedMap>
 std::string MapToString(const TOrderedOrUnorderedMap& map) {
   std::string ret;
   ret += "{";
   for (const auto& pair : map) {
-    ret += (ToString(pair.first) + " : " + ToString(pair.second) + "; ");
+    ret += (ToString(pair.first) + " : " + ToString(pair.second) + ", ");
   }
   if (ret.back() == ' ') ret.erase(ret.end() - 2, ret.end());
   ret += "}";
@@ -124,17 +129,28 @@ std::string ToString(const std::map<TKey, TValue>& value) {
   return MapToString(value);
 }
 
+// array
 template <typename TElement>
-std::string ToString(const std::vector<TElement>& value) {
+std::string ArrayToString(const TElement* value, const std::size_t size) {
   std::string ret;
   ret += "[";
-  for (const TElement& ele : value) {
-    ret += (ToString(ele) + ", ");
+  for (std::size_t i = 0; i < size; i++) {
+    ret += (ToString(value[i]) + ", ");
   }
   if (ret.back() == ' ') ret.erase(ret.end() - 2, ret.end());
   ret += "]";
 
   return ret;
+}
+
+template <typename TElement>
+std::string ToString(const std::vector<TElement>& value) {
+  return ArrayToString(value.data(), value.size());
+}
+
+template <typename TElement, std::size_t N>
+std::string ToString(const TElement (&value)[N]) {
+  return ArrayToString(&value[0], N);
 }
 }  // namespace string
 

@@ -1,11 +1,10 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#include "string.h"
-
+#include <cassert>
 #include <cstring>
 
-#include "debug.h"
 #include "logger.h"
+#include "string.h"
 
 FS_SUN_NS_BEGIN
 namespace string {
@@ -15,7 +14,7 @@ std::vector<std::string> ExtractBlocks(
         bounding_delimiters) {
   std::vector<std::string> ret;
 
-  for (const auto bd : bounding_delimiters) {
+  for (const auto &bd : bounding_delimiters) {
     const std::string& first = bd.first;
     const std::size_t begin_pos = src.find(first, 0);
     const std::size_t delrs_len = first.size();
@@ -34,7 +33,7 @@ std::vector<std::string> ExtractBlocks(
 }
 
 std::vector<std::string> Split(const std::string& src, const char* delimeter) {
-  FS_SUN_ASSERT(delimeter != nullptr);
+  assert(delimeter != nullptr);
   std::vector<std::string> ret;
   std::size_t cur_pos = 0;
   const std::size_t delrs_len = std::strlen(delimeter);

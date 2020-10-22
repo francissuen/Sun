@@ -3,6 +3,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 #include "ns.h"
 
@@ -17,7 +18,10 @@ class DeepPtr {
 
   friend std::string to_string(const DeepPtr &ptr) {
     using std::to_string;
-    return to_string(*ptr);
+    if (ptr != nullptr)
+      return to_string(*ptr);
+    else
+      return "nullptr";
   }
 
   friend bool operator!=(const DeepPtr &rhs, std::nullptr_t) {

@@ -21,7 +21,7 @@ struct TestJson {
   Json misc;
   Json::Dictionary<float> dic_floats{};
 
-  FS_SUN_JSON_REGISTER_OBJECT_BEGIN(TestJson)
+  FS_SUN_JSON_REGISTER_OBJECT_BEGIN()
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name)
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(gender)
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(age)
@@ -34,26 +34,33 @@ struct TestJson {
   FS_SUN_JSON_REGISTER_OBJECT_END()
 
   friend std::string to_string(const TestJson &tj) {
-    std::string ret{"@name: "};
-    ret += tj.name + ", @gender: " + tj.gender +
-           ", @age: " + string::ToString(tj.age) +
-           ", @ready: " + string::ToString(tj.ready) + ", @numbers: ";
-    for (std::size_t i = 0u; i < 10u; i++) {
-      ret += string::ToString(tj.numbers[i]) + ", ";
-    }
+    std::string ret{"{name: "};
+    ret += tj.name + ", gender: " + tj.gender +
+           ", age: " + string::ToString(tj.age) +
+           ", ready: " + string::ToString(tj.ready) +
+           ", numbers: " + string::ToString(tj.numbers);
 
     if (tj.my_friend != nullptr)
-      ret += (", @my_friend: " + to_string(*(tj.my_friend)));
+      ret += (", my_friend: " + string::ToString(*(tj.my_friend)));
     if (tj.my_2nd_friend != nullptr)
-      ret += (", @my_2nd_friend " + to_string(*(tj.my_2nd_friend)));
+      ret += (", my_2nd_friend " + string::ToString(*(tj.my_2nd_friend)));
 
-    ret += (", @misc: " + string::ToString(tj.misc));
+    ret += (", misc: " + string::ToString(tj.misc));
 
-    ret += ", @dic_floats: " + string::ToString(tj.dic_floats);
+    ret += ", dic_floats: " + string::ToString(tj.dic_floats);
+    ret += "}";
     return ret;
   }
 };
 
+struct B {
+  static constexpr char const *name = "B";
+  B(int) { FS_SUN_LOG("B cotr", Logger::S_INFO); }
+};
+struct C {
+  static constexpr char const *name = "C";
+  C(int) { FS_SUN_LOG("C cotr", Logger::S_INFO); }
+};
 int main(int argc, char **argv) {
   cout("hello world!", Logger::S_VERBOSE);
   cout("hello world!", Logger::S_DEBUG);
@@ -61,18 +68,15 @@ int main(int argc, char **argv) {
   cout("hello world!", Logger::S_WARNING);
   cout("hello world!", Logger::S_ERROR);
   cout("hello world!", Logger::S_FATAL);
+  cout.Flush();
 
-  struct A {};
-  struct B : public A {
-    B(int) {}
-  };
-  struct C : public A {
-    C(int) {}
-  };
-
-  const Factory<A, int> f = Factory<A, int>::With<B, C>();
-  std::unique_ptr<A> a =
-      f.Create(Factory<A, int>::With<B, C>::OrderNumberOf<B>(), 1);
+  Factory<std::string, int> f;
+  f.Register<B>(B::name);
+  f.Register<C>(C::name);
+  std::unique_ptr<B> b = f.Create<B>(B::name, 1);
+  std::unique_ptr<C> c = f.Create<C>(C::name, 0);
+  f.Unregister(B::name);
+  f.Unregister(C::name);
 
   Variant<int, bool, std::string> v;
   v = 1;
@@ -96,8 +100,6 @@ int main(int argc, char **argv) {
       cout(string::ToString(tj), Logger::S_INFO);
     }
   }
-
-  cout.Flush();
 
   return 0;
 }
