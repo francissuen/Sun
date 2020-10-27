@@ -1,6 +1,8 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_TIME_H
+#define FS_SUN_TIME_H
+
 #include "singleton.h"
 #include "string.h"
 
@@ -19,3 +21,4 @@ class FS_SUN_API Time : public Singleton<Time> {
 
 FS_SUN_NS_END
 
+#endif  // FS_SUN_TIME_H

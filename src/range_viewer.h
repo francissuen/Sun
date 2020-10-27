@@ -1,10 +1,10 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_RANGE_VIEWER_H
+#define FS_SUN_RANGE_VIEWER_H
 
 #include <memory>
 
-#include "debug.h"
 #include "ns.h"
 
 FS_SUN_NS_BEGIN
@@ -80,3 +80,5 @@ class RangeViewer {
 };
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_RANGE_VIEWER_H

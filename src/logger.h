@@ -1,6 +1,8 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_LOGGER_H
+#define FS_SUN_LOGGER_H
+
 #include <iostream>
 #include "string.h"
 
@@ -117,3 +119,5 @@ extern Logger::Log<Logger::TermFile> cout;
                     __VA_ARGS__)
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_LOGGER_H

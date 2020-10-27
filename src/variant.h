@@ -1,6 +1,7 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_VARIANT_H
+#define FS_SUN_VARIANT_H
 
 #include <cstring>
 #include <type_traits>
@@ -274,3 +275,5 @@ void ToString<T>::operator()(const Variant<Ts...> *src, std::string &ret) {
 }  // namespace variant
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_VARIANT_H

@@ -1,6 +1,7 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_UTILITY_H
+#define FS_SUN_UTILITY_H
 
 #include <future>
 #include <tuple>
@@ -267,3 +268,5 @@ template <typename T>
 struct WhichType;
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_UTILITY_H

@@ -1,14 +1,18 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
+#include "filesystem.h"
+
 #include <cassert>
 #include <cstdio>
-#ifdef __GNUC__
+
+#ifdef FS_SUN_LINUX
+#include <limits.h>
+#include <stdlib.h>
 #include <unistd.h>
-#elif _MSC_VER
+#elif defined(FS_SUN_WINDOWS)
 #include <windows.h>
 #endif
 
-#include "filesystem.h"
 #include "logger.h"
 #include "string.h"
 
@@ -16,26 +20,21 @@ using namespace fs::sun;
 
 #define FS_SUN_FILESYSTEM_MAX_PATH 128
 
-Filesystem::Filesystem()
-    :
-#ifdef _MSC_VER
-      dir_separator_('\\')
-#else
-      dir_separator_('/')
-#endif
-{
+Filesystem::Filesystem() {
   char path[FS_SUN_FILESYSTEM_MAX_PATH] = {'\0'};
-#ifdef _MSC_VER
-  GetModuleFileName(NULL, path, FS_SUN_FILESYSTEM_MAX_PATH);
-#elif __GNUC__
-  assert(::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) == -1);
+#ifdef FS_SUN_WINDOWS
+  if (GetModuleFileName(NULL, path, FS_SUN_FILESYSTEM_MAX_PATH) == 0)
+    cout("Failed to get executable path.", Logger::S_ERROR);
+#elif defined(FS_SUN_LINUX)
+  if (::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) == -1)
+    cout("Failed to get executable path.", Logger::S_ERROR);
+#else
+#error TODO
 #endif
-  working_dir_ = path;
-  const auto lastSepIdx = working_dir_.find_last_of(dir_separator_);
-  if (lastSepIdx != std::string::npos) {
-    working_dir_ = working_dir_.substr(0, lastSepIdx);
-  } else
-    working_dir_ = "NA: no dir_separator found";
+  executable_path_ = path;
+  const auto lastSepIdx = executable_path_.find_last_of(path_separator_);
+  if (lastSepIdx != std::string::npos)
+    executable_dir_ = executable_path_.substr(0, lastSepIdx);
 }
 
 std::vector<std::string> Filesystem::GetFilesInDir(
@@ -76,14 +75,35 @@ std::vector<std::string> Filesystem::GetFilesInDir(
   return files;
 }
 
-std::string Filesystem::GetAbsolutePath(const char* szPath) const {
-  assert(szPath != nullptr);
-#ifdef _MSC_VER
-  if (szPath[1] == ':')
-#elif __GNUC__
-  if (szPath[0] == '/')
+std::string Filesystem::GetExecutablePath() const { return executable_path_; }
+std::string Filesystem::GetExecutableDir() const { return executable_dir_; }
+std::string Filesystem::GetWorkingDir() const {
+  std::string ret;
+  char wd[FS_SUN_FILESYSTEM_MAX_PATH]{};
+#ifdef FS_SUN_LINUX
+  if (::getcwd(wd, FS_SUN_FILESYSTEM_MAX_PATH) != nullptr) ret = wd;
+#else
+#error TODO
 #endif
-    return std::string(szPath);
-  else  // relative path
-    return working_dir_ + dir_separator_ + szPath;
+  return ret;
+}
+
+char Filesystem::GetPathSeperator() const { return path_separator_; }
+
+std::string Filesystem::GetAbsolutePath(const char* path) const {
+  assert(path != nullptr);
+  std::string ret;
+  char abs_path[FS_SUN_FILESYSTEM_MAX_PATH]{};
+#ifdef FS_SUN_LINUX
+  if (::realpath(path, abs_path) != nullptr) ret = abs_path;
+#else
+#error TODO
+#endif
+  return ret;
+}
+
+std::string Filesystem::JoinPath(const char* path_0,
+                                 const char* path_1) const {
+  std::string ret{path_0};
+  return ret + path_separator_ + path_1;
 }
