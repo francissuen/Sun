@@ -1,6 +1,7 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_JSON_H
+#define FS_SUN_JSON_H
 
 #include <cassert>
 #include <cstdint>
@@ -84,7 +85,8 @@ class Json {
     VectorValue ReadArray();
 
    private:
-    const char *&input_;
+    const char *&input_;  // use reference because it needs to
+                          // be called recursively
     std::size_t &size_;
   };
 
@@ -217,9 +219,8 @@ class Json {
 
  public:
   Json();
-  Json(const char *input, std::size_t size);
-
-  Json(const char *sz_input);
+  Json(const char *json_string);
+  Json(const char *buffer, std::size_t size);
 
   Json(Dictionary<Value> &&values);
 
@@ -256,3 +257,5 @@ const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value);
 #define FS_SUN_JSON_REGISTER_OBJECT_END() }
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_JSON_H

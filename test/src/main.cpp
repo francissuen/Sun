@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "src/factory.h"
+#include "src/filesystem.h"
 #include "src/json.h"
 #include "src/logger.h"
 #include "src/string.h"
@@ -69,6 +70,12 @@ int main(int argc, char **argv) {
   cout("hello world!", Logger::S_ERROR);
   cout("hello world!", Logger::S_FATAL);
   cout.Flush();
+
+  cout("exe path: " + Filesystem::Instance().GetExecutablePath(),
+       Logger::S_INFO);
+  cout("exe dir: " + Filesystem::Instance().GetExecutableDir(),
+       Logger::S_INFO);
+  cout("wd: " + Filesystem::Instance().GetWorkingDir(), Logger::S_INFO);
 
   Factory<std::string, int> f;
   f.Register<B>(B::name);

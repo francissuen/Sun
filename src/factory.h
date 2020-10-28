@@ -1,6 +1,8 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_FACTORY_H
+#define FS_SUN_FACTORY_H
+
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -54,3 +56,5 @@ class Factory {
 };
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_FACTORY_H

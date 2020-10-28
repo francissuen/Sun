@@ -1,6 +1,8 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_STRING_H
+#define FS_SUN_STRING_H
+
 #include <map>
 #include <memory>
 #include <string>
@@ -57,6 +59,8 @@ std::string ConcatWithDelimiter(const char* delimiter, string_0&& str0,
                        std::forward<string_1>(str1)),
                 str2, strn...);
 }
+
+bool StartsWith(const char* string_0, const char* string_1);
 
 template <typename T>
 T ToNumber(const std::string& str) {
@@ -155,3 +159,5 @@ std::string ToString(const TElement (&value)[N]) {
 }  // namespace string
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_STRING_H

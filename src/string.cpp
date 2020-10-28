@@ -14,7 +14,7 @@ std::vector<std::string> ExtractBlocks(
         bounding_delimiters) {
   std::vector<std::string> ret;
 
-  for (const auto &bd : bounding_delimiters) {
+  for (const auto& bd : bounding_delimiters) {
     const std::string& first = bd.first;
     const std::size_t begin_pos = src.find(first, 0);
     const std::size_t delrs_len = first.size();
@@ -56,6 +56,17 @@ std::string FileExtension(const std::string& src) {
     return std::string("");
   else
     return src.substr(pos + 1);
+}
+
+bool StartsWith(const char* string_0, const char* string_1) {
+  const std::size_t len_string_1 = std::strlen(string_1);
+  if (std::strlen(string_0) >= len_string_1) {
+    for (std::size_t i = 0; i < len_string_1; i++) {
+      if (string_0[i] != string_1[i]) return false;
+    }
+  } else
+    return false;
+  return true;
 }
 
 }  // namespace string

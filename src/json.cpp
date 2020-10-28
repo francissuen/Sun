@@ -181,11 +181,11 @@ bool Json::StringToBoolean(const std::string &str) {
 
 Json::Json() {}
 
-Json::Json(const char *input, std::size_t size) {
-  Deserializer d{input, size};
+Json::Json(const char *json_string)
+    : Json{json_string, std::strlen(json_string)} {}
+
+Json::Json(const char *buffer, std::size_t size) {
+  Deserializer d{buffer, size};
   values_ = d.Execute();
 }
-
-Json::Json(const char *sz_input) : Json(sz_input, strlen(sz_input)) {}
-
 Json::Json(Dictionary<Value> &&values) : values_{std::move(values)} {}

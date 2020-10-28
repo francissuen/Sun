@@ -1,17 +1,19 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_FILESYSTEM_H
+#define FS_SUN_FILESYSTEM_H
+
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 #include "config.h"
+#include "platform.h"
 #include "singleton.h"
 FS_SUN_NS_BEGIN
 
-class FS_SUN_API Filesystem : public Singleton<Filesystem> {
- private:
-  Filesystem();
+class FS_SUN_API Filesystem {
+  FS_SUN_SINGLETON(Filesystem)
 
  public:
   /**
@@ -25,17 +27,25 @@ class FS_SUN_API Filesystem : public Singleton<Filesystem> {
       const char* dir, const std::unordered_set<std::string>& suffixes,
       const bool recursively = false) const;
 
-  inline const std::string& GetWorkingDir() const { return working_dir_; }
-
-  /**
-   * \param szPath If szPath[0] == '/'(linux) or szPath[1] == ':'(win), then
-   * it's an absolute path, else it's a relative path.
-   */
-  std::string GetAbsolutePath(const char* szPath) const;
+  std::string GetExecutablePath() const;
+  std::string GetExecutableDir() const;
+  std::string GetWorkingDir() const;
+  char GetPathSeperator() const;
+  std::string GetAbsolutePath(const char* path) const;
+  std::string JoinPath(const char* path_0, const char* path_1) const;
 
  private:
-  std::string working_dir_;
-  const char dir_separator_;
+  std::string executable_path_;
+  std::string executable_dir_;
+  const char path_separator_{
+#ifdef FS_SUN_WINDOWS
+      '\\'
+#else
+      '/'
+#endif
+  };
 };
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_FILESYSTEM_H

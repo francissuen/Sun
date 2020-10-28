@@ -1,6 +1,7 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#pragma once
+#ifndef FS_SUN_DEEP_PTR_H
+#define FS_SUN_DEEP_PTR_H
 
 #include <memory>
 #include <string>
@@ -58,3 +59,5 @@ class DeepPtr {
 };
 
 FS_SUN_NS_END
+
+#endif  // FS_SUN_DEEP_PTR_H
