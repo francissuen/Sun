@@ -33,7 +33,8 @@ class Json {
   using Value = Variant<ScalarValue, VectorValue>;
 
   template <typename T>
-  using Dictionary = std::unordered_map<std::string, T>;
+  using TDictionary = std::unordered_map<std::string, T>;
+  using Dictionary = TDictionary<Value>;
 
   /*
       enum struct Status : std::uint8_t
@@ -49,7 +50,7 @@ class Json {
     Deserializer(const char *&input, std::size_t &size);
 
    public:
-    Dictionary<Value> Execute();
+    Dictionary Execute();
 
    private:
     /** Seek token */
@@ -186,7 +187,7 @@ class Json {
 
   /* dictionary type */
   template <typename TValue, typename TRet>
-  static void UpdateValue(const TValue &value, Dictionary<TRet> &ret) {
+  static void UpdateValue(const TValue &value, TDictionary<TRet> &ret) {
     const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
     if (j_ptr != nullptr) {
       const auto &values = j_ptr->GetValues();
@@ -220,31 +221,48 @@ class Json {
  public:
   Json();
   Json(const char *json_string);
-  Json(const char *buffer, std::size_t size);
+  Json(const char *json_string, std::size_t size);
 
-  Json(Dictionary<Value> &&values);
+  Json(Dictionary values);
 
  public:
-  const Dictionary<Value> &GetValues() const;
-  /* Status GetStatus() const; */
+  operator const Dictionary &() const;
 
- private:
-  Dictionary<Value> values_;
-  /*     Status status_; */
+ public:
+  const Dictionary &GetValues() const;
+
+ protected:
+  Dictionary values_;
+
+ protected:
+  void Parse(const char *json_string, std::size_t size);
 };
 
 template <>
 const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value);
 
-#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()                         \
-  void ParseFromJson(const char *input, const std::size_t size) {   \
-    fs::sun::Json j(input, size);                                   \
-    ParseFromJson(j);                                               \
-  }                                                                 \
-                                                                    \
-  void ParseFromJson(const fs::sun::Json &j) {                      \
-    const fs::sun::Json::Dictionary<fs::sun::Json::Value> &values = \
-        j.GetValues();
+class JsonFile : public Json {
+ public:
+  JsonFile(const char *file_path);
+};
+
+#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()              \
+  inline void ParseFromJsonFile(const char *file_path) { \
+    fs::sun::JsonFile jf(file_path);                     \
+    ParseFromJson(jf);                                   \
+  }                                                      \
+  inline void ParseFromJson(const char *json_string) {   \
+    fs::sun::Json j(json_string);                        \
+    ParseFromJson(j);                                    \
+  }                                                      \
+  inline void ParseFromJson(const char *json_string,     \
+                            const std::size_t size) {    \
+    fs::sun::Json j(json_string, size);                  \
+    ParseFromJson(j);                                    \
+  }                                                      \
+                                                         \
+  inline void ParseFromJson(const fs::sun::Json &j) {    \
+    const fs::sun::Json::Dictionary &values = j.GetValues();
 
 #define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)           \
   {                                                                   \

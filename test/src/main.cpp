@@ -20,7 +20,7 @@ struct TestJson {
   TestJson *my_friend{nullptr};
   std::unique_ptr<TestJson> my_2nd_friend{nullptr};
   Json misc;
-  Json::Dictionary<float> dic_floats{};
+  Json::TDictionary<float> dic_floats{};
 
   FS_SUN_JSON_REGISTER_OBJECT_BEGIN()
   FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name)
@@ -95,17 +95,9 @@ int main(int argc, char **argv) {
 
   if (argc > 1) {
     cout(argv[1], Logger::S_INFO);
-    std::ifstream json_file(argv[1]);
-    std::string json_data;
-    if (json_file.is_open()) {
-      std::stringstream json_stream;
-      json_file >> json_stream.rdbuf();
-      json_data = json_stream.str();
-
-      TestJson tj;
-      tj.ParseFromJson(json_data.c_str(), json_data.size());
-      cout(string::ToString(tj), Logger::S_INFO);
-    }
+    TestJson tj;
+    tj.ParseFromJsonFile(argv[1]);
+    cout(string::ToString(tj), Logger::S_INFO);
   }
 
   return 0;

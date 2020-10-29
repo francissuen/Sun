@@ -27,8 +27,8 @@ class FS_SUN_API Filesystem {
       const char* dir, const std::unordered_set<std::string>& suffixes,
       const bool recursively = false) const;
 
-  std::string GetExecutablePath() const;
-  std::string GetExecutableDir() const;
+  const std::string& GetExecutablePath() const;
+  const std::string& GetExecutableDir() const;
   std::string GetWorkingDir() const;
   char GetPathSeperator() const;
   std::string GetAbsolutePath(const char* path) const;

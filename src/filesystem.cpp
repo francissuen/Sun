@@ -75,8 +75,12 @@ std::vector<std::string> Filesystem::GetFilesInDir(
   return files;
 }
 
-std::string Filesystem::GetExecutablePath() const { return executable_path_; }
-std::string Filesystem::GetExecutableDir() const { return executable_dir_; }
+const std::string& Filesystem::GetExecutablePath() const {
+  return executable_path_;
+}
+const std::string& Filesystem::GetExecutableDir() const {
+  return executable_dir_;
+}
 std::string Filesystem::GetWorkingDir() const {
   std::string ret;
   char wd[FS_SUN_FILESYSTEM_MAX_PATH]{};

@@ -1,6 +1,7 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #include "json.h"
+#include "file.h"
 #include "logger.h"
 
 using namespace fs::sun;
@@ -13,8 +14,8 @@ const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value) {
 Json::Deserializer::Deserializer(const char *&input, std::size_t &size)
     : input_{input}, size_(size) {}
 
-Json::Dictionary<Json::Value> Json::Deserializer::Execute() {
-  Dictionary<Json::Value> ret;
+Json::Dictionary Json::Deserializer::Execute() {
+  Dictionary ret;
   /** seek lcb */
   SeekToken<token_lcb>();
   AdvanceCurrentToken<token_lcb>();
@@ -61,9 +62,7 @@ void Json::Deserializer::AdvanceUntilSignificant() {
   }
 }
 
-const Json::Dictionary<Json::Value> &Json::GetValues() const {
-  return values_;
-}
+const Json::Dictionary &Json::GetValues() const { return values_; }
 
 /* Json::Status Json::GetStatus() const
 {
@@ -184,8 +183,23 @@ Json::Json() {}
 Json::Json(const char *json_string)
     : Json{json_string, std::strlen(json_string)} {}
 
-Json::Json(const char *buffer, std::size_t size) {
-  Deserializer d{buffer, size};
+Json::Json(const char *json_string, std::size_t size) {
+  Parse(json_string, size);
+}
+
+Json::Json(Dictionary values) : values_{std::move(values)} {}
+
+Json::operator const Dictionary &() const { return GetValues(); }
+
+void Json::Parse(const char *json_string, std::size_t size) {
+  Deserializer d{json_string, size};
   values_ = d.Execute();
 }
-Json::Json(Dictionary<Value> &&values) : values_{std::move(values)} {}
+
+JsonFile::JsonFile(const char *file_path) {
+  File f{file_path};
+  if (f.IsGood()) {
+    std::vector<char> json_string = f.Read();
+    Parse(json_string.data(), json_string.size());
+  }
+}
