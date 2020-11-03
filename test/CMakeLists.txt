@@ -1,10 +1,10 @@
 # Copyright (C) 2020 Francis Sun, all rights reserved.
 
-set(TEST_SUN "test_sun")
+set(SUN_TEST ${SUN}_test)
 
-add_executable(${TEST_SUN} "")
-target_include_directories(${TEST_SUN} PRIVATE ${CMAKE_SOURCE_DIR})
-target_link_libraries(${TEST_SUN} ${SUN})
+add_executable(${SUN_TEST} "")
+target_include_directories(${SUN_TEST} PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(${SUN_TEST} ${SUN})
 add_subdirectory(src)
 
-add_dependencies(${TEST_SUN} ${SUN})
+add_dependencies(${SUN_TEST} ${SUN})

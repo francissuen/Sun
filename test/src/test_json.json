@@ -13,10 +13,12 @@
     "my_friend": {
         "name": "ss",
         "gender": "female",
+        "numbers":[],
         "my_friend": {
             "name": "fs",
             "gender": "male",
-            "age": 10
+            "age": 10,
+            "my_friend":{}
         }
     },
     "my_2nd_friend": {

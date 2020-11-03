@@ -19,7 +19,7 @@ struct TestJson {
 
   TestJson *my_friend{nullptr};
   std::unique_ptr<TestJson> my_2nd_friend{nullptr};
-  Json misc;
+  Json::Dictionary misc;
   Json::TDictionary<float> dic_floats{};
 
   FS_SUN_JSON_REGISTER_OBJECT_BEGIN()

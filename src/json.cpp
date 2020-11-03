@@ -18,32 +18,42 @@ Json::Dictionary Json::Deserializer::Execute() {
   Dictionary ret;
   /** seek lcb */
   SeekToken<token_lcb>();
-  AdvanceCurrentToken<token_lcb>();
+  PassCurrentToken<token_lcb>();
 
   while (size_ != 0u) {
     /** seek left quote of name */
-    SeekToken<token_quote>();
-    if (size_ != 0u) {
-      std::string name = ReadString().Get<std::string>();
-      SeekToken<token_col>();
-      AdvanceCurrentToken<token_col>();
+    if (SeekToken<token_quote, token_rcb>()) {
       if (size_ != 0u) {
-        ret.insert(std::make_pair(std::move(name), ReadValue()));
+        std::string name = ReadString().Get<std::string>();
+        SeekToken<token_col>();
+        PassCurrentToken<token_col>();
+        if (size_ != 0u) {
+          ret.insert(std::make_pair(std::move(name), ReadValue()));
 
-        AdvanceUntilSignificant();
+          AdvanceUntilSignificant();
 
-        if (*input_ == token_rcb) {
-          AdvanceCurrentToken<token_rcb>();
-          break;
-        }
+          if (*input_ == token_rcb) {
+            PassCurrentToken<token_rcb>();
+            break;
+          }
 
-        if (*input_ != token_com) {
-          FS_SUN_LOG(std::string("Expect a comma while encounter a @token: ") +
-                         *input_,
-                     Logger::S_ERROR);
-          break;
+          if (*input_ != token_com) {
+            FS_SUN_WARNING(
+                std::string("Expect a comma while encounter token: ") +
+                *input_)
+            break;
+          }
         }
       }
+    } else {
+      // found an empty elemen
+      if (*input_ == token_rcb) {
+        PassCurrentToken<token_rcb>();
+      } else {
+        FS_SUN_WARNING(std::string("Expect a rcb while encounter token: ") +
+                       *input_);
+      }
+      break;
     }
   }
 
@@ -71,7 +81,7 @@ const Json::Dictionary &Json::GetValues() const { return values_; }
  */
 Json::ScalarValue Json::Deserializer::ReadString() {
   /** should be at quote now */
-  AdvanceCurrentToken<token_quote>();
+  PassCurrentToken<token_quote>();
 
   std::string ret;
 
@@ -87,7 +97,7 @@ Json::ScalarValue Json::Deserializer::ReadString() {
 
       if (size_ != 0u) {
         ret = {begin, input_};
-        AdvanceCurrentToken<token_quote>();
+        PassCurrentToken<token_quote>();
       }
     }
   }
@@ -101,7 +111,7 @@ Json::ScalarValue Json::Deserializer::ReadObject() {
   input_ = d.input_;
   size_ = d.size_;
 
-  return DeepPtr<Json>(std::move(values));
+  return DeepPtr<Dictionary>(std::move(values));
 }
 
 Json::ScalarValue Json::Deserializer::ReadOthers() {
@@ -136,18 +146,19 @@ Json::ScalarValue Json::Deserializer::ReadScalar() {
 
 Json::VectorValue Json::Deserializer::ReadArray() {
   VectorValue ret;
-  AdvanceCurrentToken<token_lsb>();
+  PassCurrentToken<token_lsb>();
 
   if (size_ != 0u) {
     do {
-      ret.push_back(ReadScalar());
-
       AdvanceUntilSignificant();
-      if (*input_ == token_rsb) {
-        AdvanceCurrentToken<token_rsb>();
+      if (*input_ != token_rsb) {
+        ret.push_back(ReadScalar());
+
+        if (SeekToken<token_com, token_rsb>()) PassCurrentToken<token_com>();
+      } else {
+        PassCurrentToken<token_rsb>();
         break;
-      } else
-        AdvanceCurrentToken<token_com>();
+      }
     } while (size_ != 0u);
   }
 

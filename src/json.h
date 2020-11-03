@@ -20,30 +20,25 @@ FS_SUN_NS_BEGIN
  */
 class Json {
  public:
-  /**
-   * \brief scalar type value, number, string, boolen or object
-   */
-  using ScalarValue = Variant<std::string, DeepPtr<Json>>;
-
-  /**
-   * \brief for array or multidimensional array
-   */
-  using VectorValue = std::vector<ScalarValue>;
-
-  using Value = Variant<ScalarValue, VectorValue>;
-
   template <typename T>
   using TDictionary = std::unordered_map<std::string, T>;
+
+  /**
+   * \brief scalar type: number, string, boolen or object
+   * \note Use DeepPtr due to ScalarValue needs to be copyable
+   */
+  template <typename TValue>
+  using TScalarValue = Variant<std::string, DeepPtr<TDictionary<TValue>>>;
+  template <typename TValue>
+  using TVectorValue = std::vector<TScalarValue<TValue>>;
+  class Value : public Variant<TScalarValue<Value>, TVectorValue<Value>> {
+   public:
+    using Variant<TScalarValue<Value>, TVectorValue<Value>>::Variant;
+  };
+  using ScalarValue = TScalarValue<Value>;
+  using VectorValue = TVectorValue<Value>;
   using Dictionary = TDictionary<Value>;
 
-  /*
-      enum struct Status : std::uint8_t
-      {
-          UNINITIALIZED = 0u,
-          OK,
-          BAD
-      };
-   */
  private:
   class Deserializer {
    public:
@@ -65,9 +60,27 @@ class Json {
 
       size_ -= i;
     }
+    /** Seek token except found unexpected token */
+    template <char token, char unexpected_token>
+    bool SeekToken() {
+      static_assert(token != unexpected_token,
+                    "token should not equal unexpected_token");
+      std::size_t i = 0u;
+      for (; i < size_; i++) {
+        if (*input_ == unexpected_token)
+          return false;
+        else if (*input_ == token)
+          break;
+
+        input_++;
+      }
+
+      size_ -= i;
+      return true;
+    }
 
     template <char token>
-    void AdvanceCurrentToken() {
+    void PassCurrentToken() {
       assert(token == *input_);
       input_ += 1u;
       size_ -= 1u;
@@ -127,25 +140,28 @@ class Json {
   template <typename TValue, typename TRet>
   static typename std::enable_if<std::is_class<TRet>::value>::type UpdateValue(
       const TValue &value, TRet &ret) {
-    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
-    if (j_ptr != nullptr) ret.ParseFromJson(*j_ptr);
+    const auto &j_ptr =
+        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
+    if (j_ptr != nullptr) ret.ParseFromDictionary(*j_ptr);
   }
 
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, TRet *&ret) {
-    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
+    const auto &j_ptr =
+        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
     if (j_ptr != nullptr) {
       ret = new TRet;
-      ret->ParseFromJson(*j_ptr);
+      ret->ParseFromDictionary(*j_ptr);
     }
   }
 
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, std::unique_ptr<TRet> &ret) {
-    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
+    const auto &j_ptr =
+        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
     if (j_ptr != nullptr) {
       ret.reset(new TRet);
-      ret->ParseFromJson(*j_ptr);
+      ret->ParseFromDictionary(*j_ptr);
     }
   }
 
@@ -181,17 +197,18 @@ class Json {
   }
 
   template <typename TValue>
-  static void UpdateValue(const TValue &value, Json &ret) {
-    ret = *(GetScalarValue(value).template Get<DeepPtr<Json>>());
+  static void UpdateValue(const TValue &value, Dictionary &ret) {
+    ret = *(GetScalarValue(value).template Get<DeepPtr<Dictionary>>());
   }
 
   /* dictionary type */
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, TDictionary<TRet> &ret) {
-    const auto &j_ptr = GetScalarValue(value).template Get<DeepPtr<Json>>();
-    if (j_ptr != nullptr) {
-      const auto &values = j_ptr->GetValues();
-      for (const auto &value : values) {
+    const auto &dict_ptr =
+        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
+    if (dict_ptr != nullptr) {
+      const auto &dict = *dict_ptr;
+      for (const auto &value : dict) {
         TRet tmp_ret{};
         UpdateValue(value.second, tmp_ret);
         ret.insert(std::make_pair(value.first, std::move(tmp_ret)));
@@ -249,25 +266,23 @@ class JsonFile : public Json {
 #define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()              \
   inline void ParseFromJsonFile(const char *file_path) { \
     fs::sun::JsonFile jf(file_path);                     \
-    ParseFromJson(jf);                                   \
+    ParseFromDictionary(jf);                             \
   }                                                      \
   inline void ParseFromJson(const char *json_string) {   \
     fs::sun::Json j(json_string);                        \
-    ParseFromJson(j);                                    \
+    ParseFromDictionary(j);                              \
   }                                                      \
   inline void ParseFromJson(const char *json_string,     \
                             const std::size_t size) {    \
     fs::sun::Json j(json_string, size);                  \
-    ParseFromJson(j);                                    \
+    ParseFromDictionary(j);                              \
   }                                                      \
                                                          \
-  inline void ParseFromJson(const fs::sun::Json &j) {    \
-    const fs::sun::Json::Dictionary &values = j.GetValues();
-
+  inline void ParseFromDictionary(const fs::sun::Json::Dictionary &dict) {
 #define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)           \
   {                                                                   \
-    const auto &itr = values.find(#member_variable);                  \
-    if (itr != values.end()) {                                        \
+    const auto &itr = dict.find(#member_variable);                    \
+    if (itr != dict.end()) {                                          \
       fs::sun::Json::UpdateValue(itr->second, this->member_variable); \
     }                                                                 \
   }
