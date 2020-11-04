@@ -72,13 +72,9 @@ void Json::Deserializer::AdvanceUntilSignificant() {
   }
 }
 
-const Json::Dictionary &Json::GetValues() const { return values_; }
+const Json::Dictionary &Json::GetValues() const & { return values_; }
+Json::Dictionary Json::GetValues() && { return std::move(values_); }
 
-/* Json::Status Json::GetStatus() const
-{
-    return status_;
-}
- */
 Json::ScalarValue Json::Deserializer::ReadString() {
   /** should be at quote now */
   PassCurrentToken<token_quote>();
@@ -200,7 +196,8 @@ Json::Json(const char *json_string, std::size_t size) {
 
 Json::Json(Dictionary values) : values_{std::move(values)} {}
 
-Json::operator const Dictionary &() const { return GetValues(); }
+Json::operator Dictionary() const & { return GetValues(); }
+Json::operator Dictionary() && { return std::move(this)->GetValues(); }
 
 void Json::Parse(const char *json_string, std::size_t size) {
   Deserializer d{json_string, size};

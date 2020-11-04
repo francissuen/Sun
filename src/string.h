@@ -28,7 +28,11 @@ std::vector<std::string> ExtractBlocks(
 
 std::vector<std::string> Split(const std::string& src, const char* delimiter);
 
-std::string FileExtension(const std::string& src);
+std::string DirName(const char* path);
+std::string FileName(const char* path);
+std::string JoinPath(const char* dir, const char* path);
+std::string FileExtension(const char* path);
+std::array<std::string, 2> SplitIntoDirNameAndFileName(const char* path);
 
 template <typename string_0, typename string_1>
 std::string Concat(string_0&& str0, string_1&& str1) {

@@ -8,6 +8,15 @@
 
 FS_SUN_NS_BEGIN
 namespace string {
+
+static const char path_separator{
+#ifdef FS_SUN_WINDOWS
+    '\\'
+#else
+    '/'
+#endif
+};
+
 std::vector<std::string> ExtractBlocks(
     const std::string& src,
     const std::vector<std::pair<std::string, std::string>>&
@@ -50,12 +59,35 @@ std::vector<std::string> Split(const std::string& src, const char* delimeter) {
   return ret;
 }
 
-std::string FileExtension(const std::string& src) {
-  const size_t pos = src.find_last_of('.');
-  if (pos == std::string::npos)
-    return std::string("");
+std::string DirName(const char* path) {
+  const std::string str_path{path};
+  const std::size_t pos = str_path.find_last_of(path_separator);
+  return str_path.substr(0, pos);
+}
+
+std::string FileName(const char* path) {
+  const std::string str_path{path};
+  const std::size_t pos = str_path.find_last_of(path_separator);
+  return str_path.substr(pos);
+}
+
+std::string JoinPath(const char* dir, const char* path) {
+  return std::string{dir} + path_separator + path;
+}
+
+std::string FileExtension(const char* path) {
+  std::string str_path{path};
+  const std::size_t pos = str_path.find_last_of('.');
+  if (pos != std::string::npos)
+    return str_path.substr(pos + 1);
   else
-    return src.substr(pos + 1);
+    return "";
+}
+
+std::array<std::string, 2> SplitIntoDirNameAndFileName(const char* path) {
+  const std::string str_path{path};
+  const std::size_t pos = str_path.find_last_of(path_separator);
+  return {str_path.substr(0, pos), str_path.substr(pos)};
 }
 
 bool StartsWith(const char* string_0, const char* string_1) {

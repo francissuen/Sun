@@ -30,20 +30,11 @@ class FS_SUN_API Filesystem {
   const std::string& GetExecutablePath() const;
   const std::string& GetExecutableDir() const;
   std::string GetWorkingDir() const;
-  char GetPathSeperator() const;
   std::string GetAbsolutePath(const char* path) const;
-  std::string JoinPath(const char* path_0, const char* path_1) const;
 
  private:
   std::string executable_path_;
   std::string executable_dir_;
-  const char path_separator_{
-#ifdef FS_SUN_WINDOWS
-      '\\'
-#else
-      '/'
-#endif
-  };
 };
 
 FS_SUN_NS_END

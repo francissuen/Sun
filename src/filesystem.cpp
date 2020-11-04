@@ -32,9 +32,7 @@ Filesystem::Filesystem() {
 #error TODO
 #endif
   executable_path_ = path;
-  const auto lastSepIdx = executable_path_.find_last_of(path_separator_);
-  if (lastSepIdx != std::string::npos)
-    executable_dir_ = executable_path_.substr(0, lastSepIdx);
+  executable_dir_ = string::DirName(executable_path_.c_str());
 }
 
 std::vector<std::string> Filesystem::GetFilesInDir(
@@ -42,7 +40,7 @@ std::vector<std::string> Filesystem::GetFilesInDir(
     const bool recursively) const {
   std::vector<std::string> files;
   assert(dir != nullptr);
-#ifdef _MSC_VER
+#ifdef FS_SUN_WINDOWS
   HANDLE hFind = INVALID_HANDLE_VALUE;
   WIN32_FIND_DATA ffd;
   const std::string strDir(dir);
@@ -82,30 +80,21 @@ const std::string& Filesystem::GetExecutableDir() const {
   return executable_dir_;
 }
 std::string Filesystem::GetWorkingDir() const {
-  std::string ret;
   char wd[FS_SUN_FILESYSTEM_MAX_PATH]{};
 #ifdef FS_SUN_LINUX
-  if (::getcwd(wd, FS_SUN_FILESYSTEM_MAX_PATH) != nullptr) ret = wd;
+  if (::getcwd(wd, FS_SUN_FILESYSTEM_MAX_PATH) != nullptr) return wd;
 #else
 #error TODO
 #endif
-  return ret;
+  return "";
 }
-
-char Filesystem::GetPathSeperator() const { return path_separator_; }
 
 std::string Filesystem::GetAbsolutePath(const char* path) const {
-  std::string ret;
   char abs_path[FS_SUN_FILESYSTEM_MAX_PATH]{};
 #ifdef FS_SUN_LINUX
-  if (::realpath(path, abs_path) != nullptr) ret = abs_path;
+  if (::realpath(path, abs_path) != nullptr) return abs_path;
 #else
 #error TODO
 #endif
-  return ret;
-}
-
-std::string Filesystem::JoinPath(const char* path_0,
-                                 const char* path_1) const {
-  return std::string(path_0) + path_separator_ + path_1;
+  return "";
 }

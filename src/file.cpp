@@ -16,6 +16,8 @@ File::File(const char* file_path, const char* open_mode)
         if (std::fseek(file_, 0, SEEK_SET) == 0) size_ = size;
       }
     }
+  } else {
+    cout(std::string("Failed to open file: ") + file_path, Logger::S_ERROR);
   }
 }
 

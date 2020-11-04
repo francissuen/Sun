@@ -243,10 +243,12 @@ class Json {
   Json(Dictionary values);
 
  public:
-  operator const Dictionary &() const;
+  operator Dictionary() const &;
+  operator Dictionary() &&;
 
  public:
-  const Dictionary &GetValues() const;
+  const Dictionary &GetValues() const &;
+  Dictionary GetValues() &&;
 
  protected:
   Dictionary values_;
