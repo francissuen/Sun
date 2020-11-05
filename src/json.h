@@ -34,10 +34,16 @@ class Json {
   class Value : public Variant<TScalarValue<Value>, TVectorValue<Value>> {
    public:
     using Variant<TScalarValue<Value>, TVectorValue<Value>>::Variant;
+
+   public:
+    const std::string &GetString();
+    const TVectorValue<Value> &GetArray();
+    const TDictionary<Value> &GetDictionary();
   };
   using ScalarValue = TScalarValue<Value>;
   using VectorValue = TVectorValue<Value>;
   using Dictionary = TDictionary<Value>;
+  using Array = VectorValue;
 
  private:
   class Deserializer {
