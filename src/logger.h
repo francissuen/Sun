@@ -66,7 +66,7 @@ class FS_SUN_API Logger {
     void operator()(std::string tag, std::string msg, const Severity s) {
       async_(std::move(tag), std::move(msg), s);
     }
-    void Flush() { async_.WaitForEmpty(); }
+    void Flush() { async_.Finish(); }
 
    private:
     file_t file_;
@@ -106,7 +106,7 @@ extern Logger::Log<Logger::TermFile> cout;
 #define FS_SUN_LOG_RETURN(condition, serverity, ...) \
   {                                                  \
     if (condition) {                                 \
-      FS_SUN_LOG(#condition, serverity)              \
+      FS_SUN_LOG(__FILE__ ":" __LINE__, serverity)   \
       return __VA_ARGS__;                            \
     }                                                \
   }
