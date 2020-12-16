@@ -7,11 +7,13 @@
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <list>
 #include <mutex>
-#include <queue>
 #include <thread>
 #include <tuple>
+#include <vector>
 
+#include <iostream>
 #include "ns.h"
 #include "utility.h"
 
@@ -68,19 +70,21 @@ class Async<TRet(TArgs...)> {
     std::future<TRet> ret = promise.get_future();
     {
       std::lock_guard<std::mutex> lck(pkg_buffer_mtx_);
-      pkg_buffer_.push(Package{std::move(promise),
-                               std::tuple<typename std::decay<TArgs>::type...>(
-                                   std::move(param)...)});
+      pkg_buffer_.push_back(Package{
+          std::move(promise), std::tuple<typename std::decay<TArgs>::type...>(
+                                  std::move(param)...)});
     }
     threadfunc_cv_.notify_one();
     return ret;
   }
 
-  void WaitForEmpty() {
+  void Finish() {
     std::unique_lock<std::mutex> lck(pkg_buffer_mtx_);
     if (pkg_buffer_.size() > 0) {
-      empty_cv_.wait(lck,
-                     [this]() -> bool { return pkg_buffer_.size() == 0; });
+      empty_cv_.wait(lck, [this]() -> bool {
+        return pkg_buffer_.size() == 0 &&
+               sleeping_thread_count_.load() == thread_count_;
+      });
     }
   }
 
@@ -91,27 +95,31 @@ class Async<TRet(TArgs...)> {
       if (quit_.load()) break;
       if (pkg_buffer_.size() > 0) {
         Package pkg(std::move(pkg_buffer_.front()));
-        pkg_buffer_.pop();
+        pkg_buffer_.pop_front();
         lck.unlock();
         Apply2Promise(func_, std::move(pkg.params), pkg.ret);
         lck.lock();
       } else {
+        sleeping_thread_count_.fetch_add(1);
         empty_cv_.notify_all();
         threadfunc_cv_.wait(lck);
+        sleeping_thread_count_.fetch_add(-1);
       }
     }
   }
 
  private:
   std::uint8_t thread_count_;
+  std::atomic_uint8_t sleeping_thread_count_{0};
   std::vector<std::thread> threads_;
   std::mutex pkg_buffer_mtx_;
   std::condition_variable threadfunc_cv_;
-  std::queue<Package> pkg_buffer_;
+  std::list<Package> pkg_buffer_;
   std::function<TRet(TArgs...)> func_;
   std::atomic_bool quit_;
   std::condition_variable empty_cv_;
 };
 
 FS_SUN_NS_END
+
 #endif  // FS_SUN_ASYNC_H

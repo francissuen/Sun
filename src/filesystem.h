@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "config.h"
-#include "platform.h"
+#include "os.h"
 #include "singleton.h"
 FS_SUN_NS_BEGIN
 

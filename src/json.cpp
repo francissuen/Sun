@@ -11,13 +11,13 @@ const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value) {
   return value;
 }
 
-const std::string &Json::Value::GetString() {
-  if (Is<std::string>())
-    return Get<std::string>();
-  else
-    return Get<ScalarValue>().Get<std::string>();
-}
-#error TODO
+#warning TODO Get*
+// const std::string &Json::Value::GetString() {
+//   if (Is<std::string>())
+//     return Get<std::string>();
+//   else
+//     return Get<ScalarValue>().Get<std::string>();
+// }
 const Json::TVectorValue<Json::Value> &GetArray();
 const Json::TDictionary<Json::Value> &GetDictionary();
 Json::Deserializer::Deserializer(const char *&input, std::size_t &size)

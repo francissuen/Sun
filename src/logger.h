@@ -60,13 +60,13 @@ class FS_SUN_API Logger {
     ~Log() { Flush(); }
 
    public:
-    void operator()(std::string msg, const Severity s) {
+    void operator()(std::string msg, const Severity s = Severity::S_INFO) {
       async_(default_tag_, std::move(msg), s);
     }
     void operator()(std::string tag, std::string msg, const Severity s) {
       async_(std::move(tag), std::move(msg), s);
     }
-    void Flush() { async_.WaitForEmpty(); }
+    void Flush() { async_.Finish(); }
 
    private:
     file_t file_;
@@ -85,13 +85,13 @@ extern Logger::Log<Logger::TermFile> cout;
 #define FS_SUN_FUNC_NAME __PRETTY_FUNCTION__
 #endif
 
-#define FS_SUN_LOG(message, severity)                                     \
-  {                                                                       \
-    std::string msg{fs::sun::string::ToString(message)};                  \
-    msg = msg + "\n@FILE: " + __FILE__;                                   \
-    msg = msg + ", @LINE: " + fs::sun::string::ToString(__LINE__) + "\n"; \
-    msg = msg + "@FUNCTION: " + FS_SUN_FUNC_NAME;                         \
-    fs::sun::cout(msg, severity);                                         \
+#define FS_SUN_LOG(message, severity)                             \
+  {                                                               \
+    std::string msg{fs::sun::string::ToString(message)};          \
+    msg = msg + "\n" + FS_SUN_FUNC_NAME;                          \
+    msg = msg + "\n" + __FILE__;                                  \
+    msg = msg + ":" + fs::sun::string::ToString(__LINE__) + "\n"; \
+    fs::sun::cout(msg, severity);                                 \
   }
 
 #define FS_SUN_INFO(message) \

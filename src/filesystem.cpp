@@ -5,11 +5,11 @@
 #include <cassert>
 #include <cstdio>
 
-#ifdef FS_SUN_LINUX
+#ifdef FS_SUN_OS_LINUX
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
-#elif defined(FS_SUN_WINDOWS)
+#elif defined(FS_SUN_OS_WINDOWS)
 #include <windows.h>
 #endif
 
@@ -22,10 +22,10 @@ using namespace fs::sun;
 
 Filesystem::Filesystem() {
   char path[FS_SUN_FILESYSTEM_MAX_PATH] = {'\0'};
-#ifdef FS_SUN_WINDOWS
+#ifdef FS_SUN_OS_WINDOWS
   if (GetModuleFileName(NULL, path, FS_SUN_FILESYSTEM_MAX_PATH) == 0)
     cout("Failed to get executable path.", Logger::S_ERROR);
-#elif defined(FS_SUN_LINUX)
+#elif defined(FS_SUN_OS_LINUX)
   if (::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) == -1)
     cout("Failed to get executable path.", Logger::S_ERROR);
 #else
@@ -40,7 +40,7 @@ std::vector<std::string> Filesystem::GetFilesInDir(
     const bool recursively) const {
   std::vector<std::string> files;
   assert(dir != nullptr);
-#ifdef FS_SUN_WINDOWS
+#ifdef FS_SUN_OS_WINDOWS
   HANDLE hFind = INVALID_HANDLE_VALUE;
   WIN32_FIND_DATA ffd;
   const std::string strDir(dir);
@@ -81,7 +81,7 @@ const std::string& Filesystem::GetExecutableDir() const {
 }
 std::string Filesystem::GetWorkingDir() const {
   char wd[FS_SUN_FILESYSTEM_MAX_PATH]{};
-#ifdef FS_SUN_LINUX
+#ifdef FS_SUN_OS_LINUX
   if (::getcwd(wd, FS_SUN_FILESYSTEM_MAX_PATH) != nullptr) return wd;
 #else
 #error TODO
@@ -91,7 +91,7 @@ std::string Filesystem::GetWorkingDir() const {
 
 std::string Filesystem::GetAbsolutePath(const char* path) const {
   char abs_path[FS_SUN_FILESYSTEM_MAX_PATH]{};
-#ifdef FS_SUN_LINUX
+#ifdef FS_SUN_OS_LINUX
   if (::realpath(path, abs_path) != nullptr) return abs_path;
 #else
 #error TODO
