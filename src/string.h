@@ -3,6 +3,7 @@
 #ifndef FS_SUN_STRING_H
 #define FS_SUN_STRING_H
 
+#include <array>
 #include <map>
 #include <memory>
 #include <string>
@@ -160,6 +161,12 @@ template <typename TElement, std::size_t N>
 std::string ToString(const TElement (&value)[N]) {
   return ArrayToString(&value[0], N);
 }
+
+template <typename TElement, std::size_t N>
+std::string ToString(const std::array<TElement, N>& value) {
+  return ArrayToString(value.data(), N);
+}
+
 }  // namespace string
 
 FS_SUN_NS_END

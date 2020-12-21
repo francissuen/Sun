@@ -3,6 +3,7 @@
 #ifndef FS_SUN_JSON_H
 #define FS_SUN_JSON_H
 
+#include <array>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -178,18 +179,6 @@ class Json {
         GetScalarValue(value).template Get<std::string>());
   }
 
-  template <typename TValue, typename TRet, std::size_t N>
-  static void UpdateValue(const TValue &value, TRet (&ret)[N]) {
-    const auto &vector_value = value.template Get<VectorValue>();
-    const std::size_t value_size = vector_value.size();
-    const std::size_t min_size = N >= value_size ? value_size : N;
-
-    string::ToString(vector_value);
-    for (std::size_t i = 0; i < min_size; i++) {
-      UpdateValue(vector_value[i], ret[i]);
-    }
-  }
-
   static bool StringToBoolean(const std::string &str);
 
   template <typename TValue>
@@ -222,7 +211,7 @@ class Json {
     }
   }
 
-  /* std::vector */
+  /* array type */
   template <typename TValue, typename TRet>
   static void UpdateValue(const TValue &value, std::vector<TRet> &ret) {
     const auto &vector_value = value.template Get<VectorValue>();
@@ -235,10 +224,32 @@ class Json {
     }
   }
 
+  template <typename TValue, typename TRet, std::size_t N>
+  static void UpdateValue(const TValue &value, TRet (&ret)[N]) {
+    UpdateValue(value, &ret[0], N);
+  }
+
+  template <typename TValue, typename TRet, std::size_t N>
+  static void UpdateValue(const TValue &value, std::array<TRet, N> &ret) {
+    UpdateValue(value, ret.data(), N);
+  }
+
  private:
   template <typename TValue>
   static const ScalarValue &GetScalarValue(const TValue &value) {
     return value.template Get<ScalarValue>();
+  }
+
+  template <typename TValue, typename TRet>
+  static void UpdateValue(const TValue &value, TRet *ret,
+                          const std::size_t array_size) {
+    const auto &vector_value = value.template Get<VectorValue>();
+    const std::size_t value_size = vector_value.size();
+    const std::size_t min_size =
+        array_size >= value_size ? value_size : array_size;
+    for (std::size_t i = 0; i < min_size; i++) {
+      UpdateValue(vector_value[i], ret[i]);
+    }
   }
 
  public:
