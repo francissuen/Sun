@@ -19,7 +19,7 @@
 
 FS_SUN_NS_BEGIN
 
-template <typename... Ts>
+template <typename... Signature>
 class Async;
 
 template <typename TRet, typename... TArgs>
@@ -27,7 +27,7 @@ class Async<TRet(TArgs...)> {
  private:
   struct Package {
     std::promise<TRet> ret;
-    std::tuple<typename std::decay<TArgs>::type...> params;
+    std::tuple<typename std::decay<TArgs>::type...> args;
   };
 
   template <typename T>
@@ -44,9 +44,9 @@ class Async<TRet(TArgs...)> {
       "TArgs only accepts const reference or non-reference type");
 
  public:
-  Async(const typename std::function<TRet(TArgs...)>& func,
+  Async(typename std::function<TRet(TArgs...)> func,
         const std::uint8_t threadCount = 1)
-      : func_(func), quit_(false) {
+      : func_(std::move(func)), quit_(false) {
     thread_count_ =
         threadCount == 0 ? std::thread::hardware_concurrency() : threadCount;
     threads_.reserve(thread_count_);
@@ -80,13 +80,13 @@ class Async<TRet(TArgs...)> {
 
   void Finish() {
     std::unique_lock<std::mutex> lck(pkg_buffer_mtx_);
-    if (pkg_buffer_.size() > 0) {
-      empty_cv_.wait(lck, [this]() -> bool {
-        return pkg_buffer_.size() == 0 &&
-               sleeping_thread_count_.load() == thread_count_;
-      });
-    }
+    finished_cv_.wait(lck, [this]() -> bool {
+      return pkg_buffer_.size() == 0 &&
+             finished_thread_count_.load() == thread_count_;
+    });
   }
+
+  std::uint8_t GetThreadCount() const { return thread_count_; }
 
  private:
   void ThreadFunc() {
@@ -97,27 +97,85 @@ class Async<TRet(TArgs...)> {
         Package pkg(std::move(pkg_buffer_.front()));
         pkg_buffer_.pop_front();
         lck.unlock();
-        Apply2Promise(func_, std::move(pkg.params), pkg.ret);
+        Apply2Promise(func_, std::move(pkg.args), pkg.ret);
         lck.lock();
       } else {
-        sleeping_thread_count_.fetch_add(1);
-        empty_cv_.notify_all();
-        threadfunc_cv_.wait(lck);
-        sleeping_thread_count_.fetch_add(-1);
+        finished_thread_count_.fetch_add(1);
+        finished_cv_.notify_all();
+        threadfunc_cv_.wait(lck, [this]() -> bool {
+          return quit_.load() || pkg_buffer_.size() > 0;
+        });
+        finished_thread_count_.fetch_add(-1);
       }
     }
   }
 
  private:
   std::uint8_t thread_count_;
-  std::atomic_uint8_t sleeping_thread_count_{0};
+  std::atomic_uint8_t finished_thread_count_{0};
   std::vector<std::thread> threads_;
   std::mutex pkg_buffer_mtx_;
   std::condition_variable threadfunc_cv_;
   std::list<Package> pkg_buffer_;
   std::function<TRet(TArgs...)> func_;
   std::atomic_bool quit_;
-  std::condition_variable empty_cv_;
+  std::condition_variable finished_cv_;
+};
+
+template <typename... Signature>
+class Concurrent;
+
+template <typename TRet, typename... TArgs>
+class Concurrent<TRet(TArgs...)> {
+ private:
+  struct Package {
+    std::promise<TRet> ret;
+    std::tuple<typename std::decay<TArgs>::type...> args;
+  };
+
+ public:
+  Concurrent(typename std::function<TRet(TArgs...)> func)
+      : async_(
+            [func](Package* begin, Package* end) -> void {
+              for (Package* i = begin; i != end; i++) {
+                Apply2Promise(func, std::move(i->args), i->ret);
+              }
+            },
+            0) {}
+
+ public:
+  std::future<TRet> Push(typename std::decay<TArgs>::type... args) {
+    std::promise<TRet> promise;
+    std::future<TRet> ret = promise.get_future();
+    {
+      std::lock_guard<std::mutex> lck(pkg_cache_mtx_);
+      pkg_cache_.push_back({std::move(promise), {std::move(args)...}});
+    }
+    return ret;
+  }
+
+  void Run() {
+    static const std::uint8_t thread_count = async_.GetThreadCount();
+    const std::size_t q = pkg_cache_.size() / thread_count;
+    const std::uint8_t r = pkg_cache_.size() % thread_count;
+    Package* base = pkg_cache_.data();
+    for (std::size_t i = 0; i < thread_count; i++) {
+      Package* const begin = base;
+      Package* const end = base + q + (i < r ? 1 : 0);
+      async_(begin, end);
+      base = end;
+    }
+  }
+
+  void Finish() {
+    async_.Finish();
+    pkg_cache_.clear();
+  }
+
+ private:
+  std::vector<Package> pkg_cache_;
+  std::mutex pkg_cache_mtx_;
+  Async<void(Package*, Package*)> async_;
 };
 
 FS_SUN_NS_END
