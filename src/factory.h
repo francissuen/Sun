@@ -34,8 +34,7 @@ class Factory {
     if (itr != ctors_.end())
       ctors_.erase(itr);
     else
-      FS_SUN_LOG("No ctor found for key: " + string::ToString(key),
-                 Logger::S_WARNING);
+      FS_SUN_WARN("No ctor found for key: " + string::ToString(key))
   }
 
   template <typename TRet>
@@ -45,8 +44,7 @@ class Factory {
       return std::unique_ptr<TRet>(reinterpret_cast<TRet*>(
           itr->second(std::forward<TCtorArgs>(args)...)));
     else {
-      FS_SUN_LOG("No ctor found for key: " + string::ToString(key),
-                 Logger::S_ERROR);
+      FS_SUN_ERROR("No ctor found for key: " + string::ToString(key))
       return nullptr;
     }
   }

@@ -59,14 +59,14 @@ struct TestJson {
 
 struct B {
   static constexpr char const *name = "B";
-  B(int) { FS_SUN_LOG("B cotr", Logger::S_INFO); }
+  B(int) { FS_SUN_INFO("B cotr"); }
 };
 struct C {
   static constexpr char const *name = "C";
-  C(int) { FS_SUN_LOG("C cotr", Logger::S_INFO); }
+  C(int) { FS_SUN_INFO("C cotr"); }
 };
 
-struct ConcurrentTest {
+struct AsyncBatchedTest {
   int a;
   double b;
   int idx;
@@ -75,7 +75,7 @@ struct ConcurrentTest {
     std::thread::id t_id;
   };
   mutable std::future<Ret> ret;
-  friend std::string to_string(const ConcurrentTest &ct) {
+  friend std::string to_string(const AsyncBatchedTest &ct) {
     std::string ret;
     ret += ("idx: " + string::ToString(ct.idx));
     ret += (", a: " + string::ToString(ct.a));
@@ -133,31 +133,34 @@ int main(int argc, char **argv) {
 
   // concurrent
   {
-    Concurrent<ConcurrentTest::Ret(const int, const double)> c = {
-        [](const int a, const double b) -> ConcurrentTest::Ret {
-          ConcurrentTest::Ret ret;
+    AsyncBatched<AsyncBatchedTest::Ret(const int, const double)> ab = {
+        [](const int a, const double b) -> AsyncBatchedTest::Ret {
+          AsyncBatchedTest::Ret ret;
           ret.ret = a + b;
           std::this_thread::sleep_for(50ms);
           ret.t_id = std::this_thread::get_id();
           return ret;
         }};
-    std::vector<ConcurrentTest> cts;
+    std::vector<AsyncBatchedTest> abts;
     std::random_device rd;
     std::mt19937 mt_gen{rd()};
     std::uniform_int_distribution<> int_distrib{0, 100};
     std::uniform_real_distribution<> real_distrib{.0f, 100.0f};
-    for (int i = 0; i < 100; i++) {
-      ConcurrentTest ct{int_distrib(mt_gen), real_distrib(mt_gen)};
-      ct.idx = i;
-      cout(string::ToString(ct));
-      ct.ret = c.Push(ct.a, ct.b);
-      cts.push_back(std::move(ct));
+
+    for (int batch = 0; batch < 2; batch++) {
+      for (int i = 0; i < 80; i++) {
+        AsyncBatchedTest abt{int_distrib(mt_gen), real_distrib(mt_gen)};
+        abt.idx = i;
+        cout(string::ToString(abt));
+        abt.ret = ab.Add(abt.a, abt.b);
+        abts.push_back(std::move(abt));
+      }
+      ab.Commit();
     }
 
-    c.Run();
-    c.Finish();
-    for (const auto &ct : cts) {
-      cout(string::ToString(ct));
+    ab.Finish();
+    for (const auto &abt : abts) {
+      cout(string::ToString(abt));
     }
   }
 

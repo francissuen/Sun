@@ -47,9 +47,8 @@ Json::Dictionary Json::Deserializer::Execute() {
           }
 
           if (*input_ != token_com) {
-            FS_SUN_WARNING(
-                std::string("Expect a comma while encounter token: ") +
-                *input_)
+            FS_SUN_WARN(std::string("Expect a comma while encounter token: ") +
+                        *input_)
             break;
           }
         }
@@ -59,8 +58,8 @@ Json::Dictionary Json::Deserializer::Execute() {
       if (*input_ == token_rcb) {
         PassCurrentToken<token_rcb>();
       } else {
-        FS_SUN_WARNING(std::string("Expect a rcb while encounter token: ") +
-                       *input_);
+        FS_SUN_WARN(std::string("Expect a rcb while encounter token: ") +
+                    *input_);
       }
       break;
     }
@@ -189,7 +188,7 @@ bool Json::StringToBoolean(const std::string &str) {
   else if (str.compare("false") == 0)
     return false;
   else {
-    FS_SUN_LOG("invalid string @str: " + str, Logger::S_WARNING);
+    FS_SUN_ERROR("invalid string @str: " + str);
     return false;
   }
 }
