@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <functional>
 #include <future>
+#include <iostream>
 #include <list>
 #include <mutex>
 #include <thread>
@@ -14,21 +15,32 @@
 #include <unordered_map>
 #include <vector>
 
-#include <iostream>
 #include "ns.h"
 #include "utility.h"
 
 FS_SUN_NS_BEGIN
 
+struct ThreadIndex {
+  static constexpr const std::uint8_t npos{
+      std::numeric_limits<std::uint8_t>::max()};
+  std::uint8_t idx{0u};
+};
+
 template <typename... Signature>
 class Async;
 
+template <typename... Signature>
+class AsyncBatched;
+
 template <typename TRet, typename... TArgs>
 class Async<TRet(TArgs...)> {
+  friend class AsyncBatched<TRet(TArgs...)>;
+
  private:
   struct Package {
+    using Args = std::tuple<typename std::decay<TArgs>::type...>;
     std::promise<TRet> ret;
-    std::tuple<typename std::decay<TArgs>::type...> args;
+    Args args;
   };
 
   template <typename T>
@@ -43,6 +55,44 @@ class Async<TRet(TArgs...)> {
       std::conditional<sizeof...(TArgs) == 0, std::true_type,
                        StaticAnd<TArgsValidator, TArgs...>>::type::value,
       "TArgs only accepts const reference or non-reference type");
+
+  struct HasThreadIndex {
+    static constexpr const bool value =
+        IsType<ThreadIndex>::In<typename std::decay<TArgs>::type...>::value;
+  };
+  static_assert((!HasThreadIndex::value) ||
+                    (HasThreadIndex::value &&
+                     IndexOf<ThreadIndex>::In<
+                         typename std::decay<TArgs>::type...>::value == 0),
+                "If there has the type ThreadIndex in TArgs, then the index "
+                "of it must be 0");
+
+  template <bool has_thread_idx, typename TDummy = void>
+  struct HelperImpl;
+
+  template <typename TDummy>
+  struct HelperImpl<false, TDummy> {
+    template <typename... TCArgs>
+    static typename Package::Args ConstructArgs(TCArgs... args) {
+      return {std::move(args)...};
+    }
+    static void SetThreadIdx(const std::uint8_t thread_idx,
+                             typename Package::Args& args) {}
+  };
+
+  template <typename TDummy>
+  struct HelperImpl<true, TDummy> {
+    template <typename... TCArgs>
+    static typename Package::Args ConstructArgs(TCArgs... args) {
+      return {{ThreadIndex::npos}, std::move(args)...};
+    }
+    static void SetThreadIdx(const std::uint8_t thread_idx,
+                             typename Package::Args& args) {
+      std::get<0>(args) = {thread_idx};
+    }
+  };
+
+  using Helper = HelperImpl<HasThreadIndex::value>;
 
  public:
   Async() {}
@@ -68,14 +118,14 @@ class Async<TRet(TArgs...)> {
     }
   }
 
-  std::future<TRet> operator()(typename std::decay<TArgs>::type... param) {
+  template <typename... TUserArgs>
+  std::future<TRet> operator()(TUserArgs... args) {
     std::promise<TRet> promise;
     std::future<TRet> ret = promise.get_future();
     {
       std::lock_guard<std::mutex> lck(pkg_buffer_mtx_);
       pkg_buffer_.push_back(Package{
-          std::move(promise), std::tuple<typename std::decay<TArgs>::type...>(
-                                  std::move(param)...)});
+          std::move(promise), Helper::ConstructArgs(std::move(args)...)});
     }
     threadfunc_cv_.notify_one();
     return ret;
@@ -100,21 +150,8 @@ class Async<TRet(TArgs...)> {
 
   std::uint8_t GetThreadCount() const { return threads_.size(); }
 
-  std::uint8_t GetThreadIdx() const {
-    const auto& idx = thread_indices_.find(std::this_thread::get_id());
-    if (idx != thread_indices_.end())
-      return idx->second;
-    else
-      return GetThreadCount();
-  }
-
  private:
   void ThreadFunc(const std::uint8_t thread_idx) {
-    {
-      std::lock_guard<std::mutex> lck(thread_indices_mtx_);
-      thread_indices_.insert(
-          std::make_pair(std::this_thread::get_id(), thread_idx));
-    }
     std::unique_lock<std::mutex> lck(pkg_buffer_mtx_);
     for (;;) {
       if (quit_.load()) break;
@@ -122,6 +159,7 @@ class Async<TRet(TArgs...)> {
         Package pkg(std::move(pkg_buffer_.front()));
         pkg_buffer_.pop_front();
         lck.unlock();
+        Helper::SetThreadIdx(thread_idx, pkg.args);
         Apply2Promise(func_, std::move(pkg.args), pkg.ret);
         lck.lock();
       } else {
@@ -136,8 +174,6 @@ class Async<TRet(TArgs...)> {
   }
 
  private:
-  std::unordered_map<std::thread::id, std::uint8_t> thread_indices_;
-  std::mutex thread_indices_mtx_;
   std::atomic_uint8_t finished_thread_count_{0u};
   std::vector<std::thread> threads_;
   std::mutex pkg_buffer_mtx_;
@@ -155,35 +191,35 @@ class Async<TRet(TArgs...)> {
  *                 / | \
  *              run concurrently
  */
-template <typename... Signature>
-class AsyncBatched;
-
 template <typename TRet, typename... TArgs>
 class AsyncBatched<TRet(TArgs...)> {
  private:
-  struct Package {
-    std::promise<TRet> ret;
-    std::tuple<typename std::decay<TArgs>::type...> args;
-  };
+  using ThisAsync = Async<TRet(TArgs...)>;
+  using Package = typename ThisAsync::Package;
+  using Helper = typename ThisAsync::Helper;
 
  public:
   AsyncBatched(typename std::function<TRet(TArgs...)> func)
       : commiter_{std::bind(&AsyncBatched::Commiter, this,
                             std::placeholders::_1)},
-        worker_{[func](Package* begin, Package* end) -> void {
+        worker_{[func](const ThreadIndex thread_idx, Package* begin,
+                       Package* end) -> void {
                   for (Package* i = begin; i != end; i++) {
+                    Helper::SetThreadIdx(thread_idx.idx, i->args);
                     Apply2Promise(func, std::move(i->args), i->ret);
                   }
                 },
                 0} {}
 
  public:
-  std::future<TRet> Add(typename std::decay<TArgs>::type... args) {
+  template <typename... TUserArgs>
+  std::future<TRet> Add(TUserArgs... args) {
     std::promise<TRet> promise;
     std::future<TRet> ret = promise.get_future();
     {
       std::lock_guard<std::mutex> lck(staging_pkg_mtx_);
-      staging_pkg_.push_back({std::move(promise), {std::move(args)...}});
+      staging_pkg_.push_back(
+          {std::move(promise), Helper::ConstructArgs(std::move(args)...)});
     }
     return ret;
   }
@@ -218,7 +254,7 @@ class AsyncBatched<TRet(TArgs...)> {
   std::vector<Package> staging_pkg_;
   std::mutex staging_pkg_mtx_;
   Async<void(std::vector<Package>)> commiter_;
-  Async<void(Package*, Package*)> worker_;
+  Async<void(const ThreadIndex, Package*, Package*)> worker_;
 };
 
 FS_SUN_NS_END

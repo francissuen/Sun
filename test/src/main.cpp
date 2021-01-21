@@ -72,7 +72,7 @@ struct AsyncBatchedTest {
   int idx;
   struct Ret {
     double ret;
-    std::thread::id t_id;
+    std::uint8_t t_id;
   };
   mutable std::future<Ret> ret;
   friend std::string to_string(const AsyncBatchedTest &ct) {
@@ -83,10 +83,8 @@ struct AsyncBatchedTest {
     if (ct.ret.valid()) {
       if (ct.ret.wait_for(0s) == std::future_status::ready) {
         const Ret ct_ret = ct.ret.get();
-        std::stringstream tid_s;
-        tid_s << ct_ret.t_id;
         ret += (", ret: " + string::ToString(ct_ret.ret) +
-                ", tid: " + tid_s.str());
+                ", tid: " + string::ToString(ct_ret.t_id));
       }
     }
     return ret;
@@ -133,12 +131,14 @@ int main(int argc, char **argv) {
 
   // concurrent
   {
-    AsyncBatched<AsyncBatchedTest::Ret(const int, const double)> ab = {
-        [](const int a, const double b) -> AsyncBatchedTest::Ret {
+    AsyncBatched<AsyncBatchedTest::Ret(const ThreadIndex thread_idx, const int,
+                                       const double)>
+        ab = {[](const ThreadIndex thread_idx, const int a,
+                 const double b) -> AsyncBatchedTest::Ret {
           AsyncBatchedTest::Ret ret;
           ret.ret = a + b;
           std::this_thread::sleep_for(50ms);
-          ret.t_id = std::this_thread::get_id();
+          ret.t_id = thread_idx.idx;
           return ret;
         }};
     std::vector<AsyncBatchedTest> abts;
