@@ -12,59 +12,43 @@
 
 FS_SUN_NS_BEGIN
 
-template <typename TEvent, typename THandlerID = std::uintptr_t>
+template <typename TEvent, typename TTargetID, typename... TFuncArgs>
 class EventMachine {
  public:
-  using Handler =
-      std::function<void(const TEvent &, const std::shared_ptr<void> &)>;
-  struct EventData {
-    TEvent ev;
-    std::shared_ptr<void> user_ptr;
-  };
+  using Handler = std::function<void(const TEvent, TFuncArgs... args)>;
 
  public:
-  void Register(const TEvent &ev, const THandlerID &handler_id,
-                const Handler &handler) {
+  void Register(const TEvent ev, const TTargetID target_id, Handler handler) {
     const auto &itr = handlers_.find(ev);
     if (itr != handlers_.end()) {
-      itr->second.insert(std::make_pair(handler_id, handler));
+      itr->second.insert(std::make_pair(target_id, std::move(handler)));
     } else
-      handlers_.insert(std::make_pair(ev, {handler_id, handler}));
+      handlers_.insert(
+          std::make_pair(ev, std::unordered_map<TTargetID, Handler>{
+                                 {target_id, std::move(handler)}}));
   }
 
-  void Unregister(const TEvent &ev, const THandlerID &handler_id) {
+  void Unregister(const TEvent ev, const TTargetID target_id) {
     const auto &itr = handlers_.find(ev);
     if (itr != handlers_.end()) {
       auto &handlers = itr->second;
-      const auto &handler_itr = handlers.find(handler_id);
+      const auto &handler_itr = handlers.find(target_id);
       if (handler_itr != handlers.end()) handlers.erase(handler_itr);
     }
   }
 
-  void PostEvent(const TEvent &ev) { event_data_queue_.push_back(ev); }
-
-  void DispatchEvent(const TEvent &ev) {
+  template <typename... TArgs>
+  void DispatchEvent(const TEvent &ev, TArgs &&... args) {
     const auto &itr = handlers_.find(ev);
     if (itr != handlers_.end()) {
       for (const auto &handler : itr->second) {
-        handler->second(ev);
+        handler.second(ev, std::forward<TArgs>(args)...);
       }
     }
   }
 
-  bool GetEvent(EventData &ev) {
-    if (event_data_queue_.size() > 0) {
-      ev = std::move(event_data_queue_.front());
-      event_data_queue_.pop_front();
-      return true;
-    } else
-      return false;
-  }
-
  private:
-  std::unordered_map<TEvent, std::unordered_map<THandlerID, Handler>>
-      handlers_;
-  std::list<EventData> event_data_queue_;
+  std::unordered_map<TEvent, std::unordered_map<TTargetID, Handler>> handlers_;
 };
 
 FS_SUN_NS_END

@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Francis Sun, all rights reserved. */
+/* Copyright (C) 2021 Francis Sun, all rights reserved. */
 
 #ifndef FS_SUN_FILE_H
 #define FS_SUN_FILE_H
@@ -13,13 +13,20 @@ FS_SUN_NS_BEGIN
 
 class File {
  public:
-  File(const char* file_path, const char* open_mode = "r");
-  ~File();
+  File(const char* file_path);
 
  public:
+  ~File();
+  File(const File&) = delete;
+  File(File&& file);
+  File& operator=(const File&) = delete;
+  File& operator=(File&&);
+
+ public:
+  bool Open(const char* open_mode = "r");
+  bool Close();
   std::string GetPath() const;
   std::size_t GetSize() const;
-  bool IsGood() const;
   std::vector<char> Read();
   bool Read(char* buffer, const std::size_t size);
 

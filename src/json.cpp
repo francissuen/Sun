@@ -1,8 +1,8 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #include "json.h"
+
 #include "file.h"
-#include "logger.h"
 
 using namespace fs::sun;
 
@@ -204,18 +204,20 @@ Json::Json(const char *json_string, std::size_t size) {
 
 Json::Json(Dictionary values) : values_{std::move(values)} {}
 
-Json::operator Dictionary() const & { return GetValues(); }
-Json::operator Dictionary() && { return std::move(this)->GetValues(); }
-
 void Json::Parse(const char *json_string, std::size_t size) {
   Deserializer d{json_string, size};
   values_ = d.Execute();
 }
 
-JsonFile::JsonFile(const char *file_path) {
-  File f{file_path};
-  if (f.IsGood()) {
-    std::vector<char> json_string = f.Read();
-    Parse(json_string.data(), json_string.size());
-  }
+JsonFile::JsonFile(const char *file_path) : file_{file_path} {}
+
+bool JsonFile::Open() {
+  if (file_.Open()) {
+    std::vector<char> json_string = file_.Read();
+    json_.Parse(json_string.data(), json_string.size());
+    return true;
+  } else
+    return false;
 }
+
+const Json &JsonFile::GetJson() const { return json_; }

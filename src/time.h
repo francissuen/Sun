@@ -8,16 +8,10 @@
 
 FS_SUN_NS_BEGIN
 
-class FS_SUN_API Time : public Singleton<Time> {
-  friend class Singleton<Time>;
-
- private:
-  Time() = default;
-
- public:
-  std::string LocalTime() const;
-  std::uint64_t Timestamp() const;
-};
+namespace time {
+std::string LocalTime();
+std::uint64_t Timestamp();
+}  // namespace time
 
 FS_SUN_NS_END
 

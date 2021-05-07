@@ -24,12 +24,12 @@ Filesystem::Filesystem() {
   char path[FS_SUN_FILESYSTEM_MAX_PATH] = {'\0'};
 #ifdef FS_SUN_OS_WINDOWS
   if (GetModuleFileName(NULL, path, FS_SUN_FILESYSTEM_MAX_PATH) == 0)
-    cout("Failed to get executable path.", Logger::S_ERROR);
+    FS_SUN_ERROR("Failed to get executable path.");
 #elif defined(FS_SUN_OS_LINUX)
   if (::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) == -1)
-    cout("Failed to get executable path.", Logger::S_ERROR);
+    FS_SUN_ERROR("Failed to get executable path.");
 #else
-#error TODO
+#warning TODO
 #endif
   executable_path_ = path;
   executable_dir_ = string::DirName(executable_path_.c_str());
@@ -84,7 +84,7 @@ std::string Filesystem::GetWorkingDir() const {
 #ifdef FS_SUN_OS_LINUX
   if (::getcwd(wd, FS_SUN_FILESYSTEM_MAX_PATH) != nullptr) return wd;
 #else
-#error TODO
+#warning TODO
 #endif
   return "";
 }
@@ -94,7 +94,7 @@ std::string Filesystem::GetAbsolutePath(const char* path) const {
 #ifdef FS_SUN_OS_LINUX
   if (::realpath(path, abs_path) != nullptr) return abs_path;
 #else
-#error TODO
+#warning TODO
 #endif
   return "";
 }

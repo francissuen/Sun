@@ -5,6 +5,7 @@
 
 #include "src/factory.h"
 #include "src/filesystem.h"
+#include "src/id.h"
 #include "src/json.h"
 #include "src/logger.h"
 #include "src/string.h"
@@ -25,17 +26,19 @@ struct TestJson {
   Json::Dictionary misc;
   Json::TDictionary<float> dic_floats{};
 
-  FS_SUN_JSON_REGISTER_OBJECT_BEGIN()
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(gender)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(age)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(ready)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(numbers)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_friend)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_2nd_friend)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(misc)
-  FS_SUN_JSON_REGISTER_OBJECT_MEMBER(dic_floats)
-  FS_SUN_JSON_REGISTER_OBJECT_END()
+  // FS_SUN_JSON_REGISTER_OBJECT_BEGIN()
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(name)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(gender)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(age)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(ready)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(numbers)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_friend)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(my_2nd_friend)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(misc)
+  // FS_SUN_JSON_REGISTER_OBJECT_MEMBER(dic_floats)
+  // FS_SUN_JSON_REGISTER_OBJECT_END()
+  FS_SUN_JSON_REGISTER(name, gender, age, ready, numbers, my_friend,
+                       my_2nd_friend, misc, dic_floats)
 
   friend std::string to_string(const TestJson &tj) {
     std::string ret{"{name: "};
@@ -92,19 +95,20 @@ struct AsyncBatchedTest {
 };
 
 int main(int argc, char **argv) {
-  cout("hello world!", Logger::S_VERBOSE);
-  cout("hello world!", Logger::S_DEBUG);
-  cout("hello world!", Logger::S_INFO);
-  cout("hello world!", Logger::S_WARNING);
-  cout("hello world!", Logger::S_ERROR);
-  cout("hello world!", Logger::S_FATAL);
-  cout.Flush();
+  auto &logger = Logger<>::Instance();
+  logger.Log("hello world!", logger::S_VERBOSE);
+  logger.Log("hello world!", logger::S_DEBUG);
+  logger.Log("hello world!", logger::S_INFO);
+  logger.Log("hello world!", logger::S_WARNING);
+  logger.Log("hello world!", logger::S_ERROR);
+  logger.Log("hello world!", logger::S_FATAL);
+  logger.Flush();
 
-  cout("exe path: " + Filesystem::Instance().GetExecutablePath(),
-       Logger::S_INFO);
-  cout("exe dir: " + Filesystem::Instance().GetExecutableDir(),
-       Logger::S_INFO);
-  cout("wd: " + Filesystem::Instance().GetWorkingDir(), Logger::S_INFO);
+  logger.Log("exe path: " + Filesystem::Instance().GetExecutablePath(),
+             logger::S_INFO);
+  logger.Log("exe dir: " + Filesystem::Instance().GetExecutableDir(),
+             logger::S_INFO);
+  logger.Log("wd: " + Filesystem::Instance().GetWorkingDir(), logger::S_INFO);
 
   Factory<std::string, int> f;
   f.Register<B>(B::name);
@@ -116,17 +120,19 @@ int main(int argc, char **argv) {
 
   Variant<int, bool, std::string> v;
   v = 1;
-  cout(string::ToString(v.Get<int>()), Logger::S_INFO);
+  logger.Log(string::ToString(v.Get<int>()), logger::S_INFO);
   v = false;
-  cout(string::ToString(v.Get<bool>()), Logger::S_INFO);
+  logger.Log(string::ToString(v.Get<bool>()), logger::S_INFO);
   v = std::string("a");
-  cout(string::ToString(v), Logger::S_INFO);
+  logger.Log(string::ToString(v), logger::S_INFO);
 
   if (argc > 1) {
-    cout(argv[1], Logger::S_INFO);
+    logger.Log(argv[1], logger::S_INFO);
     TestJson tj;
-    tj.ParseFromJsonFile(argv[1]);
-    cout(string::ToString(tj), Logger::S_INFO);
+    if (tj.ParseFromJsonFile(argv[1]))
+      logger.Log(string::ToString(tj), logger::S_INFO);
+    else
+      logger.Log("Failed parsing TestJson file", logger::S_ERROR);
   }
 
   // concurrent
@@ -151,7 +157,7 @@ int main(int argc, char **argv) {
       for (int i = 0; i < 80; i++) {
         AsyncBatchedTest abt{int_distrib(mt_gen), real_distrib(mt_gen)};
         abt.idx = i;
-        cout(string::ToString(abt));
+        logger.Log(string::ToString(abt));
         abt.ret = ab.Add(abt.a, abt.b);
         abts.push_back(std::move(abt));
       }
@@ -160,7 +166,7 @@ int main(int argc, char **argv) {
 
     ab.Finish();
     for (const auto &abt : abts) {
-      cout(string::ToString(abt));
+      logger.Log(string::ToString(abt));
     }
   }
 

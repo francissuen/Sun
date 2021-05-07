@@ -8,7 +8,7 @@ project(${SUN} VERSION 0.1.0 LANGUAGES CXX)
 include(vesta/CMakeLists.txt)
 
 # generate the config.h
-fs_vesta_generate_config_h(FS_SUN)
+fs_vesta_generate_config_h(FS_SUN ${SUN})
 
 option(FS_SUN_STATIC_LIB "Build a static lib?" ON)
 

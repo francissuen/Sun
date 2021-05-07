@@ -8,7 +8,7 @@
 #define FS_SUN_TIME_BUFFER_MAX_LEN 128
 
 using namespace fs::sun;
-std::string Time::LocalTime() const {
+std::string time::LocalTime() {
   std::string ret(FS_SUN_TIME_BUFFER_MAX_LEN, '\0');
   char* buffer = &(ret.front());
   time_t rawTime;
@@ -22,7 +22,7 @@ std::string Time::LocalTime() const {
   return ret;
 }
 
-std::uint64_t Time::Timestamp() const {
+std::uint64_t time::Timestamp() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::system_clock::now().time_since_epoch())
       .count();

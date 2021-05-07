@@ -1,10 +1,11 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
+#include "string.h"
+
 #include <cassert>
 #include <cstring>
 
 #include "logger.h"
-#include "string.h"
 
 FS_SUN_NS_BEGIN
 namespace string {
@@ -46,14 +47,16 @@ std::vector<std::string> Split(const std::string& src, const char* delimeter) {
   std::vector<std::string> ret;
   std::size_t cur_pos = 0;
   const std::size_t delrs_len = std::strlen(delimeter);
-  while (true) {
-    const std::size_t pos = src.find(delimeter, cur_pos);
-    if (pos != std::string::npos) {
-      ret.push_back(src.substr(cur_pos, pos));
-      cur_pos += (pos + delrs_len);
-    } else {
-      ret.push_back(src.substr(cur_pos));
-      break;
+  if (delrs_len != 0) {
+    while (true) {
+      const std::size_t pos = src.find(delimeter, cur_pos);
+      if (pos != std::string::npos) {
+        ret.push_back(src.substr(cur_pos, pos));
+        cur_pos += (pos + delrs_len);
+      } else {
+        ret.push_back(src.substr(cur_pos));
+        break;
+      }
     }
   }
   return ret;
@@ -104,4 +107,3 @@ bool StartsWith(const char* string_0, const char* string_1) {
 }  // namespace string
 
 FS_SUN_NS_END
-

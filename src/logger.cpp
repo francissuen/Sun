@@ -1,16 +1,12 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
 #include "logger.h"
-
+#include "config.h"
 #include "time.h"
 using namespace fs::sun;
 
-#define FS_SUN_LOGGER_DEFAULT_TAG "sun"
-
-Logger::Log<Logger::TermFile> fs::sun::cout(FS_SUN_LOGGER_DEFAULT_TAG);
-
 /** ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS */
-Logger::TermFile::TermFile()
+logger::TermFile::TermFile()
     : color_{
 #ifdef _MSC_VER
           FOREGROUND_INTENSITY | FOREGROUND_RED,
@@ -31,7 +27,7 @@ Logger::TermFile::TermFile()
 #endif
 }
 
-Logger::TermFile::~TermFile() {
+logger::TermFile::~TermFile() {
 #ifdef _MSC_VER
   ::SetConsoleTextAttribute(console_, _preConsoleAttrib.wAttributes);
 #else
@@ -39,7 +35,7 @@ Logger::TermFile::~TermFile() {
 #endif
 }
 
-void Logger::TermFile::LogRoutine(const std::string& tag,
+void logger::TermFile::LogRoutine(const std::string& tag,
                                   const std::string& msg,
                                   const Severity s) const {
 #ifdef _MSC_VER
@@ -51,8 +47,7 @@ void Logger::TermFile::LogRoutine(const std::string& tag,
   std::cout.flush();
 }
 
-std::string Logger::TermFile::Format(const std::string& tag,
+std::string logger::TermFile::Format(const std::string& tag,
                                      const std::string& msg) const {
-  return Time::Instance().LocalTime() + "@tag: " + tag + ", @msg: " + msg +
-         "\n";
+  return time::LocalTime() + "@tag: " + tag + ", @msg: " + msg + "\n";
 }

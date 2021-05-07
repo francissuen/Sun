@@ -37,11 +37,10 @@ class DeepPtr {
   template <typename... TArgs>
   DeepPtr(TArgs &&... args) : ptr_{new T{std::forward<TArgs>(args)...}} {}
 
+ public:
   DeepPtr(const DeepPtr &ptr) : ptr_{ptr != nullptr ? new T(*ptr) : nullptr} {}
 
   DeepPtr(DeepPtr &&ptr) : ptr_{std::move(ptr.ptr_)} {}
-
- public:
   DeepPtr &operator=(const DeepPtr &rhs) {
     DeepPtr temp(rhs);
     swap(*this, temp);

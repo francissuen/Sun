@@ -12,8 +12,11 @@
 #include <unordered_map>
 
 #include "deep_ptr.h"
+#include "file.h"
+#include "logger.h"
 #include "ns.h"
 #include "variant.h"
+
 FS_SUN_NS_BEGIN
 
 /**
@@ -149,7 +152,7 @@ class Json {
       const TValue &value, TRet &ret) {
     const auto &j_ptr =
         GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
-    if (j_ptr != nullptr) ret.ParseFromDictionary(*j_ptr);
+    if (j_ptr != nullptr) ret.ParseFromJsonDictionary(*j_ptr);
   }
 
   template <typename TValue, typename TRet>
@@ -158,7 +161,7 @@ class Json {
         GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
     if (j_ptr != nullptr) {
       ret = new TRet;
-      ret->ParseFromDictionary(*j_ptr);
+      ret->ParseFromJsonDictionary(*j_ptr);
     }
   }
 
@@ -168,7 +171,7 @@ class Json {
         GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
     if (j_ptr != nullptr) {
       ret.reset(new TRet);
-      ret->ParseFromDictionary(*j_ptr);
+      ret->ParseFromJsonDictionary(*j_ptr);
     }
   }
 
@@ -260,46 +263,63 @@ class Json {
   Json(Dictionary values);
 
  public:
-  operator Dictionary() const &;
-  operator Dictionary() &&;
-
- public:
+  void Parse(const char *json_string, std::size_t size);
   const Dictionary &GetValues() const &;
   Dictionary GetValues() &&;
 
  protected:
   Dictionary values_;
-
- protected:
-  void Parse(const char *json_string, std::size_t size);
 };
 
 template <>
 const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value);
 
-class JsonFile : public Json {
+class JsonFile {
  public:
   JsonFile(const char *file_path);
+
+ public:
+  bool Open();
+  const Json &GetJson() const;
+
+ private:
+  Json json_;
+  File file_;
 };
 
+#ifdef NDEBUG
+#define FS_SUN_JSON_INFO_MEMBER_(member)
+#else
+#define FS_SUN_JSON_INFO_MEMBER_(member) \
+  FS_SUN_INFO("sun::Json paring: " #member)
+#endif
+
 #define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()              \
-  inline void ParseFromJsonFile(const char *file_path) { \
+  inline bool ParseFromJsonFile(const char *file_path) { \
     fs::sun::JsonFile jf(file_path);                     \
-    ParseFromDictionary(jf);                             \
+    if (jf.Open()) {                                     \
+      ParseFromJsonDictionary(jf.GetJson().GetValues()); \
+      return true;                                       \
+    } else                                               \
+      return false;                                      \
   }                                                      \
   inline void ParseFromJson(const char *json_string) {   \
     fs::sun::Json j(json_string);                        \
-    ParseFromDictionary(j);                              \
+    ParseFromJsonDictionary(j.GetValues());              \
   }                                                      \
   inline void ParseFromJson(const char *json_string,     \
                             const std::size_t size) {    \
     fs::sun::Json j(json_string, size);                  \
-    ParseFromDictionary(j);                              \
+    ParseFromJsonDictionary(j.GetValues());              \
+  }                                                      \
+  inline void ParseFromJson(const fs::sun::Json &j) {    \
+    ParseFromJsonDictionary(j.GetValues());              \
   }                                                      \
                                                          \
-  inline void ParseFromDictionary(const fs::sun::Json::Dictionary &dict) {
+  inline void ParseFromJsonDictionary(const fs::sun::Json::Dictionary &dict) {
 #define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)           \
   {                                                                   \
+    FS_SUN_JSON_INFO_MEMBER_(member_variable)                         \
     const auto &itr = dict.find(#member_variable);                    \
     if (itr != dict.end()) {                                          \
       fs::sun::Json::UpdateValue(itr->second, this->member_variable); \
@@ -307,6 +327,12 @@ class JsonFile : public Json {
   }
 
 #define FS_SUN_JSON_REGISTER_OBJECT_END() }
+
+// only works when the number of args is less or equal than 9
+#define FS_SUN_JSON_REGISTER(...)                                       \
+  FS_SUN_JSON_REGISTER_OBJECT_BEGIN()                                   \
+  FS_SUN_CALL_FOR_EACH(FS_SUN_JSON_REGISTER_OBJECT_MEMBER, __VA_ARGS__) \
+  FS_SUN_JSON_REGISTER_OBJECT_END()
 
 FS_SUN_NS_END
 

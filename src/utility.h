@@ -18,14 +18,19 @@
 FS_SUN_NS_BEGIN
 
 template <typename T0, typename T1>
-T0& Max(const T0& t0, const T1& t1) {
+const T0& Max(const T0& t0, const T1& t1) {
   return t0 > t1 ? t0 : t1;
 }
 
 template <typename T0, typename T1, typename T2, typename... Tn>
-T0& Max(const T0& t0, const T1& t1, const T2& t2, Tn&... tn) {
+const T0& Max(const T0& t0, const T1& t1, const T2& t2, Tn&... tn) {
   T0& x = Max(tn...);
   return t0 > x ? t0 : x;
+}
+
+template <typename T>
+const T& Clamp(const T& v, const T& lo, const T& hi) {
+  return v <= lo ? lo : (v >= hi ? hi : v);
 }
 
 template <typename T>
@@ -111,6 +116,11 @@ struct IndexOf {
   template <TIndex current_index, typename... Ts>
   struct SeekIndex;
 
+  template <TIndex current_index>
+  struct SeekIndex<current_index> {
+    static constexpr TIndex index = npos;
+  };
+
   template <TIndex current_index, typename TLast>
   struct SeekIndex<current_index, TLast> {
     static constexpr TIndex index =
@@ -128,7 +138,6 @@ struct IndexOf {
  public:
   template <typename... Ts>
   struct In {
-    static_assert(sizeof...(Ts) > 0, "count of Ts should be at least one.");
     static_assert(sizeof...(Ts) < npos, "too many Ts... for type TIndex");
     static constexpr TIndex value = SeekIndex<0u, Ts...>::index;
   };
@@ -264,8 +273,84 @@ struct remove_cvref {
       typename std::remove_cv<typename std::remove_reference<T>::type>::type;
 };
 
-template <typename T>
-struct WhichType;
+template <typename... Ts>
+struct SizeOf {
+  static constexpr const std::size_t value = sizeof...(Ts);
+};
+
+#define FS_SUN_EMPTY
+
+#define FS_SUN_GET_1ST_ARG_(arg1, ...) arg1
+#define FS_SUN_GET_1ST_ARG(...) FS_SUN_GET_1ST_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_GET_2ND_ARG_(arg1, arg2, ...) arg2
+#define FS_SUN_GET_2ND_ARG(...) FS_SUN_GET_2ND_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_GET_3RD_ARG_(arg1, arg2, arg3, ...) arg3
+#define FS_SUN_GET_3RD_ARG(...) FS_SUN_GET_3RD_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_GET_4TH_ARG_(arg1, arg2, arg3, arg4, ...) arg4
+#define FS_SUN_GET_4TH_ARG(...) FS_SUN_GET_4TH_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_GET_5TH_ARG_(arg1, arg2, arg3, arg4, arg5, ...) arg5
+#define FS_SUN_GET_5TH_ARG(...) FS_SUN_GET_5TH_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_GET_9TH_ARG_(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, \
+                            arg9, ...)                                      \
+  arg9
+#define FS_SUN_GET_9TH_ARG(...) FS_SUN_GET_9TH_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_GET_10TH_ARG_(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, \
+                             arg9, arg10, ...)                               \
+  arg10
+#define FS_SUN_GET_10TH_ARG(...) FS_SUN_GET_10TH_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_GET_11TH_ARG_(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, \
+                             arg9, arg10, arg11, ...)                        \
+  arg11
+#define FS_SUN_GET_11TH_ARG(...) FS_SUN_GET_11TH_ARG_(__VA_ARGS__, DUMMY_ARG)
+
+#define FS_SUN_CALL_FOR_EACH_9_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_8_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_8_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_7_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_7_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_6_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_6_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_5_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_5_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_4_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_4_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_3_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_3_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_2_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_2_(func, arg, ...) \
+  func(arg);                                    \
+  FS_SUN_CALL_FOR_EACH_1_(func, __VA_ARGS__)
+
+#define FS_SUN_CALL_FOR_EACH_1_(func, arg) func(arg);
+
+#define FS_SUN_CALL_FOR_EACH(func, ...)                                 \
+  FS_SUN_GET_10TH_ARG(__VA_ARGS__, FS_SUN_CALL_FOR_EACH_9_,             \
+                      FS_SUN_CALL_FOR_EACH_8_, FS_SUN_CALL_FOR_EACH_7_, \
+                      FS_SUN_CALL_FOR_EACH_6_, FS_SUN_CALL_FOR_EACH_5_, \
+                      FS_SUN_CALL_FOR_EACH_4_, FS_SUN_CALL_FOR_EACH_3_, \
+                      FS_SUN_CALL_FOR_EACH_2_, FS_SUN_CALL_FOR_EACH_1_) \
+  (func, __VA_ARGS__)
 
 FS_SUN_NS_END
 

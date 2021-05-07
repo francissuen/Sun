@@ -101,14 +101,17 @@ class Async<TRet(TArgs...)> {
     SetFunction(std::move(func), thread_count);
   }
 
+ public:
   ~Async() { Quit(); }
+  Async(const Async&) = delete;
+  Async& operator=(const Async&) = delete;
 
  public:
   void SetFunction(typename std::function<TRet(TArgs...)> func,
                    std::uint8_t thread_count = 1) {
     Quit();
 
-    quit_.store(false);
+    quit_ = false;
     func_ = std::move(func);
     if (thread_count == 0) thread_count = std::thread::hardware_concurrency();
     threads_.reserve(thread_count);
@@ -123,6 +126,10 @@ class Async<TRet(TArgs...)> {
     std::promise<TRet> promise;
     std::future<TRet> ret = promise.get_future();
     {
+      std::unique_lock<std::mutex> blocking_lck{blocking_mtx_};
+      blocking_cv_.wait(blocking_lck, [this]() { return !is_blocking_; });
+      blocking_lck.unlock();
+
       std::lock_guard<std::mutex> lck(pkg_buffer_mtx_);
       pkg_buffer_.push_back(Package{
           std::move(promise), Helper::ConstructArgs(std::move(args)...)});
@@ -131,9 +138,27 @@ class Async<TRet(TArgs...)> {
     return ret;
   }
 
+  void Block() {
+    {
+      std::lock_guard<std::mutex> lck{blocking_mtx_};
+      is_blocking_ = true;
+    }
+  }
+
+  void Unblock() {
+    {
+      std::lock_guard<std::mutex> lck{blocking_mtx_};
+      is_blocking_ = false;
+      blocking_cv_.notify_all();
+    }
+  }
+
   void Quit() {
-    quit_.store(true);
-    threadfunc_cv_.notify_all();
+    {
+      std::lock_guard<std::mutex> lck{pkg_buffer_mtx_};
+      quit_ = true;
+      threadfunc_cv_.notify_all();
+    }
     for (auto& t : threads_) {
       t.join();
     }
@@ -141,11 +166,14 @@ class Async<TRet(TArgs...)> {
   }
 
   void Finish() {
-    std::unique_lock<std::mutex> lck(pkg_buffer_mtx_);
-    finished_cv_.wait(lck, [this]() -> bool {
-      return pkg_buffer_.size() == 0 &&
-             finished_thread_count_.load() == threads_.size();
-    });
+    {
+      std::unique_lock<std::mutex> lck(pkg_buffer_mtx_);
+      likely_finished_cv_.wait(lck, [this]() -> bool {
+        std::lock_guard<std::mutex> lck{finished_thread_count_mtx};
+        return pkg_buffer_.size() == 0 &&
+               finished_thread_count_ == threads_.size();
+      });
+    }
   }
 
   std::uint8_t GetThreadCount() const { return threads_.size(); }
@@ -154,7 +182,7 @@ class Async<TRet(TArgs...)> {
   void ThreadFunc(const std::uint8_t thread_idx) {
     std::unique_lock<std::mutex> lck(pkg_buffer_mtx_);
     for (;;) {
-      if (quit_.load()) break;
+      if (quit_) break;
       if (pkg_buffer_.size() > 0) {
         Package pkg(std::move(pkg_buffer_.front()));
         pkg_buffer_.pop_front();
@@ -163,25 +191,35 @@ class Async<TRet(TArgs...)> {
         Apply2Promise(func_, std::move(pkg.args), pkg.ret);
         lck.lock();
       } else {
-        finished_thread_count_.fetch_add(1);
-        finished_cv_.notify_all();
+        {
+          std::lock_guard<std::mutex> lck{finished_thread_count_mtx};
+          finished_thread_count_ += 1u;
+          likely_finished_cv_.notify_all();
+        }
         threadfunc_cv_.wait(lck, [this]() -> bool {
-          return quit_.load() || pkg_buffer_.size() > 0;
+          return quit_ || pkg_buffer_.size() > 0u;
         });
-        finished_thread_count_.fetch_add(-1);
+        {
+          std::lock_guard<std::mutex> lck{finished_thread_count_mtx};
+          finished_thread_count_ -= 1u;
+        }
       }
     }
   }
 
  private:
-  std::atomic_uint8_t finished_thread_count_{0u};
+  std::uint8_t finished_thread_count_{0u};
+  std::mutex finished_thread_count_mtx;
   std::vector<std::thread> threads_;
   std::mutex pkg_buffer_mtx_;
   std::condition_variable threadfunc_cv_;
   std::list<Package> pkg_buffer_;
   std::function<TRet(TArgs...)> func_;
-  std::atomic_bool quit_{false};
-  std::condition_variable finished_cv_;
+  bool quit_{false};
+  std::condition_variable likely_finished_cv_;
+  bool is_blocking_{false};
+  std::mutex blocking_mtx_;
+  std::condition_variable blocking_cv_;
 };
 
 /**
