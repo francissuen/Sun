@@ -24,8 +24,7 @@ const T0& Max(const T0& t0, const T1& t1) {
 
 template <typename T0, typename T1, typename T2, typename... Tn>
 const T0& Max(const T0& t0, const T1& t1, const T2& t2, Tn&... tn) {
-  T0& x = Max(tn...);
-  return t0 > x ? t0 : x;
+  return Max(Max(t0, t1), t2, tn...);
 }
 
 template <typename T>
@@ -221,9 +220,11 @@ struct Invoke {
                               const TIndex current_index, TArgs&&... args) {
       if (target_index == current_index)
         ForTypeIn<T0>::With(std::forward<TArgs>(args)...);
-      else
+      else {
         ForTypeIn<T1, TOthers...>::template With2Internal<TIndex, TArgs...>(
-            target_index, current_index + 1u, std::forward<TArgs>(args)...);
+            target_index, (TIndex)(current_index + 1u),
+            std::forward<TArgs>(args)...);
+      }
     }
 
     template <typename TIndex, typename... TArgs>
@@ -351,6 +352,9 @@ struct SizeOf {
                       FS_SUN_CALL_FOR_EACH_4_, FS_SUN_CALL_FOR_EACH_3_, \
                       FS_SUN_CALL_FOR_EACH_2_, FS_SUN_CALL_FOR_EACH_1_) \
   (func, __VA_ARGS__)
+
+#define FS_SUN_UNUSED_(var) (void)var;
+#define FS_SUN_UNUSED(...) FS_SUN_CALL_FOR_EACH(FS_SUN_UNUSED_, __VA_ARGS__)
 
 FS_SUN_NS_END
 

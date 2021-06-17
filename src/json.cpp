@@ -11,7 +11,7 @@ const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value) {
   return value;
 }
 
-#warning TODO Get*
+// TODO Get*
 // const std::string &Json::Value::GetString() {
 //   if (Is<std::string>())
 //     return Get<std::string>();
@@ -213,8 +213,8 @@ JsonFile::JsonFile(const char *file_path) : file_{file_path} {}
 
 bool JsonFile::Open() {
   if (file_.Open()) {
-    std::vector<char> json_string = file_.Read();
-    json_.Parse(json_string.data(), json_string.size());
+    std::vector<unsigned char> json_string = file_.Read();
+    json_.Parse(((char *)json_string.data()), json_string.size());
     return true;
   } else
     return false;

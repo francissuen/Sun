@@ -27,8 +27,8 @@ class File {
   bool Close();
   std::string GetPath() const;
   std::size_t GetSize() const;
-  std::vector<char> Read();
-  bool Read(char* buffer, const std::size_t size);
+  std::vector<unsigned char> Read();
+  bool Read(unsigned char* buffer, const std::size_t size);
 
  private:
   std::string path_;

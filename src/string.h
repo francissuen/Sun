@@ -70,7 +70,7 @@ bool StartsWith(const char* string_0, const char* string_1);
 template <typename T>
 T ToNumber(const std::string& str) {
   /** fallback to int */
-  return std::stoi(str);
+  return (T)std::stoi(str);
 }
 
 #define FS_SUN_STRING_DEFINE_TO_NUMBER(ret_type, suffix_of_stox) \

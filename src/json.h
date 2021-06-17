@@ -182,6 +182,12 @@ class Json {
         GetScalarValue(value).template Get<std::string>());
   }
 
+  template <typename TValue, typename TRet>
+  static typename std::enable_if<std::is_enum<TRet>::value>::type UpdateValue(
+      const TValue &value, TRet &ret) {
+    ret = static_cast<TRet>(UpdateValue<TValue, int>(value, ret));
+  }
+
   static bool StringToBoolean(const std::string &str);
 
   template <typename TValue>
@@ -287,13 +293,6 @@ class JsonFile {
   File file_;
 };
 
-#ifdef NDEBUG
-#define FS_SUN_JSON_INFO_MEMBER_(member)
-#else
-#define FS_SUN_JSON_INFO_MEMBER_(member) \
-  FS_SUN_INFO("sun::Json paring: " #member)
-#endif
-
 #define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()              \
   inline bool ParseFromJsonFile(const char *file_path) { \
     fs::sun::JsonFile jf(file_path);                     \
@@ -319,7 +318,6 @@ class JsonFile {
   inline void ParseFromJsonDictionary(const fs::sun::Json::Dictionary &dict) {
 #define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)           \
   {                                                                   \
-    FS_SUN_JSON_INFO_MEMBER_(member_variable)                         \
     const auto &itr = dict.find(#member_variable);                    \
     if (itr != dict.end()) {                                          \
       fs::sun::Json::UpdateValue(itr->second, this->member_variable); \

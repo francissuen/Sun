@@ -46,12 +46,12 @@ class ID {
     Of() : id_{generator_.Get()} {}
 
    public:
-    inline operator IDType() const { return Get(); }
+    inline operator IDType() const { return GetID(); }
 
    public:
-    inline IDType Get() const { return id_; }
+    inline IDType GetID() const { return id_; }
 
-   private:
+   protected:
     const IDType id_;
   };
 

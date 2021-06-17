@@ -72,12 +72,12 @@ struct C {
 struct AsyncBatchedTest {
   int a;
   double b;
-  int idx;
+  int idx{};
   struct Ret {
-    double ret;
-    std::uint8_t t_id;
+    double ret{};
+    std::size_t t_id{};
   };
-  mutable std::future<Ret> ret;
+  mutable std::future<Ret> ret{};
   friend std::string to_string(const AsyncBatchedTest &ct) {
     std::string ret;
     ret += ("idx: " + string::ToString(ct.idx));

@@ -7,7 +7,14 @@
 
 using namespace fs::sun;
 
-File::File(const char* file_path) : path_{file_path}, file_{nullptr} {}
+File::File(const char* file_path) : path_{file_path}, file_{nullptr} {
+  if (path_ != "") {
+    if (path_[path_.size() - 1] == '/') {
+      FS_SUN_ERROR(std::string("file_path can't be a folder: ") + file_path);
+      path_ = "";
+    }
+  }
+}
 
 File::File(File&& other)
     : path_{std::move(other.path_)}, file_{other.file_}, size_{other.size_} {
@@ -58,17 +65,18 @@ std::string File::GetPath() const { return path_; }
 
 std::size_t File::GetSize() const { return size_; }
 
-std::vector<char> File::Read() {
-  std::vector<char> ret;
+std::vector<unsigned char> File::Read() {
+  std::vector<unsigned char> ret;
   assert(file_ != nullptr && size_ != 0u);
   ret.resize(size_);
-  if (std::fread(ret.data(), sizeof(char), size_, file_) != size_) ret.clear();
+  if (std::fread(ret.data(), sizeof(unsigned char), size_, file_) != size_)
+    ret.clear();
   return ret;
 }
 
-bool File::Read(char* buffer, const std::size_t size) {
+bool File::Read(unsigned char* buffer, const std::size_t size) {
   assert(file_ != nullptr && size_ != 0u && buffer != nullptr);
-  if (std::fread(buffer, sizeof(char), size, file_) == size)
+  if (std::fread(buffer, sizeof(unsigned char), size, file_) == size)
     return true;
   else
     return false;
