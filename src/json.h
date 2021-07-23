@@ -146,119 +146,159 @@ class Json {
   static constexpr char token_quote = u8"\""[0];
   static constexpr char token_backslash = u8"\\"[0];
 
+#define FS_SUN_JSON_GET_VALUE_(value_type)                      \
+  bool has_succeeded{false};                                    \
+  const ScalarValue &sv = GetScalarValue(value, has_succeeded); \
+  if (!has_succeeded) return false;                             \
+  if (!(sv.Is<value_type>())) return false;                     \
+  const value_type &rv = sv.RawGet<value_type>();
+
  public:
   template <typename TValue, typename TRet>
-  static typename std::enable_if<std::is_class<TRet>::value>::type UpdateValue(
-      const TValue &value, TRet &ret) {
-    const auto &j_ptr =
-        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
-    if (j_ptr != nullptr) ret.ParseFromJsonDictionary(*j_ptr);
-  }
-
-  template <typename TValue, typename TRet>
-  static void UpdateValue(const TValue &value, TRet *&ret) {
-    const auto &j_ptr =
-        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
-    if (j_ptr != nullptr) {
-      ret = new TRet;
-      ret->ParseFromJsonDictionary(*j_ptr);
-    }
-  }
-
-  template <typename TValue, typename TRet>
-  static void UpdateValue(const TValue &value, std::unique_ptr<TRet> &ret) {
-    const auto &j_ptr =
-        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
-    if (j_ptr != nullptr) {
-      ret.reset(new TRet);
-      ret->ParseFromJsonDictionary(*j_ptr);
-    }
-  }
-
-  template <typename TValue, typename TRet>
-  static typename std::enable_if<std::is_arithmetic<TRet>::value>::type
+  static typename std::enable_if<std::is_class<TRet>::value, bool>::type
   UpdateValue(const TValue &value, TRet &ret) {
-    ret = string::ToNumber<TRet>(
-        GetScalarValue(value).template Get<std::string>());
+    FS_SUN_JSON_GET_VALUE_(DeepPtr<Dictionary>);
+    if (rv != nullptr) {
+      ret.ParseFromJsonDictionary(*rv);
+      return true;
+    } else
+      return false;
   }
 
   template <typename TValue, typename TRet>
-  static typename std::enable_if<std::is_enum<TRet>::value>::type UpdateValue(
-      const TValue &value, TRet &ret) {
-    ret = static_cast<TRet>(UpdateValue<TValue, int>(value, ret));
+  static bool UpdateValue(const TValue &value, TRet *&ret) {
+    FS_SUN_JSON_GET_VALUE_(DeepPtr<Dictionary>);
+    if (rv != nullptr) {
+      ret = new TRet;
+      ret->ParseFromJsonDictionary(*rv);
+      return true;
+    } else
+      return false;
+  }
+
+  template <typename TValue, typename TRet>
+  static bool UpdateValue(const TValue &value, std::unique_ptr<TRet> &ret) {
+    FS_SUN_JSON_GET_VALUE_(DeepPtr<Dictionary>);
+    if (rv != nullptr) {
+      ret.reset(new TRet);
+      ret->ParseFromJsonDictionary(*rv);
+      return true;
+    } else
+      return false;
+  }
+
+  template <typename TValue, typename TRet>
+  static typename std::enable_if<std::is_arithmetic<TRet>::value, bool>::type
+  UpdateValue(const TValue &value, TRet &ret) {
+    FS_SUN_JSON_GET_VALUE_(std::string);
+    ret = string::ToNumber<TRet>(rv);
+    return true;
+  }
+
+  template <typename TValue, typename TRet>
+  static typename std::enable_if<std::is_enum<TRet>::value, bool>::type
+  UpdateValue(const TValue &value, TRet &ret) {
+    if (!UpdateValue<TValue, int>(value, ret)) return false;
+    ret = static_cast<TRet>(ret);
+    return true;
   }
 
   static bool StringToBoolean(const std::string &str);
 
   template <typename TValue>
-  static void UpdateValue(const TValue &value, bool &ret) {
-    ret = StringToBoolean(GetScalarValue(value).template Get<std::string>());
+  static bool UpdateValue(const TValue &value, bool &ret) {
+    FS_SUN_JSON_GET_VALUE_(std::string);
+    ret = StringToBoolean(rv);
+    return true;
   }
 
   template <typename TValue>
-  static void UpdateValue(const TValue &value, std::string &ret) {
-    ret = GetScalarValue(value).template Get<std::string>();
+  static bool UpdateValue(const TValue &value, std::string &ret) {
+    FS_SUN_JSON_GET_VALUE_(std::string);
+    ret = rv;
+    return true;
   }
 
   template <typename TValue>
-  static void UpdateValue(const TValue &value, Dictionary &ret) {
-    ret = *(GetScalarValue(value).template Get<DeepPtr<Dictionary>>());
+  static bool UpdateValue(const TValue &value, Dictionary &ret) {
+    FS_SUN_JSON_GET_VALUE_(DeepPtr<Dictionary>);
+    ret = *(rv);
+    return true;
   }
 
   /* dictionary type */
   template <typename TValue, typename TRet>
-  static void UpdateValue(const TValue &value, TDictionary<TRet> &ret) {
-    const auto &dict_ptr =
-        GetScalarValue(value).template Get<DeepPtr<Dictionary>>();
-    if (dict_ptr != nullptr) {
-      const auto &dict = *dict_ptr;
+  static bool UpdateValue(const TValue &value, TDictionary<TRet> &ret) {
+    FS_SUN_JSON_GET_VALUE_(DeepPtr<Dictionary>);
+    if (rv != nullptr) {
+      const auto &dict = *rv;
       for (const auto &value : dict) {
         TRet tmp_ret{};
-        UpdateValue(value.second, tmp_ret);
+        if (!UpdateValue(value.second, tmp_ret)) {
+          FS_SUN_ERROR("Failed to UpdateValue for TDictionary at key: " +
+                       value.first);
+          return false;
+        }
         ret.insert(std::make_pair(value.first, std::move(tmp_ret)));
       }
-    }
+      return true;
+    } else
+      return false;
   }
 
   /* array type */
   template <typename TValue, typename TRet>
-  static void UpdateValue(const TValue &value, std::vector<TRet> &ret) {
-    const auto &vector_value = value.template Get<VectorValue>();
+  static bool UpdateValue(const TValue &value, std::vector<TRet> &ret) {
+    if (!value.template Is<VectorValue>()) return false;
+    const auto &vector_value = value.template RawGet<VectorValue>();
     const std::size_t value_size = vector_value.size();
 
     for (std::size_t i = 0; i < value_size; i++) {
       TRet tmp_ret{};
-      UpdateValue(vector_value[i], tmp_ret);
+      if (!UpdateValue(vector_value[i], tmp_ret)) {
+        FS_SUN_ERROR("Failed to UpdateValue for std::vector at index: " +
+                     string::ToString(i));
+        return false;
+      }
       ret.push_back(std::move(tmp_ret));
     }
+    return true;
   }
 
   template <typename TValue, typename TRet, std::size_t N>
-  static void UpdateValue(const TValue &value, TRet (&ret)[N]) {
-    UpdateValue(value, &ret[0], N);
+  static bool UpdateValue(const TValue &value, TRet (&ret)[N]) {
+    return UpdateValue(value, &ret[0], N);
   }
 
   template <typename TValue, typename TRet, std::size_t N>
-  static void UpdateValue(const TValue &value, std::array<TRet, N> &ret) {
-    UpdateValue(value, ret.data(), N);
+  static bool UpdateValue(const TValue &value, std::array<TRet, N> &ret) {
+    return UpdateValue(value, ret.data(), N);
   }
 
  private:
   template <typename TValue>
-  static const ScalarValue &GetScalarValue(const TValue &value) {
+  static const ScalarValue &GetScalarValue(const TValue &value,
+                                           bool &has_succeeded) {
+    has_succeeded = value.template Is<ScalarValue>();
     return value.template Get<ScalarValue>();
   }
 
   template <typename TValue, typename TRet>
-  static void UpdateValue(const TValue &value, TRet *ret,
+  static bool UpdateValue(const TValue &value, TRet *ret,
                           const std::size_t array_size) {
-    const auto &vector_value = value.template Get<VectorValue>();
+    if (!(value.template Is<VectorValue>())) return false;
+    const auto &vector_value = value.template RawGet<VectorValue>();
     const std::size_t value_size = vector_value.size();
     const std::size_t min_size =
         array_size >= value_size ? value_size : array_size;
     for (std::size_t i = 0; i < min_size; i++) {
-      UpdateValue(vector_value[i], ret[i]);
+      if (!UpdateValue(vector_value[i], ret[i])) {
+        FS_SUN_ERROR("Failed to UpdateValue for array at index: " +
+                     string::ToString(i));
+        return false;
+      }
     }
+    return true;
   }
 
  public:
@@ -278,7 +318,8 @@ class Json {
 };
 
 template <>
-const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value);
+const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value,
+                                              bool &has_succeeded);
 
 class JsonFile {
  public:
@@ -293,38 +334,42 @@ class JsonFile {
   File file_;
 };
 
-#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()              \
-  inline bool ParseFromJsonFile(const char *file_path) { \
-    fs::sun::JsonFile jf(file_path);                     \
-    if (jf.Open()) {                                     \
-      ParseFromJsonDictionary(jf.GetJson().GetValues()); \
-      return true;                                       \
-    } else                                               \
-      return false;                                      \
-  }                                                      \
-  inline void ParseFromJson(const char *json_string) {   \
-    fs::sun::Json j(json_string);                        \
-    ParseFromJsonDictionary(j.GetValues());              \
-  }                                                      \
-  inline void ParseFromJson(const char *json_string,     \
-                            const std::size_t size) {    \
-    fs::sun::Json j(json_string, size);                  \
-    ParseFromJsonDictionary(j.GetValues());              \
-  }                                                      \
-  inline void ParseFromJson(const fs::sun::Json &j) {    \
-    ParseFromJsonDictionary(j.GetValues());              \
-  }                                                      \
-                                                         \
-  inline void ParseFromJsonDictionary(const fs::sun::Json::Dictionary &dict) {
-#define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)           \
-  {                                                                   \
-    const auto &itr = dict.find(#member_variable);                    \
-    if (itr != dict.end()) {                                          \
-      fs::sun::Json::UpdateValue(itr->second, this->member_variable); \
-    }                                                                 \
+#define FS_SUN_JSON_REGISTER_OBJECT_BEGIN()                     \
+  inline bool ParseFromJsonFile(const char *file_path) {        \
+    fs::sun::JsonFile jf(file_path);                            \
+    if (jf.Open()) {                                            \
+      return ParseFromJsonDictionary(jf.GetJson().GetValues()); \
+    } else                                                      \
+      return false;                                             \
+  }                                                             \
+  inline bool ParseFromJson(const char *json_string) {          \
+    fs::sun::Json j(json_string);                               \
+    return ParseFromJsonDictionary(j.GetValues());              \
+  }                                                             \
+  inline bool ParseFromJson(const char *json_string,            \
+                            const std::size_t size) {           \
+    fs::sun::Json j(json_string, size);                         \
+    return ParseFromJsonDictionary(j.GetValues());              \
+  }                                                             \
+  inline bool ParseFromJson(const fs::sun::Json &j) {           \
+    return ParseFromJsonDictionary(j.GetValues());              \
+  }                                                             \
+                                                                \
+  inline bool ParseFromJsonDictionary(const fs::sun::Json::Dictionary &dict) {
+#define FS_SUN_JSON_REGISTER_OBJECT_MEMBER(member_variable)                  \
+  {                                                                          \
+    const auto &itr = dict.find(#member_variable);                           \
+    if (itr != dict.end()) {                                                 \
+      if (!fs::sun::Json::UpdateValue(itr->second, this->member_variable)) { \
+        FS_SUN_ERROR("Failed to UpdateValue for " #member_variable);         \
+        return false;                                                        \
+      }                                                                      \
+    }                                                                        \
   }
 
-#define FS_SUN_JSON_REGISTER_OBJECT_END() }
+#define FS_SUN_JSON_REGISTER_OBJECT_END() \
+  return true;                            \
+  }
 
 // only works when the number of args is less or equal than 9
 #define FS_SUN_JSON_REGISTER(...)                                       \

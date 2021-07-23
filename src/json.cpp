@@ -7,7 +7,9 @@
 using namespace fs::sun;
 
 template <>
-const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value) {
+const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value,
+                                              bool &has_succeeded) {
+  has_succeeded = true;
   return value;
 }
 

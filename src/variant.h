@@ -171,7 +171,7 @@ class Variant {
    *  \warining No guarantee for a correct value.
    */
   template <typename T>
-      T &RawGet() & noexcept {
+  T &RawGet() &noexcept {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     return reinterpret_cast<T &>(raw_data_);
   }
@@ -180,7 +180,7 @@ class Variant {
    *  \warining No guarantee for a correct value.
    */
   template <typename T>
-      T &&RawGet() && noexcept {
+  T &&RawGet() &&noexcept {
     static_assert(IsType<T>::template In<Ts...>::value, "T is not one of Ts");
     return std::move(reinterpret_cast<T &>(raw_data_));
   }
