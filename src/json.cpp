@@ -22,7 +22,7 @@ const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value,
 // }
 const Json::TVectorValue<Json::Value> &GetArray();
 const Json::TDictionary<Json::Value> &GetDictionary();
-Json::Deserializer::Deserializer(const char *&input, std::size_t &size)
+Json::Deserializer::Deserializer(Input &input, std::size_t &size)
     : input_{input}, size_(size) {}
 
 Json::Dictionary Json::Deserializer::Execute() {
@@ -49,8 +49,10 @@ Json::Dictionary Json::Deserializer::Execute() {
           }
 
           if (*input_ != token_com) {
-            FS_SUN_WARN(std::string("Expect a comma while encounter token: ") +
-                        *input_)
+            FS_SUN_ERROR(
+                std::string("Expect a comma while encountered token: ") +
+                *input_ + ", " + input_.GetFormatedLineColumnNumberString())
+            is_good_ = false;
             break;
           }
         }
@@ -60,8 +62,10 @@ Json::Dictionary Json::Deserializer::Execute() {
       if (*input_ == token_rcb) {
         PassCurrentToken<token_rcb>();
       } else {
-        FS_SUN_WARN(std::string("Expect a rcb while encounter token: ") +
-                    *input_);
+        FS_SUN_ERROR(std::string("Expect a rcb while encountered token: ") +
+                     *input_ + ", " +
+                     input_.GetFormatedLineColumnNumberString());
+        is_good_ = false;
       }
       break;
     }
@@ -69,6 +73,8 @@ Json::Dictionary Json::Deserializer::Execute() {
 
   return ret;
 }
+
+bool Json::Deserializer::IsGood() const { return is_good_; }
 
 void Json::Deserializer::AdvanceUntilSignificant() {
   while (size_ != 0u) {
@@ -85,6 +91,53 @@ void Json::Deserializer::AdvanceUntilSignificant() {
 const Json::Dictionary &Json::GetValues() const & { return values_; }
 Json::Dictionary Json::GetValues() && { return std::move(values_); }
 
+Json::Deserializer::Input::Input(const char *input) : input_{input} {}
+
+char Json::Deserializer::Input::operator*() const { return *input_; }
+
+Json::Deserializer::Input &Json::Deserializer::Input::operator++() {
+  AdvanceByOne();
+  return *this;
+}
+
+const char *Json::Deserializer::Input::Get() const { return input_; }
+
+Json::Deserializer::Input Json::Deserializer::Input::operator-(
+    const std::size_t offset) {
+  return {input_ - offset};
+}
+
+std::size_t Json::Deserializer::Input::GetLineNumber() const {
+  return line_number_;
+}
+
+std::size_t Json::Deserializer::Input::GetColumnNumber() const {
+  return column_number_;
+}
+
+std::string Json::Deserializer::Input::GetFormatedLineColumnNumberString()
+    const {
+  return sun::string::ToString(line_number_) + ":" +
+         sun::string::ToString(column_number_);
+}
+
+Json::Deserializer::Input &Json::Deserializer::Input::operator+=(
+    const std::size_t offset) {
+  for (std::size_t i = 0u; i < offset; i++) {
+    AdvanceByOne();
+  }
+  return *this;
+}
+
+void Json::Deserializer::Input::AdvanceByOne() {
+  if (*input_ == token_lf) {
+    ++line_number_;
+    column_number_ = 0u;
+  } else
+    ++column_number_;
+  ++input_;
+}
+
 Json::ScalarValue Json::Deserializer::ReadString() {
   /** should be at quote now */
   PassCurrentToken<token_quote>();
@@ -92,7 +145,7 @@ Json::ScalarValue Json::Deserializer::ReadString() {
   std::string ret;
 
   if (size_ != 0u) {
-    const char *const begin = input_;
+    const char *const begin = input_.Get();
     if (size_ != 0u) {
       do {
         /** seek right quote */
@@ -102,7 +155,7 @@ Json::ScalarValue Json::Deserializer::ReadString() {
       } while (size_ != 0u);
 
       if (size_ != 0u) {
-        ret = {begin, input_};
+        ret = {begin, input_.Get()};
         PassCurrentToken<token_quote>();
       }
     }
@@ -121,7 +174,7 @@ Json::ScalarValue Json::Deserializer::ReadObject() {
 }
 
 Json::ScalarValue Json::Deserializer::ReadOthers() {
-  const char *begin = input_;
+  const char *begin = input_.Get();
   do {
     const char cur_char = *input_;
     if (cur_char == token_com || cur_char == token_rsb ||
@@ -133,7 +186,7 @@ Json::ScalarValue Json::Deserializer::ReadOthers() {
     size_ -= 1u;
   } while (size_ != 0);
 
-  return std::string{begin, input_};
+  return std::string{begin, input_.Get()};
 }
 
 Json::ScalarValue Json::Deserializer::ReadScalar() {
@@ -207,9 +260,13 @@ Json::Json(const char *json_string, std::size_t size) {
 Json::Json(Dictionary values) : values_{std::move(values)} {}
 
 void Json::Parse(const char *json_string, std::size_t size) {
-  Deserializer d{json_string, size};
+  Deserializer::Input input{json_string};
+  Deserializer d{input, size};
   values_ = d.Execute();
+  is_good_ = d.IsGood();
 }
+
+bool Json::IsGood() const { return is_good_; }
 
 JsonFile::JsonFile(const char *file_path) : file_{file_path} {}
 
@@ -217,7 +274,7 @@ bool JsonFile::Open() {
   if (file_.Open()) {
     std::vector<unsigned char> json_string = file_.Read();
     json_.Parse(((char *)json_string.data()), json_string.size());
-    return true;
+    return json_.IsGood();
   } else
     return false;
 }

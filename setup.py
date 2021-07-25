@@ -5,7 +5,7 @@ deps = dependency.Dependency()
 
 vesta = {
     "src_path": """\
-https://github.com/francisjsun/vesta.git@dev"""}
+git@github.com:francisjsun/vesta.git?dev"""}
 deps.add(dependency.DepInfo(vesta), dependency.fs_trivial_git_proj_dep_sln)
 
 

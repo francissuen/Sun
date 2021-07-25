@@ -50,12 +50,69 @@ class Json {
   using Array = VectorValue;
 
  private:
+  /** 6 structural tokens */
+  static constexpr char token_lsb = u8"["[0];
+  static constexpr char token_lcb = u8"{"[0];
+  static constexpr char token_rsb = u8"]"[0];
+  static constexpr char token_rcb = u8"}"[0];
+  static constexpr char token_col = u8":"[0];
+  static constexpr char token_com = u8","[0];
+
+  /** 3 literal name tokens */
+  static constexpr char const *token_true = u8"true";
+  static constexpr char token_t = u8"t"[0];
+  static constexpr char const *token_false = u8"false";
+  static constexpr char token_f = u8"f"[0];
+  static constexpr char const *token_null = u8"null";
+  static constexpr char token_n = u8"n"[0];
+
+  /** insignificant whitespace */
+  static constexpr char token_space = u8" "[0];
+  static constexpr char token_tab = u8"\t"[0];
+  static constexpr char token_lf = u8"\n"[0];
+  static constexpr char token_cr = u8"\r"[0];
+
+  /** quote token */
+  static constexpr char token_quote = u8"\""[0];
+  static constexpr char token_backslash = u8"\\"[0];
+
+ private:
   class Deserializer {
    public:
-    Deserializer(const char *&input, std::size_t &size);
+    class Input {
+     public:
+      Input(const char *input);
+
+     public:
+      char operator*() const;
+
+      Input &operator++();
+
+      Input &operator+=(const std::size_t offset);
+
+      const char *Get() const;
+
+      Input operator-(const std::size_t offset);
+
+      std::size_t GetLineNumber() const;
+      std::size_t GetColumnNumber() const;
+      std::string GetFormatedLineColumnNumberString() const;
+
+     private:
+      const char *input_;
+      std::size_t line_number_{0u};
+      std::size_t column_number_{0u};
+
+     private:
+      inline void AdvanceByOne();
+    };
+
+   public:
+    Deserializer(Input &input, std::size_t &size);
 
    public:
     Dictionary Execute();
+    bool IsGood() const;
 
    private:
     /** Seek token */
@@ -65,7 +122,7 @@ class Json {
       for (; i < size_; i++) {
         if (*input_ == token) break;
 
-        input_++;
+        ++input_;
       }
 
       size_ -= i;
@@ -82,7 +139,7 @@ class Json {
         else if (*input_ == token)
           break;
 
-        input_++;
+        ++input_;
       }
 
       size_ -= i;
@@ -109,42 +166,16 @@ class Json {
     VectorValue ReadArray();
 
    private:
-    const char *&input_;  // use reference because it needs to
-                          // be called recursively
+    Input &input_;  // use reference because it needs to
+                    // be called recursively
     std::size_t &size_;
+    bool is_good_{true};
   };
 
  public:
   friend std::string to_string(const Json &value) {
     return string::ToString(value.values_);
   }
-
- private:
-  /** 6 structural tokens */
-  static constexpr char token_lsb = u8"["[0];
-  static constexpr char token_lcb = u8"{"[0];
-  static constexpr char token_rsb = u8"]"[0];
-  static constexpr char token_rcb = u8"}"[0];
-  static constexpr char token_col = u8":"[0];
-  static constexpr char token_com = u8","[0];
-
-  /** 3 literal name tokens */
-  static constexpr char const *token_true = u8"true";
-  static constexpr char token_t = u8"t"[0];
-  static constexpr char const *token_false = u8"false";
-  static constexpr char token_f = u8"f"[0];
-  static constexpr char const *token_null = u8"null";
-  static constexpr char token_n = u8"n"[0];
-
-  /** insignificant whitespace */
-  static constexpr char token_space = u8" "[0];
-  static constexpr char token_tab = u8"\t"[0];
-  static constexpr char token_lf = u8"\n"[0];
-  static constexpr char token_cr = u8"\r"[0];
-
-  /** quote token */
-  static constexpr char token_quote = u8"\""[0];
-  static constexpr char token_backslash = u8"\\"[0];
 
 #define FS_SUN_JSON_GET_VALUE_(value_type)                      \
   bool has_succeeded{false};                                    \
@@ -310,11 +341,13 @@ class Json {
 
  public:
   void Parse(const char *json_string, std::size_t size);
+  bool IsGood() const;
   const Dictionary &GetValues() const &;
   Dictionary GetValues() &&;
 
  protected:
   Dictionary values_;
+  bool is_good_{true};
 };
 
 template <>
@@ -339,17 +372,30 @@ class JsonFile {
     fs::sun::JsonFile jf(file_path);                            \
     if (jf.Open()) {                                            \
       return ParseFromJsonDictionary(jf.GetJson().GetValues()); \
-    } else                                                      \
+    } else {                                                    \
+      FS_SUN_ERROR("Failed to Open JsonFile for file_path: " +  \
+                   std::string(file_path));                     \
       return false;                                             \
+    }                                                           \
   }                                                             \
   inline bool ParseFromJson(const char *json_string) {          \
     fs::sun::Json j(json_string);                               \
-    return ParseFromJsonDictionary(j.GetValues());              \
+    if (j.IsGood())                                             \
+      return ParseFromJsonDictionary(j.GetValues());            \
+    else {                                                      \
+      FS_SUN_ERROR("Failed to parse json string");              \
+      return false;                                             \
+    }                                                           \
   }                                                             \
   inline bool ParseFromJson(const char *json_string,            \
                             const std::size_t size) {           \
     fs::sun::Json j(json_string, size);                         \
-    return ParseFromJsonDictionary(j.GetValues());              \
+    if (j.IsGood())                                             \
+      return ParseFromJsonDictionary(j.GetValues());            \
+    else {                                                      \
+      FS_SUN_ERROR("Failed to parse json string");              \
+      return false;                                             \
+    }                                                           \
   }                                                             \
   inline bool ParseFromJson(const fs::sun::Json &j) {           \
     return ParseFromJsonDictionary(j.GetValues());              \
