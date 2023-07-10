@@ -3,6 +3,7 @@
 #ifndef FS_SUN_FILESYSTEM_H
 #define FS_SUN_FILESYSTEM_H
 
+#include <filesystem>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -10,10 +11,17 @@
 #include "config.h"
 #include "os.h"
 #include "singleton.h"
+
 FS_SUN_NS_BEGIN
 
 class FS_SUN_API Filesystem {
   FS_SUN_SINGLETON(Filesystem)
+ private:
+  Filesystem();
+  ~Filesystem();
+
+ private:
+  class Meta;
 
  public:
   /**
@@ -24,17 +32,27 @@ class FS_SUN_API Filesystem {
    * returned.
    */
   std::vector<std::string> GetFilesInDir(
-      const char* dir, const std::unordered_set<std::string>& suffixes,
+      const char* dir, const std::unordered_set<std::string>& extensions,
       const bool recursively = false) const;
 
+  template <typename TFunc>
+  void IterateDir(const char* dir, const TFunc& func,
+                  const bool recursively = false) const {
+    const auto& iterating = [&func]<typename TDirItr>(const TDirItr& dir_itr) {
+      for (const auto& d_e : dir_itr) {
+        func(d_e);
+      }
+    };
+    recursively ? iterating(std::filesystem::recursive_directory_iterator(dir))
+                : iterating(std::filesystem::directory_iterator(dir));
+  }
   const std::string& GetExecutablePath() const;
   const std::string& GetExecutableDir() const;
   std::string GetWorkingDir() const;
   std::string GetAbsolutePath(const char* path) const;
 
  private:
-  std::string executable_path_;
-  std::string executable_dir_;
+  Meta* meta_{nullptr};
 };
 
 FS_SUN_NS_END

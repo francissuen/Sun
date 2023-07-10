@@ -356,6 +356,12 @@ struct SizeOf {
 #define FS_SUN_UNUSED_(var) (void)var;
 #define FS_SUN_UNUSED(...) FS_SUN_CALL_FOR_EACH(FS_SUN_UNUSED_, __VA_ARGS__)
 
+#define FS_SUN_DEL_PTR(ptr) \
+  {                         \
+    delete ptr;             \
+    ptr = nullptr;          \
+  }
+
 FS_SUN_NS_END
 
 #endif  // FS_SUN_UTILITY_H

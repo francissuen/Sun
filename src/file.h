@@ -7,31 +7,33 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
 #include "ns.h"
 
 FS_SUN_NS_BEGIN
 
-class File {
+class FS_SUN_API File {
+ private:
+  class Meta;
+
  public:
   File(const char* file_path);
 
  public:
   ~File();
   File(const File&) = delete;
-  File(File&& file);
   File& operator=(const File&) = delete;
-  File& operator=(File&&);
 
  public:
   bool Open(const char* open_mode = "r");
   bool Close();
-  std::string GetPath() const;
+  const std::string& GetPath() const;
   std::size_t GetSize() const;
   std::vector<unsigned char> Read();
   bool Read(unsigned char* buffer, const std::size_t size);
 
  private:
-  std::string path_;
+  Meta* meta_;
   std::FILE* file_;
   std::size_t size_{0u};
 };

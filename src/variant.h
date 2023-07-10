@@ -3,6 +3,10 @@
 #ifndef FS_SUN_VARIANT_H
 #define FS_SUN_VARIANT_H
 
+#if __cplusplus >= 201703L
+#include <variant>
+#else
+
 #include <cstring>
 #include <type_traits>
 #include <typeinfo>
@@ -13,7 +17,6 @@
 #include "utility.h"
 
 FS_SUN_NS_BEGIN
-
 template <typename... Ts>
 class Variant;
 
@@ -108,17 +111,28 @@ class Variant {
         other.index_, this, std::move(other));
   }
 
-  template <typename T,
-            typename = typename std::enable_if<IsType<typename remove_cvref<
-                T>::type>::template In<Ts...>::value>::type>
-  Variant(T &&other)
+ private:
+  class RightCtorTag {};
+  class WrongCtorTag {};
+  template <typename T>
+  class DetermineTag {
+   public:
+    using Tag = std::conditional<
+        IsType<typename remove_cvref<T>::type>::template In<Ts...>::value,
+        RightCtorTag, WrongCtorTag>::type;
+  };
+
+  template <typename T>
+  Variant(T &&other, RightCtorTag)
       : index_(IndexOf<typename remove_cvref<T>::type>::template In<
                Ts...>::value) {
-    static_assert(
-        IsType<typename remove_cvref<T>::type>::template In<Ts...>::value,
-        "Invalid type T.");
     new (&(raw_data_)) typename remove_cvref<T>::type(std::forward<T>(other));
   }
+
+ public:
+  template <typename T>
+  Variant(T &&other)
+      : Variant(std::forward<T>(other), typename DetermineTag<T>::Tag{}) {}
 
   ~Variant() {
     Invoke<variant::Dtor>::template ForTypeIn<Ts...>::With2(index_, this);
@@ -135,7 +149,7 @@ class Variant {
   }
 
   template <typename T, typename... TArgs>
-  T &Emplace(TArgs &&... args) {
+  T &Emplace(TArgs &&...args) {
     return operator=(T(std::forward<TArgs>(args)...));
   }
 
@@ -275,5 +289,7 @@ void ToString<T>::operator()(const Variant<Ts...> *src, std::string &ret) {
 }  // namespace variant
 
 FS_SUN_NS_END
+
+#endif
 
 #endif  // FS_SUN_VARIANT_H

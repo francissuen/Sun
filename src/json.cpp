@@ -4,7 +4,15 @@
 
 #include "file.h"
 
-using namespace fs::sun;
+FS_SUN_NS_BEGIN
+
+class Json::Meta {
+  friend class Json;
+  friend std::string to_string(const Json &value);
+  Meta() = default;
+  Meta(Json::Dictionary new_values) : values_{std::move(new_values)} {}
+  Json::Dictionary values_;
+};
 
 template <>
 const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value,
@@ -12,6 +20,8 @@ const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value,
   has_succeeded = true;
   return value;
 }
+
+Json::~Json() { FS_SUN_DEL_PTR(meta_) }
 
 // TODO Get*
 // const std::string &Json::Value::GetString() {
@@ -35,7 +45,7 @@ Json::Dictionary Json::Deserializer::Execute() {
     /** seek left quote of name */
     if (SeekToken<token_quote, token_rcb>()) {
       if (size_ != 0u) {
-        std::string name = ReadString().Get<std::string>();
+        std::string name = std::get<std::string>(ReadString());
         SeekToken<token_col>();
         PassCurrentToken<token_col>();
         if (size_ != 0u) {
@@ -88,8 +98,7 @@ void Json::Deserializer::AdvanceUntilSignificant() {
   }
 }
 
-const Json::Dictionary &Json::GetValues() const & { return values_; }
-Json::Dictionary Json::GetValues() && { return std::move(values_); }
+const Json::Dictionary &Json::GetValues() const { return meta_->values_; }
 
 Json::Deserializer::Input::Input(const char *input) : input_{input} {}
 
@@ -229,12 +238,17 @@ Json::Value Json::Deserializer::ReadValue() {
 
   const char cur_char = *input_;
   Value ret;
+
   if (cur_char == token_lsb)
-    ret = ReadArray();
+    ret = Value(ReadArray());
   else
     ret = ReadScalar();
 
   return ret;
+}
+
+std::string to_string(const Json &value) {
+  return string::ToString(value.meta_->values_);
 }
 
 bool Json::StringToBoolean(const std::string &str) {
@@ -248,21 +262,21 @@ bool Json::StringToBoolean(const std::string &str) {
   }
 }
 
-Json::Json() {}
+Json::Json() { meta_ = new Meta{}; }
 
 Json::Json(const char *json_string)
     : Json{json_string, std::strlen(json_string)} {}
 
-Json::Json(const char *json_string, std::size_t size) {
+Json::Json(const char *json_string, std::size_t size) : Json{} {
   Parse(json_string, size);
 }
 
-Json::Json(Dictionary values) : values_{std::move(values)} {}
+Json::Json(Dictionary values) : meta_{new Meta{std::move(values)}} {}
 
 void Json::Parse(const char *json_string, std::size_t size) {
   Deserializer::Input input{json_string};
   Deserializer d{input, size};
-  values_ = d.Execute();
+  meta_->values_ = d.Execute();
   is_good_ = d.IsGood();
 }
 
@@ -280,3 +294,5 @@ bool JsonFile::Open() {
 }
 
 const Json &JsonFile::GetJson() const { return json_; }
+
+FS_SUN_NS_END

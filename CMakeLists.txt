@@ -14,7 +14,7 @@ option(FS_SUN_STATIC_LIB "Build a static lib?" ON)
 
 if(FS_SUN_STATIC_LIB)
   add_library(${SUN} "")
-  target_compile_definitions(${SUN} PRIVATE FS_SUN_STATIC_LIB)
+  target_compile_definitions(${SUN} PUBLIC FS_SUN_STATIC_LIB)
 else()
   add_library(${SUN} SHARED "")
   target_compile_definitions(${SUN} PRIVATE FS_SUN_SHARED_LIB)

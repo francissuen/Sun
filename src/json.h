@@ -10,19 +10,19 @@
 #include <limits>
 #include <type_traits>
 #include <unordered_map>
+#include <variant>
 
 #include "deep_ptr.h"
 #include "file.h"
 #include "logger.h"
 #include "ns.h"
-#include "variant.h"
 
 FS_SUN_NS_BEGIN
 
 /**
  * \brief conforms to Standard ECMA-404
  */
-class Json {
+class FS_SUN_API Json {
  public:
   template <typename T>
   using TDictionary = std::unordered_map<std::string, T>;
@@ -32,12 +32,12 @@ class Json {
    * \note Use DeepPtr due to ScalarValue needs to be copyable
    */
   template <typename TValue>
-  using TScalarValue = Variant<std::string, DeepPtr<TDictionary<TValue>>>;
+  using TScalarValue = std::variant<std::string, DeepPtr<TDictionary<TValue>>>;
   template <typename TValue>
   using TVectorValue = std::vector<TScalarValue<TValue>>;
-  class Value : public Variant<TScalarValue<Value>, TVectorValue<Value>> {
+  class Value : public std::variant<TScalarValue<Value>, TVectorValue<Value>> {
    public:
-    using Variant<TScalarValue<Value>, TVectorValue<Value>>::Variant;
+    using std::variant<TScalarValue<Value>, TVectorValue<Value>>::variant;
 
    public:
     const std::string &GetString();
@@ -49,32 +49,34 @@ class Json {
   using Dictionary = TDictionary<Value>;
   using Array = VectorValue;
 
+  class Meta;
+
  private:
   /** 6 structural tokens */
-  static constexpr char token_lsb = u8"["[0];
-  static constexpr char token_lcb = u8"{"[0];
-  static constexpr char token_rsb = u8"]"[0];
-  static constexpr char token_rcb = u8"}"[0];
-  static constexpr char token_col = u8":"[0];
-  static constexpr char token_com = u8","[0];
+  static constexpr char token_lsb = '[';
+  static constexpr char token_lcb = '{';
+  static constexpr char token_rsb = ']';
+  static constexpr char token_rcb = '}';
+  static constexpr char token_col = ':';
+  static constexpr char token_com = ',';
 
   /** 3 literal name tokens */
-  static constexpr char const *token_true = u8"true";
-  static constexpr char token_t = u8"t"[0];
-  static constexpr char const *token_false = u8"false";
-  static constexpr char token_f = u8"f"[0];
-  static constexpr char const *token_null = u8"null";
-  static constexpr char token_n = u8"n"[0];
+  static constexpr char const *token_true = "true";
+  static constexpr char token_t = 't';
+  static constexpr char const *token_false = "false";
+  static constexpr char token_f = 'f';
+  static constexpr char const *token_null = "null";
+  static constexpr char token_n = 'n';
 
   /** insignificant whitespace */
-  static constexpr char token_space = u8" "[0];
-  static constexpr char token_tab = u8"\t"[0];
-  static constexpr char token_lf = u8"\n"[0];
-  static constexpr char token_cr = u8"\r"[0];
+  static constexpr char token_space = ' ';
+  static constexpr char token_tab = '\t';
+  static constexpr char token_lf = '\n';
+  static constexpr char token_cr = '\r';
 
   /** quote token */
-  static constexpr char token_quote = u8"\""[0];
-  static constexpr char token_backslash = u8"\\"[0];
+  static constexpr char token_quote = '\"';
+  static constexpr char token_backslash = '\\';
 
  private:
   class Deserializer {
@@ -173,16 +175,31 @@ class Json {
   };
 
  public:
-  friend std::string to_string(const Json &value) {
-    return string::ToString(value.values_);
+  friend std::string to_string(const Json::ScalarValue &value) {
+    // TODO
+    return std::visit(
+        []<typename T>(T &&t) -> std::string {
+          return string::ToString(std::forward<T>(t));
+        },
+        value);
   }
+  friend std::string to_string(const Json::Value &value) {
+    return std::visit(
+        []<typename T>(T &&t) -> std::string {
+          return string::ToString(std::forward<T>(t));
+        },
+        value);
+  }
+
+  friend std::string to_string(const Json &value);
 
 #define FS_SUN_JSON_GET_VALUE_(value_type)                      \
   bool has_succeeded{false};                                    \
   const ScalarValue &sv = GetScalarValue(value, has_succeeded); \
   if (!has_succeeded) return false;                             \
-  if (!(sv.Is<value_type>())) return false;                     \
-  const value_type &rv = sv.RawGet<value_type>();
+  auto ptr_value = std::get_if<value_type>(&sv);                \
+  if (ptr_value == nullptr) return false;                       \
+  const value_type &rv = *ptr_value;
 
  public:
   template <typename TValue, typename TRet>
@@ -310,15 +327,17 @@ class Json {
   template <typename TValue>
   static const ScalarValue &GetScalarValue(const TValue &value,
                                            bool &has_succeeded) {
-    has_succeeded = value.template Is<ScalarValue>();
-    return value.template Get<ScalarValue>();
+    auto ptr_scalar_value = std::get_if<ScalarValue>(&value);
+    has_succeeded = ptr_scalar_value != nullptr ? true : false;
+    return *ptr_scalar_value;
   }
 
   template <typename TValue, typename TRet>
   static bool UpdateValue(const TValue &value, TRet *ret,
                           const std::size_t array_size) {
-    if (!(value.template Is<VectorValue>())) return false;
-    const auto &vector_value = value.template RawGet<VectorValue>();
+    auto ptr_vector_value = std::get_if<VectorValue>(&value);
+    if (ptr_vector_value == nullptr) return false;
+    auto &vector_value = *ptr_vector_value;
     const std::size_t value_size = vector_value.size();
     const std::size_t min_size =
         array_size >= value_size ? value_size : array_size;
@@ -339,22 +358,23 @@ class Json {
 
   Json(Dictionary values);
 
+  ~Json();
+
  public:
   void Parse(const char *json_string, std::size_t size);
   bool IsGood() const;
-  const Dictionary &GetValues() const &;
-  Dictionary GetValues() &&;
+  const Dictionary &GetValues() const;
 
  protected:
-  Dictionary values_;
+  Meta *meta_{nullptr};
   bool is_good_{true};
 };
 
 template <>
-const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value,
-                                              bool &has_succeeded);
+FS_SUN_API const Json::ScalarValue &Json::GetScalarValue(
+    const ScalarValue &value, bool &has_succeeded);
 
-class JsonFile {
+class FS_SUN_API JsonFile {
  public:
   JsonFile(const char *file_path);
 

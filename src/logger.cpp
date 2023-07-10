@@ -5,8 +5,6 @@
 #include "time.h"
 using namespace fs::sun;
 
-std::mutex logger::TermFile::mtx_;
-
 /** ref https://en.wikipedia.org/wiki/ANSI_escape_code#Windows_and_DOS */
 logger::TermFile::TermFile()
     : color_{
@@ -31,7 +29,6 @@ logger::TermFile::TermFile()
 
 logger::TermFile::~TermFile() {
   {
-    std::lock_guard<std::mutex> lck{mtx_};
 #ifdef _MSC_VER
     ::SetConsoleTextAttribute(console_, _preConsoleAttrib.wAttributes);
 #else
@@ -44,7 +41,6 @@ void logger::TermFile::LogRoutine(const std::string& tag,
                                   const std::string& msg,
                                   const Severity s) const {
   {
-    std::lock_guard<std::mutex> lck{mtx_};
 #ifdef _MSC_VER
     ::SetConsoleTextAttribute(console_, color_[s]);
 #else

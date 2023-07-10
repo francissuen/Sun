@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ns.h"
+#include "string.h"
 
 FS_SUN_NS_BEGIN
 
@@ -20,7 +21,7 @@ class DeepPtr {
   friend std::string to_string(const DeepPtr &ptr) {
     using std::to_string;
     if (ptr != nullptr)
-      return to_string(*ptr);
+      return string::ToString(*ptr);
     else
       return "nullptr";
   }
@@ -35,7 +36,7 @@ class DeepPtr {
 
  public:
   template <typename... TArgs>
-  DeepPtr(TArgs &&... args) : ptr_{new T{std::forward<TArgs>(args)...}} {}
+  DeepPtr(TArgs &&...args) : ptr_{new T{std::forward<TArgs>(args)...}} {}
 
  public:
   DeepPtr(const DeepPtr &ptr) : ptr_{ptr != nullptr ? new T(*ptr) : nullptr} {}
@@ -44,9 +45,13 @@ class DeepPtr {
   DeepPtr &operator=(const DeepPtr &rhs) {
     DeepPtr temp(rhs);
     swap(*this, temp);
+    return *this;
   }
 
-  DeepPtr &operator=(DeepPtr &&rhs) { swap(*this, rhs); }
+  DeepPtr &operator=(DeepPtr &&rhs) {
+    swap(*this, rhs);
+    return *this;
+  }
 
   const T &operator*() const { return *ptr_; }
 

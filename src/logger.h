@@ -28,9 +28,6 @@ enum Severity : std::uint8_t {
 
 /** terminal file */
 class FS_SUN_API TermFile {
- private:
-  static std::mutex mtx_;
-
  public:
   TermFile();
 
