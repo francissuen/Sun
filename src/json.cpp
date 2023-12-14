@@ -6,23 +6,6 @@
 
 FS_SUN_NS_BEGIN
 
-class Json::Meta {
-  friend class Json;
-  friend std::string to_string(const Json &value);
-  Meta() = default;
-  Meta(Json::Dictionary new_values) : values_{std::move(new_values)} {}
-  Json::Dictionary values_;
-};
-
-template <>
-const Json::ScalarValue &Json::GetScalarValue(const ScalarValue &value,
-                                              bool &has_succeeded) {
-  has_succeeded = true;
-  return value;
-}
-
-Json::~Json() { FS_SUN_DEL_PTR(meta_) }
-
 // TODO Get*
 // const std::string &Json::Value::GetString() {
 //   if (Is<std::string>())
@@ -98,7 +81,7 @@ void Json::Deserializer::AdvanceUntilSignificant() {
   }
 }
 
-const Json::Dictionary &Json::GetValues() const { return meta_->values_; }
+const Json::Dictionary &Json::GetValues() const { return values_; }
 
 Json::Deserializer::Input::Input(const char *input) : input_{input} {}
 
@@ -179,7 +162,7 @@ Json::ScalarValue Json::Deserializer::ReadObject() {
   input_ = d.input_;
   size_ = d.size_;
 
-  return DeepPtr<Dictionary>(std::move(values));
+  return DeepPtr<Dictionary>{std::move(values)};
 }
 
 Json::ScalarValue Json::Deserializer::ReadOthers() {
@@ -240,7 +223,7 @@ Json::Value Json::Deserializer::ReadValue() {
   Value ret;
 
   if (cur_char == token_lsb)
-    ret = Value(ReadArray());
+    ret = ReadArray();
   else
     ret = ReadScalar();
 
@@ -248,7 +231,7 @@ Json::Value Json::Deserializer::ReadValue() {
 }
 
 std::string to_string(const Json &value) {
-  return string::ToString(value.meta_->values_);
+  return string::ToString(value.values_);
 }
 
 bool Json::StringToBoolean(const std::string &str) {
@@ -262,8 +245,6 @@ bool Json::StringToBoolean(const std::string &str) {
   }
 }
 
-Json::Json() { meta_ = new Meta{}; }
-
 Json::Json(const char *json_string)
     : Json{json_string, std::strlen(json_string)} {}
 
@@ -271,12 +252,12 @@ Json::Json(const char *json_string, std::size_t size) : Json{} {
   Parse(json_string, size);
 }
 
-Json::Json(Dictionary values) : meta_{new Meta{std::move(values)}} {}
+Json::Json(Dictionary values) : values_{std::move(values)} {}
 
 void Json::Parse(const char *json_string, std::size_t size) {
   Deserializer::Input input{json_string};
   Deserializer d{input, size};
-  meta_->values_ = d.Execute();
+  values_ = d.Execute();
   is_good_ = d.IsGood();
 }
 

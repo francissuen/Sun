@@ -10,7 +10,7 @@
 
 #ifdef FS_VESTA_OS_WINDOWS
 #include <Windows.h>
-#elif defined(FS_VESTA_OS_LINUX)
+#elif defined(FS_VESTA_OS_UNIX)
 #include <unistd.h>
 #endif
 
@@ -20,14 +20,6 @@
 using namespace fs::sun;
 
 #define FS_SUN_FILESYSTEM_MAX_PATH 128
-
-class Filesystem::Meta {
-  friend class Filesystem;
-
- private:
-  std::string executable_path_;
-  std::string executable_dir_;
-};
 
 Filesystem::Filesystem() {
   char path[FS_SUN_FILESYSTEM_MAX_PATH] = {'\0'};
@@ -40,12 +32,9 @@ Filesystem::Filesystem() {
 #else
   // TODO
 #endif
-  meta_ = new Meta();
-  meta_->executable_path_ = path;
-  meta_->executable_dir_ = string::DirName(meta_->executable_path_.c_str());
+  executable_path_ = path;
+  executable_dir_ = string::DirName(executable_path_.c_str());
 }
-
-Filesystem::~Filesystem(){FS_SUN_DEL_PTR(meta_)}
 
 std::vector<std::string> Filesystem::GetFilesInDir(
     const char* dir, const std::unordered_set<std::string>& extensions,
@@ -73,10 +62,10 @@ std::vector<std::string> Filesystem::GetFilesInDir(
 }
 
 const std::string& Filesystem::GetExecutablePath() const {
-  return meta_->executable_path_;
+  return executable_path_;
 }
 const std::string& Filesystem::GetExecutableDir() const {
-  return meta_->executable_dir_;
+  return executable_dir_;
 }
 std::string Filesystem::GetWorkingDir() const {
   return std::filesystem::current_path().string();

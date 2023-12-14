@@ -18,10 +18,6 @@ class FS_SUN_API Filesystem {
   FS_SUN_SINGLETON(Filesystem)
  private:
   Filesystem();
-  ~Filesystem();
-
- private:
-  class Meta;
 
  public:
   /**
@@ -38,7 +34,7 @@ class FS_SUN_API Filesystem {
   template <typename TFunc>
   void IterateDir(const char* dir, const TFunc& func,
                   const bool recursively = false) const {
-    const auto& iterating = [&func]<typename TDirItr>(const TDirItr& dir_itr) {
+    const auto& iterating = [&func](const auto& dir_itr) {
       for (const auto& d_e : dir_itr) {
         func(d_e);
       }
@@ -52,7 +48,8 @@ class FS_SUN_API Filesystem {
   std::string GetAbsolutePath(const char* path) const;
 
  private:
-  Meta* meta_{nullptr};
+  std::string executable_path_;
+  std::string executable_dir_;
 };
 
 FS_SUN_NS_END

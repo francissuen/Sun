@@ -23,7 +23,8 @@ std::string time::LocalTime() {
 }
 
 std::uint64_t time::Timestamp() {
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
-             std::chrono::system_clock::now().time_since_epoch())
-      .count();
+  return static_cast<std::uint64_t>(
+      std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch())
+          .count());
 }

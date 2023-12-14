@@ -1,6 +1,6 @@
 # Copyright (C) 2020 Francis Sun, all rights reserved.
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.6)
 
 set(SUN "sun")
 project(${SUN} VERSION 0.1.0 LANGUAGES CXX)
@@ -16,8 +16,9 @@ if(FS_SUN_STATIC_LIB)
   add_library(${SUN} "")
   target_compile_definitions(${SUN} PUBLIC FS_SUN_STATIC_LIB)
 else()
-  add_library(${SUN} SHARED "")
-  target_compile_definitions(${SUN} PRIVATE FS_SUN_SHARED_LIB)
+  # add_library(${SUN} SHARED "")
+  # target_compile_definitions(${SUN} PRIVATE FS_SUN_SHARED_LIB)
+  message(FATAL_ERROR "unsupported yet!")
 endif()
 
 add_subdirectory(src)

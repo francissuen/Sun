@@ -2,7 +2,7 @@ Project Sun - A C++ utils library.
 ===========
 
 ## Features ##
-1. All features are compatiable with **C++20**.
+1. All features are compatiable with **C++17**.
 2. Cross-platform supported(including linux, macOS and windows).
 3. **Async**, unlike std::async, it wraps the function into a coresponding async  
 verison and has guarantee of running in a thread-pool.

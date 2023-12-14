@@ -9,7 +9,6 @@
 #include "src/json.h"
 #include "src/logger.h"
 #include "src/string.h"
-#include "src/variant.h"
 
 using namespace fs::sun;
 using namespace std::chrono_literals;
@@ -117,14 +116,6 @@ int main(int argc, char **argv) {
   std::unique_ptr<C> c = f.Create<C>(C::name, 0);
   f.Unregister(B::name);
   f.Unregister(C::name);
-
-  Variant<int, bool, std::string> v;
-  v = 1;
-  logger.Log(string::ToString(v.Get<int>()), logger::S_INFO);
-  v = false;
-  logger.Log(string::ToString(v.Get<bool>()), logger::S_INFO);
-  v = std::string("a");
-  logger.Log(string::ToString(v), logger::S_INFO);
 
   if (argc > 1) {
     logger.Log(argv[1], logger::S_INFO);

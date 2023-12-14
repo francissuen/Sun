@@ -19,7 +19,6 @@ class DeepPtr {
   }
 
   friend std::string to_string(const DeepPtr &ptr) {
-    using std::to_string;
     if (ptr != nullptr)
       return string::ToString(*ptr);
     else
@@ -42,13 +41,8 @@ class DeepPtr {
   DeepPtr(const DeepPtr &ptr) : ptr_{ptr != nullptr ? new T(*ptr) : nullptr} {}
 
   DeepPtr(DeepPtr &&ptr) : ptr_{std::move(ptr.ptr_)} {}
-  DeepPtr &operator=(const DeepPtr &rhs) {
-    DeepPtr temp(rhs);
-    swap(*this, temp);
-    return *this;
-  }
 
-  DeepPtr &operator=(DeepPtr &&rhs) {
+  DeepPtr &operator=(DeepPtr rhs) {
     swap(*this, rhs);
     return *this;
   }

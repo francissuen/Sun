@@ -91,13 +91,6 @@ FS_SUN_STRING_DEFINE_TO_NUMBER(long double, ld)
 
 #undef FS_SUN_STRING_DEFINE_TO_NUMBER
 
-template <typename T>
-std::string ToString(const T& value) {
-  using std::to_string;
-
-  return to_string(value);
-}
-
 inline std::string ToString(const char* value) {
   return value != nullptr ? value : "";
 }
@@ -108,13 +101,8 @@ inline std::string ToString(const bool& value) {
   return value ? "true" : "false";
 }
 
-template <typename T, typename TDeleter>
-std::string ToString(const std::unique_ptr<T, TDeleter>& value) {
-  if (value != nullptr) {
-    return ToString(*value);
-  } else
-    return "nullptr";
-}
+template <typename T>
+std::string ToString(const T&);
 
 // map
 template <typename TOrderedOrUnorderedMap>
@@ -166,6 +154,21 @@ std::string ToString(const TElement (&value)[N]) {
 template <typename TElement, std::size_t N>
 std::string ToString(const std::array<TElement, N>& value) {
   return ArrayToString(value.data(), N);
+}
+
+template <typename T, typename TDeleter>
+std::string ToString(const std::unique_ptr<T, TDeleter>& value) {
+  if (value != nullptr) {
+    return ToString(*value);
+  } else
+    return "nullptr";
+}
+
+template <typename T>
+std::string ToString(const T& value) {
+  using std::to_string;
+
+  return to_string(value);
 }
 
 }  // namespace string

@@ -13,9 +13,6 @@
 FS_SUN_NS_BEGIN
 
 class FS_SUN_API File {
- private:
-  class Meta;
-
  public:
   File(const char* file_path);
 
@@ -33,7 +30,7 @@ class FS_SUN_API File {
   bool Read(unsigned char* buffer, const std::size_t size);
 
  private:
-  Meta* meta_;
+  std::string path_;
   std::FILE* file_;
   std::size_t size_{0u};
 };

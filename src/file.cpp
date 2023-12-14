@@ -7,45 +7,26 @@
 
 using namespace fs::sun;
 
-class File::Meta {
-  friend class File;
-
- private:
-  Meta(const char* file_path) {
-    if (file_path != nullptr) {
-      path_ = file_path;
-    }
-  }
-
- private:
-  std::string path_;
-};
-
-File::File(const char* file_path)
-    : meta_{new Meta{file_path}}, file_{nullptr} {
-  auto& path = meta_->path_;
-  if (path != "") {
-    if (path[path.size() - 1] == '/') {
+File::File(const char* file_path) : path_{file_path}, file_{nullptr} {
+  if (path_ != "") {
+    if (path_[path_.size() - 1] == '/') {
       FS_SUN_ERROR(std::string("file_path can't be a folder: ") + file_path);
-      path = "";
+      path_ = "";
     }
   }
 }
 
-File::~File() {
-  Close();
-  FS_SUN_DEL_PTR(meta_)
-}
+File::~File() { Close(); }
 
 bool File::Open(const char* open_mode) {
   if (file_ == nullptr) {
-    file_ = std::fopen(meta_->path_.c_str(), open_mode);
+    file_ = std::fopen(path_.c_str(), open_mode);
     if (file_ != nullptr) {
       if (std::fseek(file_, 0, SEEK_END) == 0) {
         const long size = std::ftell(file_);
         if (size != -1l) {
           if (std::fseek(file_, 0, SEEK_SET) == 0) {
-            size_ = size;
+            size_ = static_cast<std::size_t>(size);
             return true;
           }
         }
@@ -65,7 +46,7 @@ bool File::Close() {
   return false;
 }
 
-const std::string& File::GetPath() const { return meta_->path_; }
+const std::string& File::GetPath() const { return path_; }
 
 std::size_t File::GetSize() const { return size_; }
 

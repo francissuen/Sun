@@ -33,11 +33,20 @@ class FS_SUN_API Json {
    */
   template <typename TValue>
   using TScalarValue = std::variant<std::string, DeepPtr<TDictionary<TValue>>>;
+
+  template <typename TValue>
+  friend std::string to_string(const TScalarValue<TValue> &scalar_value) {
+    return std::visit(
+        Overloaded{[](const auto &sv) { return string::ToString(sv); }},
+        scalar_value);
+  }
+
   template <typename TValue>
   using TVectorValue = std::vector<TScalarValue<TValue>>;
   class Value : public std::variant<TScalarValue<Value>, TVectorValue<Value>> {
    public:
-    using std::variant<TScalarValue<Value>, TVectorValue<Value>>::variant;
+    using BaseType = std::variant<TScalarValue<Value>, TVectorValue<Value>>;
+    using BaseType::variant;
 
    public:
     const std::string &GetString();
@@ -47,9 +56,6 @@ class FS_SUN_API Json {
   using ScalarValue = TScalarValue<Value>;
   using VectorValue = TVectorValue<Value>;
   using Dictionary = TDictionary<Value>;
-  using Array = VectorValue;
-
-  class Meta;
 
  private:
   /** 6 structural tokens */
@@ -175,20 +181,11 @@ class FS_SUN_API Json {
   };
 
  public:
-  friend std::string to_string(const Json::ScalarValue &value) {
-    // TODO
-    return std::visit(
-        []<typename T>(T &&t) -> std::string {
-          return string::ToString(std::forward<T>(t));
-        },
-        value);
-  }
   friend std::string to_string(const Json::Value &value) {
-    return std::visit(
-        []<typename T>(T &&t) -> std::string {
-          return string::ToString(std::forward<T>(t));
-        },
-        value);
+    return std::visit(Overloaded{[](const auto &v) -> std::string {
+                        return string::ToString(v);
+                      }},
+                      static_cast<const Value::BaseType &>(value));
   }
 
   friend std::string to_string(const Json &value);
@@ -202,7 +199,9 @@ class FS_SUN_API Json {
   const value_type &rv = *ptr_value;
 
  public:
-  template <typename TValue, typename TRet>
+  template <typename TValue,
+            typename TRet>  // TValue should be template argument, since it
+                            // could be Value or ScalarValue
   static typename std::enable_if<std::is_class<TRet>::value, bool>::type
   UpdateValue(const TValue &value, TRet &ret) {
     FS_SUN_JSON_GET_VALUE_(DeepPtr<Dictionary>);
@@ -297,52 +296,49 @@ class FS_SUN_API Json {
   /* array type */
   template <typename TValue, typename TRet>
   static bool UpdateValue(const TValue &value, std::vector<TRet> &ret) {
-    if (!value.template Is<VectorValue>()) return false;
-    const auto &vector_value = value.template RawGet<VectorValue>();
-    const std::size_t value_size = vector_value.size();
-
-    for (std::size_t i = 0; i < value_size; i++) {
-      TRet tmp_ret{};
-      if (!UpdateValue(vector_value[i], tmp_ret)) {
-        FS_SUN_ERROR("Failed to UpdateValue for std::vector at index: " +
-                     string::ToString(i));
-        return false;
-      }
-      ret.push_back(std::move(tmp_ret));
-    }
-    return true;
+    const VectorValue *ptr_v_value = std::get_if<VectorValue>(&value);
+    if (ptr_v_value == nullptr) return false;
+    ret.resize(ptr_v_value->size());
+    return UpdateVectorValue(*ptr_v_value, ret.data(), ret.size());
   }
 
   template <typename TValue, typename TRet, std::size_t N>
   static bool UpdateValue(const TValue &value, TRet (&ret)[N]) {
-    return UpdateValue(value, &ret[0], N);
+    const VectorValue *ptr_v_value = std::get_if<VectorValue>(&value);
+    return ptr_v_value != nullptr ? UpdateVectorValue(*ptr_v_value, ret, N)
+                                  : false;
   }
 
   template <typename TValue, typename TRet, std::size_t N>
   static bool UpdateValue(const TValue &value, std::array<TRet, N> &ret) {
-    return UpdateValue(value, ret.data(), N);
+    const VectorValue *ptr_v_value = std::get_if<VectorValue>(&value);
+    return ptr_v_value != nullptr
+               ? UpdateVectorValue(*ptr_v_value, ret.data(), N)
+               : false;
   }
 
  private:
-  template <typename TValue>
-  static const ScalarValue &GetScalarValue(const TValue &value,
+  static const ScalarValue &GetScalarValue(const Value &value,
                                            bool &has_succeeded) {
     auto ptr_scalar_value = std::get_if<ScalarValue>(&value);
     has_succeeded = ptr_scalar_value != nullptr ? true : false;
     return *ptr_scalar_value;
   }
 
-  template <typename TValue, typename TRet>
-  static bool UpdateValue(const TValue &value, TRet *ret,
-                          const std::size_t array_size) {
-    auto ptr_vector_value = std::get_if<VectorValue>(&value);
-    if (ptr_vector_value == nullptr) return false;
-    auto &vector_value = *ptr_vector_value;
-    const std::size_t value_size = vector_value.size();
+  static const ScalarValue &GetScalarValue(const ScalarValue &s_value,
+                                           bool &has_succeeded) {
+    has_succeeded = true;
+    return s_value;
+  }
+
+  template <typename TRet>
+  static bool UpdateVectorValue(const VectorValue &v_value, TRet *ret,
+                                const std::size_t ret_array_size) {
+    const std::size_t value_size = v_value.size();
     const std::size_t min_size =
-        array_size >= value_size ? value_size : array_size;
+        ret_array_size >= value_size ? value_size : ret_array_size;
     for (std::size_t i = 0; i < min_size; i++) {
-      if (!UpdateValue(vector_value[i], ret[i])) {
+      if (!UpdateValue(v_value[i], ret[i])) {
         FS_SUN_ERROR("Failed to UpdateValue for array at index: " +
                      string::ToString(i));
         return false;
@@ -352,13 +348,11 @@ class FS_SUN_API Json {
   }
 
  public:
-  Json();
+  Json() = default;
   Json(const char *json_string);
   Json(const char *json_string, std::size_t size);
 
   Json(Dictionary values);
-
-  ~Json();
 
  public:
   void Parse(const char *json_string, std::size_t size);
@@ -366,13 +360,9 @@ class FS_SUN_API Json {
   const Dictionary &GetValues() const;
 
  protected:
-  Meta *meta_{nullptr};
+  Dictionary values_;
   bool is_good_{true};
 };
-
-template <>
-FS_SUN_API const Json::ScalarValue &Json::GetScalarValue(
-    const ScalarValue &value, bool &has_succeeded);
 
 class FS_SUN_API JsonFile {
  public:

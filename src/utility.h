@@ -6,6 +6,7 @@
 #include <future>
 #include <tuple>
 #include <type_traits>
+#include <variant>
 
 #include "ns.h"
 
@@ -278,6 +279,14 @@ template <typename... Ts>
 struct SizeOf {
   static constexpr const std::size_t value = sizeof...(Ts);
 };
+
+template <typename... Ts>
+struct Overloaded : Ts... {
+  using Ts::operator()...;
+};
+
+template <typename... Ts>
+Overloaded(Ts...) -> Overloaded<Ts...>;
 
 #define FS_SUN_EMPTY
 
