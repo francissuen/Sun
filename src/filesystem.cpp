@@ -11,7 +11,11 @@
 #ifdef FS_VESTA_OS_WINDOWS
 #include <Windows.h>
 #elif defined(FS_VESTA_OS_UNIX)
+#ifdef FS_VESTA_OS_MACOS
+#include <mach-o/dyld.h>
+#else
 #include <unistd.h>
+#endif
 #endif
 
 #include "logger.h"
@@ -27,10 +31,14 @@ Filesystem::Filesystem() {
   if (GetModuleFileName(NULL, path, FS_SUN_FILESYSTEM_MAX_PATH) == 0)
     FS_SUN_ERROR("Failed to get executable path.");
 #elif defined(FS_VESTA_OS_UNIX)
-  if (::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) == -1)
+#ifdef FS_VESTA_OS_MACOS
+  uint32_t buf_size = FS_SUN_FILESYSTEM_MAX_PATH;
+  if (_NSGetExecutablePath(path, &buf_size) == -1)
     FS_SUN_ERROR("Failed to get executable path.");
 #else
-  // TODO
+  if (::readlink("/proc/self/exe", path, FS_SUN_FILESYSTEM_MAX_PATH) == -1)
+    FS_SUN_ERROR("Failed to get executable path.");
+#endif
 #endif
   executable_path_ = path;
   executable_dir_ = string::DirName(executable_path_.c_str());
