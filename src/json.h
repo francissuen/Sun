@@ -364,6 +364,10 @@ class FS_SUN_API Json {
   bool is_good_{true};
 };
 
+// TODO, support multi files json
+// { "my_obj" = {"member0":1}}
+// or {"my_obj": "path_to_my_obj_json_file"}, in this case, the my_obj stored
+// in a sperated json file
 class FS_SUN_API JsonFile {
  public:
   JsonFile(const char *file_path);

@@ -39,20 +39,6 @@ void Swap(T& a, T& b) {
   swap(a, b);
 }
 
-template <typename T, T... n>
-struct StaticMax;
-
-template <typename T, T t0, T t1>
-struct StaticMax<T, t0, t1> {
-  static constexpr T value = t0 > t1 ? t0 : t1;
-};
-
-template <typename T, T t0, T t1, T t2, T... tn>
-struct StaticMax<T, t0, t1, t2, tn...> {
-  static constexpr T x = StaticMax<T, t1, t2, tn...>::value;
-  static constexpr T value = t0 > x ? t0 : x;
-};
-
 /** index sequence */
 template <std::size_t...>
 struct IndexSequence {};

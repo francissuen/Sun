@@ -1,14 +1,16 @@
-#include <chrono>
-#include <fstream>
-#include <random>
-#include <sstream>
-
+#include "src/compile_time.h"
 #include "src/factory.h"
 #include "src/filesystem.h"
 #include "src/id.h"
 #include "src/json.h"
 #include "src/logger.h"
 #include "src/string.h"
+
+#include <chrono>
+#include <fstream>
+#include <random>
+#include <sstream>
+#include <unordered_map>
 
 using namespace fs::sun;
 using namespace std::chrono_literals;
@@ -160,6 +162,12 @@ int main(int argc, char **argv) {
       logger.Log(string::ToString(abt));
     }
   }
+
+  using MyCTMap = compile_time::Map<std::unordered_map<int, int>, CTPair(1, 2),
+                                    CTPair(2, 3)>;
+  static_assert(MyCTMap::Get<1>::value == 2);
+  static_assert(MyCTMap::Get<3, -1>::value == -1);
+  assert(MyCTMap::GetRTMap().find(2)->second == MyCTMap::Get<2>::value);
 
   return 0;
 }
