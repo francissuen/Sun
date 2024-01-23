@@ -95,6 +95,8 @@ struct AsyncBatchedTest {
   }
 };
 
+struct IDClass : ID32<IDClass> {};
+
 int main(int argc, char **argv) {
   auto &logger = Logger<>::Instance();
   logger.Log("hello world!", logger::S_VERBOSE);
@@ -168,6 +170,19 @@ int main(int argc, char **argv) {
   static_assert(MyCTMap::Get<1>::value == 2);
   static_assert(MyCTMap::Get<3, -1>::value == -1);
   assert(MyCTMap::GetRTMap().find(2)->second == MyCTMap::Get<2>::value);
+
+  Async<void(int)> id_test;
+  id_test.SetFunction(
+      [&logger](int idx) {
+        IDClass id_class;
+        logger.Log("id class idx: " + string::ToString(idx) +
+                   ", id:" + string::ToString(id_class.GetID()));
+      },
+      0);
+  for (size_t i = 0; i < 100; i++) {
+    id_test(i);
+  }
+  id_test.Finish();
 
   return 0;
 }
