@@ -18,6 +18,7 @@ template <typename TKey, typename TValue, TKey t_key, TValue t_value>
 struct Pair : std::pair<TKey, TValue> {
   using Key = TKey;
   using Value = TValue;
+  using Inverse = Pair<TValue, TKey, t_value, t_key>;
 
   Pair() : std::pair<TKey, TValue>{t_key, t_value} {}
 };
@@ -92,6 +93,13 @@ struct Map<TRTMap, Pair<TKey, TValue, t_key, t_value>, TOtherPairs...> {
   static const TRTMap& GetRTMap() {
     static const TRTMap runtime_map{Pair<TKey, TValue, t_key, t_value>{},
                                     TOtherPairs{}...};
+    return runtime_map;
+  }
+
+  // return an inversed rt map
+  static const TRTMap& GetRTMapInverse() {
+    static const TRTMap runtime_map{Pair<TValue, TKey, t_value, t_key>{},
+                                    typename TOtherPairs::Inverse{}...};
     return runtime_map;
   }
 

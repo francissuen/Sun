@@ -170,6 +170,9 @@ int main(int argc, char **argv) {
   static_assert(MyCTMap::Get<1>::value == 2);
   static_assert(MyCTMap::Get<3, -1>::value == -1);
   assert(MyCTMap::GetRTMap().find(2)->second == MyCTMap::Get<2>::value);
+  logger.Log("inverse map @3: " +
+             string::ToString(MyCTMap::GetRTMapInverse().find(3)->second));
+  assert(MyCTMap::GetRTMapInverse().find(3)->second == 2);
 
   Async<void(int)> id_test;
   id_test.SetFunction(
