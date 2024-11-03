@@ -95,7 +95,7 @@ struct AsyncBatchedTest {
   }
 };
 
-struct IDClass : ID32<IDClass> {};
+struct IDClass : IDObject<IDClass> {};
 
 int main(int argc, char **argv) {
   auto &logger = Logger<>::Instance();
@@ -174,15 +174,15 @@ int main(int argc, char **argv) {
              string::ToString(MyCTMap::GetRTMapInverse().find(3)->second));
   assert(MyCTMap::GetRTMapInverse().find(3)->second == 2);
 
-  Async<void(int)> id_test;
+  Async<void(std::size_t)> id_test;
   id_test.SetFunction(
-      [&logger](int idx) {
+      [&logger](std::size_t idx) {
         IDClass id_class;
         logger.Log("id class idx: " + string::ToString(idx) +
                    ", id:" + string::ToString(id_class.GetID()));
       },
       0);
-  for (size_t i = 0; i < 100; i++) {
+  for (std::size_t i = 0; i < 100; i++) {
     id_test(i);
   }
   id_test.Finish();

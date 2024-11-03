@@ -12,57 +12,45 @@
 
 FS_SUN_NS_BEGIN
 
-namespace id {
-namespace generator {
-template <typename T>
-class Increment {
+template <typename TID>
+class IDIncrementalGenerator {
  public:
-  static constexpr T INVALID_ID{std::numeric_limits<T>::max()};
+  constexpr static TID IVALID_ID{std::numeric_limits<TID>::max()};
 
  public:
-  inline T Get() {
-    return id_.fetch_add(1, std::memory_order::memory_order_relaxed);
-  };
+  TID Get() { return id_.fetch_add(1, std::memory_order_relaxed); }
 
  private:
-  std::atomic<T> id_{T{0}};
+  std::atomic<TID> id_;
 };
-}  // namespace generator
-}  // namespace id
 
-template <typename TID, typename TGenerator = id::generator::Increment<TID>>
-class ID {
+template <typename TObject, typename TID = std::size_t,
+          typename TIDGenerator = IDIncrementalGenerator<TID>>
+class IDObject {
  public:
   using IDType = TID;
 
-  template <typename TObject>
-  class Of {
-   private:
-    static TGenerator generator_;
+ public:
+  constexpr static TID INVALID_ID{TIDGenerator::INVALID_ID};
 
-   protected:
-    Of() : id_{generator_.Get()} {}
-
-   public:
-    inline operator IDType() const { return GetID(); }
-
-   public:
-    inline IDType GetID() const { return id_; }
-
-   protected:
-    const IDType id_;
-  };
+ private:
+  static TIDGenerator id_generator_;
 
  public:
-  static constexpr IDType INVALID_ID{TGenerator::INVALID_ID};
+  IDObject() : id_{id_generator_.Get()} {}
+
+ public:
+  TID GetID() const { return id_; }
+
+ protected:
+  const TID id_;
 };
 
-template <typename T, typename G>
-template <typename O>
-G ID<T, G>::Of<O>::generator_;
+template <typename TObject, typename TID, typename TIDGnerator>
+constexpr TID IDObject<TObject, TID, TIDGnerator>::INVALID_ID;
 
-template <typename T>
-using ID32 = ID<std::uint32_t>::Of<T>;
+template <typename TObject, typename TID, typename TIDGnerator>
+TIDGnerator IDObject<TObject, TID, TIDGnerator>::id_generator_;
 
 FS_SUN_NS_END
 
