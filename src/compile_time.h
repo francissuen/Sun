@@ -3,6 +3,9 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "logger.h"
+#include "string.h"
+
 namespace fs {
 namespace sun {
 namespace compile_time {
@@ -90,10 +93,23 @@ template <typename TRTMap, typename TKey, typename TValue,
           typename std::enable_if<!(IsPair<TRTMap>::value), TKey>::type t_key,
           TValue t_value, typename... TOtherPairs>
 struct Map<TRTMap, Pair<TKey, TValue, t_key, t_value>, TOtherPairs...> {
+  using Key = TKey;
+  using Value = TValue;
   static const TRTMap& GetRTMap() {
     static const TRTMap runtime_map{Pair<TKey, TValue, t_key, t_value>{},
                                     TOtherPairs{}...};
     return runtime_map;
+  }
+
+  static TValue RTMapGet(const TKey key, const TValue default_value = {}) {
+    const auto& rt_map = GetRTMap();
+    const auto itr = rt_map.find(key);
+    if (itr != rt_map.end()) {
+      return itr->second;
+    } else {
+      FS_SUN_WARN("cannot find key: " + string::ToString(key));
+      return default_value;
+    }
   }
 
   // return an inversed rt map
