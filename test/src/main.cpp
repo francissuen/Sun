@@ -174,8 +174,8 @@ int main(int argc, char **argv) {
   const auto v = MyCTMap::RTMapGet(3);
   logger.Log("unknown key 3: " + string::ToString(v));
   logger.Log("inverse map @3: " +
-             string::ToString(MyCTMap::GetRTMapInverse().find(3)->second));
-  assert(MyCTMap::GetRTMapInverse().find(3)->second == 2);
+             string::ToString(MyCTMap::GetRTInverseMap().find(3)->second));
+  assert(MyCTMap::RTInverseMapGet(3) == 2);
 
   Async<void(std::size_t)> id_test;
   id_test.SetFunction(

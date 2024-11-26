@@ -1,7 +1,6 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#ifndef FS_SUN_ASYNC_H
-#define FS_SUN_ASYNC_H
+#pragma once
 
 #include <atomic>
 #include <condition_variable>
@@ -299,5 +298,3 @@ class AsyncBatched<TRet(TArgs...)> {
 };
 
 FS_SUN_NS_END
-
-#endif  // FS_SUN_ASYNC_H

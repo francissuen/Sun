@@ -4,7 +4,6 @@
 #include <unordered_map>
 
 #include "logger.h"
-#include "string.h"
 
 namespace fs {
 namespace sun {
@@ -89,22 +88,36 @@ struct Map<Pair<TKey, TValue, t_key, t_value>, TOtherPairs...> {
  * @tparam t_value
  * @tparam TOtherPairs
  */
-template <typename TRTMap, typename TKey, typename TValue,
-          typename std::enable_if<!(IsPair<TRTMap>::value), TKey>::type t_key,
-          TValue t_value, typename... TOtherPairs>
-struct Map<TRTMap, Pair<TKey, TValue, t_key, t_value>, TOtherPairs...> {
+template <template <typename TK, typename TV, typename...>
+          typename TRTMapTemplate,
+          typename TKey, typename TValue, TKey t_key, TValue t_value,
+          typename... TOtherPairs>
+struct Map<TRTMapTemplate<TKey, TValue>, Pair<TKey, TValue, t_key, t_value>,
+           TOtherPairs...> {
   using Key = TKey;
   using Value = TValue;
-  static const TRTMap& GetRTMap() {
-    static const TRTMap runtime_map{Pair<TKey, TValue, t_key, t_value>{},
-                                    TOtherPairs{}...};
+  using RTMap = TRTMapTemplate<TKey, TValue>;
+  using RTInverseMap = TRTMapTemplate<TValue, TKey>;
+
+  static const RTMap& GetRTMap() {
+    static const RTMap runtime_map{Pair<TKey, TValue, t_key, t_value>{},
+                                   TOtherPairs{}...};
     return runtime_map;
   }
 
-  static TValue RTMapGet(const TKey key, const TValue default_value = {}) {
-    const auto& rt_map = GetRTMap();
-    const auto itr = rt_map.find(key);
-    if (itr != rt_map.end()) {
+  // return an inversed rt map
+  static const RTInverseMap& GetRTInverseMap() {
+    static const RTInverseMap runtime_map{Pair<TValue, TKey, t_value, t_key>{},
+                                          typename TOtherPairs::Inverse{}...};
+    return runtime_map;
+  }
+
+ private:
+  template <typename TMap>
+  static TValue MapGet(const TMap& map, const TKey key,
+                       const TValue default_value = {}) {
+    const auto itr = map.find(key);
+    if (itr != map.end()) {
       return itr->second;
     } else {
       FS_SUN_WARN("cannot find key: " + string::ToString(key));
@@ -112,11 +125,14 @@ struct Map<TRTMap, Pair<TKey, TValue, t_key, t_value>, TOtherPairs...> {
     }
   }
 
-  // return an inversed rt map
-  static const TRTMap& GetRTMapInverse() {
-    static const TRTMap runtime_map{Pair<TValue, TKey, t_value, t_key>{},
-                                    typename TOtherPairs::Inverse{}...};
-    return runtime_map;
+ public:
+  static TValue RTMapGet(const TKey key, const TValue default_value = {}) {
+    return MapGet(GetRTMap(), key, default_value);
+  }
+
+  static TKey RTInverseMapGet(const TValue key,
+                              const TKey default_value = {}) {
+    return MapGet(GetRTInverseMap(), key, default_value);
   }
 
   template <TKey t_in_key, TValue... value>

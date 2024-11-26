@@ -1,7 +1,6 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#ifndef FS_SUN_LOGGER_H
-#define FS_SUN_LOGGER_H
+#pragma once
 
 #include <iostream>
 
@@ -126,5 +125,3 @@ using namespace fs::sun;
 #endif  // FS_SUN_NO_NS
 
 FS_SUN_NS_END
-
-#endif  // FS_SUN_LOGGER_H

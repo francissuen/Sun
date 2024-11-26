@@ -1,7 +1,6 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#ifndef FS_SUN_UTILITY_H
-#define FS_SUN_UTILITY_H
+#pragma once
 
 #include <future>
 #include <tuple>
@@ -358,5 +357,3 @@ Overloaded(Ts...) -> Overloaded<Ts...>;
   }
 
 FS_SUN_NS_END
-
-#endif  // FS_SUN_UTILITY_H

@@ -1,7 +1,6 @@
 /* Copyright (C) 2020 Francis Sun, all rights reserved. */
 
-#ifndef FS_SUN_STRING_H
-#define FS_SUN_STRING_H
+#pragma once
 
 #include <array>
 #include <map>
@@ -174,5 +173,3 @@ std::string ToString(const T& value) {
 }  // namespace string
 
 FS_SUN_NS_END
-
-#endif  // FS_SUN_STRING_H
